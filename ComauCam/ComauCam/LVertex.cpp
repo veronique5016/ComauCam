@@ -60,6 +60,7 @@ bool LVertex::IsLower(LVertex* pVertex)
 	return IsLower(*pVertex);
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 
 LEdge::LEdge()
@@ -75,6 +76,58 @@ LEdge::LEdge(LVertex* _v1, LVertex* _v2)
 	v2 = _v2;
 
 	e_adja = NULL;
+}
+//////////////////////////////////////////////////////////////////////////
+LTriangle::LTriangle()
+{
+	v1 = v2 = v3 = NULL;
+	e1 = e2 = e3 = NULL;
+	n = NULL;
+	b_use = false;     //面片是否被使用
+	FaceType = 0;  //面片类型
+	SelectIntersectLine = NULL;     //上一面片已经求交的相交线，用于寻找下一相交线
+	OtherIntersectLine = NULL;      //另一条相交线
+}
+
+LTriangle::LTriangle(LVertex* v1, LVertex* v2, LVertex* v3)
+{
+	this->v1 = v1;
+	this->v2 = v2;
+	this->v3 = v3;
+
+	e1 = e2 = e3 = NULL;
+	n = NULL;
+}
+
+CVector3D* LTriangle::GntNormal()
+{
+	CVector3D vec1 = *v2 - *v1;
+	CVector3D vec2 = *v3 - *v2;
+	CVector3D vec = vec1*vec2;
+	vec.Normalize();
+	n = new CVector3D(vec);
+	return n;  // 返回n放在外面数组里以便统一管理
+}
+
+LTriangle* LTriangle::GetNbTri1() const//寻找附近面片
+{
+	return e1->e_adja ? e1->e_adja->t : NULL;
+}
+
+LTriangle* LTriangle::GetNbTri2() const
+{
+	return e2->e_adja ? e2->e_adja->t : NULL;
+}
+
+LTriangle* LTriangle::GetNbTri3() const
+{
+	return e3->e_adja ? e3->e_adja->t : NULL;
+}
+
+void LTriangle::Draw_LTriangle(COpenGLDC* pDC)
+{
+	pDC->DrawTriChip(*n, *v1, *v2, *v3);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,77 +190,6 @@ bool LEdgeHull::operator < (const LEdgeHull& edgeHull)
 }
 
 //////////////////////////////////////////////////////////////////////////
-
-LTriangle::LTriangle()
-{
-	v1 = v2 = v3 = NULL;
-	e1 = e2 = e3 = NULL;
-	n = NULL;
-}
-
-LTriangle::LTriangle(LVertex* v1, LVertex* v2, LVertex* v3)
-{
-	this->v1 = v1;
-	this->v2 = v2;
-	this->v3 = v3;
-
-	e1 = e2 = e3 = NULL;
-	n = NULL;
-}
-
-CVector3D* LTriangle::GntNormal()
-{
-	CVector3D vec1 = *v2 - *v1;
-	CVector3D vec2 = *v3 - *v2;
-	CVector3D vec = vec1*vec2;
-	vec.Normalize();
-	n = new CVector3D(vec);
-	return n;  // 返回n放在外面数组里以便统一管理
-}
-
-LTriangle* LTriangle::GetNbTri1() const//寻找附近面片
-{
-	return e1->e_adja ? e1->e_adja->t : NULL;
-}
-
-LTriangle* LTriangle::GetNbTri2() const
-{
-	return e2->e_adja ? e2->e_adja->t : NULL;
-}
-
-LTriangle* LTriangle::GetNbTri3() const
-{
-	return e3->e_adja ? e3->e_adja->t : NULL;
-}
-
-/*
-void LTriangle::Draw(COpenGLDC* pDC)
-{
-	COLORREF oldClr;
-	if (GetIsSelected())
-		oldClr = pDC->SetMaterialColor(CLR_SELECTED);
-	else
-		oldClr = pDC->SetMaterialColor(m_clr);
-
-	pDC->DrawTriChip(*n, *v1, *v2, *v3);
-
-	pDC->SetMaterialColor(oldClr);
-}
-*/
-
-void LTriangle::Draw(COpenGLDC* pDC, bool ShowTri)
-{
-	if (ShowTri)
-	{
-		pDC->DrawTriChip(*n, *v1, *v2, *v3);
-	}
-	else
-	{
-		pDC->DrawTriFrame(*v1, *v2, *v3);
-	}
-	
-}
-//////////////////////////////////////////////////////////////////////////
 TopologySTL::TopologySTL()
 {
 
@@ -225,7 +207,7 @@ TopologySTL::~TopologySTL()
 		}
 	}
 	m_vertices.clear();
-/*
+
 	sz = m_ltris.size();
 	for (int i = sz - 1; i >= 0; i--)
 	{
@@ -257,5 +239,5 @@ TopologySTL::~TopologySTL()
 			m_normals[i] = NULL;
 		}
 	}
-*/
 }
+

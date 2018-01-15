@@ -95,7 +95,6 @@ public:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnDeletemodel();
 	afx_msg void OnFileSave();
-//	afx_msg void OnSwitchTriangle();
 	afx_msg void OnTriangleFrame();
 	afx_msg void OnTriangleFace();
 	afx_msg void OnStartSlice();

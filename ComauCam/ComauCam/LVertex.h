@@ -1,14 +1,13 @@
 #pragma once
-
 #include "GeomBase.h"
 #include "OpenGL.h"
 #include <vector>
-
 using namespace std;
 // 定义指针结构的点、边、三角形
 struct LVertex;
 struct LEdge;
 struct LTriangle;
+struct LEdgeHull;
 
 struct LVertex : public CPoint3D
 {
@@ -33,15 +32,7 @@ struct LEdge   // Half edge structure    半边数据结构
 		*e_adja;    // adjacent edge together with which forms edge   伙伴半边
 };
 
-struct LEdgeHull
-{
-	LEdge* edge;
-
-	bool IsOpposite(const LEdgeHull& edgeHull);    //判断是否为伙伴半边的函数
-	bool operator < (const LEdgeHull& edgeHull);
-};
-
-struct LTriangle : public CEntity
+struct LTriangle : public CObject
 {
 	LTriangle();
 	LTriangle(LVertex* v1, LVertex* v2, LVertex* v3);
@@ -49,14 +40,25 @@ struct LTriangle : public CEntity
 	LTriangle* GetNbTri2() const;
 	LTriangle* GetNbTri3() const;
 	CVector3D* GntNormal();
-	virtual void Draw(COpenGLDC* pDC, bool ShowTri);
-//	void Draw(COpenGLDC* pDC);   // 新添的，不知道能不能用，上面那句是原始的
+	void Draw_LTriangle(COpenGLDC* pDC);   //这里没有用重写的函数直接新定义的，注意
 
 	LVertex *v1, *v2, *v3;  // 逆时针排列
 	LEdge   *e1, *e2, *e3;  // 半边
 	CVector3D* n;           // 法向量
+
+	bool b_use;     //面片是否被使用
+	int FaceType;  //面片类型
+	LEdge* SelectIntersectLine;     //上一面片已经求交的相交线，用于寻找下一相交线
+	LEdge* OtherIntersectLine;      //另一条相交线
 };
 
+struct LEdgeHull//外壳
+{
+	LEdge* edge;
+
+	bool IsOpposite(const LEdgeHull& edgeHull);    //判断是否为伙伴半边的函数
+	bool operator < (const LEdgeHull& edgeHull);
+};
 
 struct TopologySTL    // 具有拓扑关系的点线面集合
 {
@@ -67,3 +69,4 @@ struct TopologySTL    // 具有拓扑关系的点线面集合
 	vector<LTriangle*> m_ltris;//面
 	vector<CVector3D*> m_normals;//向量
 };
+

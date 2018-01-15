@@ -1,35 +1,56 @@
 #pragma once
 #include "STLModel.h"
 #include "Triangle.h"
-#include "SliceModel.h"
 #include <vector>
-
+#include "OpenGL.h"
 using namespace std;
+
+
+//面片类型 
+#define NO_POINT_ON_SURFACE 1
+#define ONE_POINT_ON_SURFACE 2 
+#define EDGE_ON_SURFACE 3
+#define ONLY_ONE_POINT_ON_SURFACE 4
+
+struct PolyLine
+{
+public:
+	PolyLine();
+	~PolyLine();
+	vector<CPoint3D*> m_Linkpoints;
+};
+
+struct Layer
+{
+public:
+	Layer();
+	~Layer();
+	double z;
+	vector<PolyLine*> m_Polylines;
+};
 
 class CSlice
 {
 public:
-	struct Triangle;
-	struct CLineEx;
-	//struct Segment;
-	//struct Pt_Seg;
-
 	CSlice(void);
 	~CSlice(void);
-	void LoadSTLModel(vector<CSTLModel*>& models);					 //载入模型
-	void Slice();
+	void LoadSTLModel(CSTLModel* models);	//载入模型，建立拓扑关系
+	void slice(CSTLModel* model);  //切片函数
+	void getpolylinePoints(double z);
+	void drawpolyline();
 
 protected:
-	void CalcTrisEigenHeight();										 //计算三角片特征高度
-	bool CalcTriXYPlaneInst(Triangle* pTri, double z, CLineEx& line);//计算与xy平面的关系
+	void InterSect(double z, LTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
+	void CalInerSectPoint(double z, LEdge * edge, LTriangle*pCurFace, CPoint3D* point);
+	void JudgeFaceType(double z, LTriangle* pCurFace);    //判断面片的类型
+	void JudgeOtherLine(double z, LTriangle* pCurFace);   //判断另一条相交线
+	double ReturnZmin(const LTriangle* Ltri);   //返回一个面片的最小Z坐标值
+	double ReturnZmax(const LTriangle* Ltri);
+	double ReturnZmid(const LTriangle* Ltri);
+
 public:
-	vector<CSTLModel*> m_STLModels;
-	vector<CSliceModel*> m_slices;                                   //输出的切片模型
-
-	vector<double> m_Zs;
-//	vector<double> points;
-protected:
-	vector<Triangle*> m_tris;
+	vector<LEdge*> m_Slice_edge;     //存储相交边
+	vector<Layer*> m_layers;         //存储片层
+	vector<LTriangle*> m_tris_slice;   //保存一份三角面片，作为初始数据
 };
-
 

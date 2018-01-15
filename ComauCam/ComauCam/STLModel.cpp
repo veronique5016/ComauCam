@@ -334,14 +334,6 @@ BOOL CSTLModel::IsSpace(TCHAR ch)
 
 void CSTLModel::Draw(COpenGLDC* pDC, bool ShowTri)
 {
-	//COLORREF oldClr;
-
-	//pDC->GetMaterialColor(oldClr);
-	//if (GetIsSelected())
-	//	pDC->SetMaterialColor(CLR_SELECTED);
-	//else
-	//	pDC->SetMaterialColor(m_clr);
-
 	int sz = m_tris.GetSize();
 	if (ShowTri)
 	{
@@ -357,7 +349,6 @@ void CSTLModel::Draw(COpenGLDC* pDC, bool ShowTri)
 			m_tris[i]->DrawTriangleFrame(pDC);  //线框模式
 		}
 	}
-	//pDC->SetMaterialColor(oldClr);
 }
 
 void CSTLModel::Topologize()	// 建立拓扑关系
@@ -403,7 +394,6 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 		pFace->v2 = SearchPtInVertices(m_tris[i]->B);
 		pFace->v3 = SearchPtInVertices(m_tris[i]->C);
 		pFace->n = pNormal;                           //将面表和向量表也对应了起来
-
 													  //将信息全部存在了半边结构的面数组里
 		m_ltris.push_back(pFace);   // 在faces序列中三角面片还是随机排放的
 	}

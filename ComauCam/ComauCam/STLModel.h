@@ -9,7 +9,7 @@
 
 
 
-class CSTLModel :public CEntity, public TopologySTL
+class CSTLModel :public CObject, public TopologySTL
 {
 public:
 	CSTLModel();

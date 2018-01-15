@@ -18,6 +18,7 @@
 #endif
 
 vector<CSTLModel*> models;
+vector<CSlice*> m_slices;
 // CComauCamView
 
 IMPLEMENT_DYNCREATE(CComauCamView, CView)
@@ -329,7 +330,7 @@ BOOL CComauCamView::RenderScene()
 	} 
 	if (m_bCanSliceDraw)
 	{
-		m_slice->m_slices[0]->Draw(m_pDC, true);
+		m_slices[0]->drawpolyline();
 	}
 	// ondeletemodel 释放 DC 
 	::glPopMatrix();
@@ -605,11 +606,15 @@ void CComauCamView::OnTriangleFace()
 void CComauCamView::OnStartSlice()
 {
 	// TODO: 在此添加命令处理程序代码
-	CSlice* m_slice = new CSlice();
-	m_slice->LoadSTLModel(models);
-	m_slice->Slice();
-//	m_slice->m_slices[0]->Draw(m_pDC, true);
-//	m_bCanSTLDraw = false;
-	m_bCanSliceDraw = true;
-	RenderScene();
+	int szModel = models.size();
+	for (int i = 0; i<szModel; i++)
+	{
+		CSlice* pSlice = new CSlice();
+		pSlice->LoadSTLModel(models[i]);
+		pSlice->slice(models[i]);
+//		pSlice->drawpolyline();
+		m_slices.push_back(pSlice);
+		m_bCanSliceDraw = true;
+		Invalidate(TRUE);
+	}
 }

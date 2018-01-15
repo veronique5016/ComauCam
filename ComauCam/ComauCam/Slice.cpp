@@ -1,319 +1,389 @@
 #include "stdafx.h"
 #include "Slice.h"
-#include "Global.h"
-#include "Slice.h"
-#include <fstream>
+#include <algorithm>
 
-using namespace std;
-//#include "SliceDlg.h"
-double g_baseLevel = -10;
-
-//double maxh;
-//double minh;
-//double c;
-double g_maxLayerHeight = 0.2;
-double g_minLayerHeight = 0.1;
-double g_stairError = 0.1;
-struct CSlice::Triangle
+PolyLine::PolyLine()
 {
-	Triangle(LVertex* v1, LVertex* v2, LVertex* v3, CVector3D* n, CSliceModel* pSlice)
-	{
-		Init(v1, v2, v3, n, pSlice);
-	}
-	Triangle(LTriangle* pTri, CSliceModel* pSlice)
-	{
-		Init(pTri->v1, pTri->v2, pTri->v3, pTri->n, pSlice);
-	}
-
-	void Init(LVertex* v1, LVertex* v2, LVertex* v3, CVector3D* n, CSliceModel* pSlice)
-	{
-		this->v1 = v1;
-		this->v2 = v2;
-		this->v3 = v3;
-		this->n = n;
-		this->pSliceModel = pSlice;
-		AdjustVertices();
-	}
-
-	void AdjustVertices()//调整最高点
-	{
-		if (v3->IsLower(v2))
-		{
-			swap(v2, v3);
-		}
-		if (v2->IsLower(v1))
-		{
-			swap(v1, v2);
-		}
-		if (v3->IsLower(v2))
-		{
-			swap(v2, v3);
-		}
-	}
-
-	LVertex* GetVertex(int idx) const//根据参数返回顶点
-	{
-		switch (idx)
-		{
-		case 1:
-			return v1;
-		case 2:
-			return v2;
-		case 3:
-			return v3;
-		}
-	}
-	CSTLModel* GetModel() const
-	{
-		//return pModel;
-	}
-
-	static bool IsLower(Triangle* pTri1, Triangle* pTri2)
-	{
-		return pTri1->v1->IsLower(pTri2->v1);
-	}
-
-	//protected:
-	LVertex      *v1, *v2, *v3;     // 指向三个顶点的指针,v1 最低， v3 最高
-	CVector3D*   n;                 // 用于计算特征高度
-	double       eigenH;            // 特征高度
-	CSliceModel* pSliceModel;       // 切片模型
-};
-
-struct CSlice::CLineEx : public CLine
+}
+PolyLine::~PolyLine()
 {
-	CSliceModel* pSlice;
-};
+}
+
+Layer::Layer()
+{
+}
+Layer::~Layer()
+{
+}
+
 CSlice::CSlice(void)
 {
+
 }
 
 CSlice::~CSlice(void)
 {
-	int sz = m_slices.size();
-	for (int i = sz - 1; i >= 0; i--)
-	{
-		delete m_slices[i];
-		m_slices[i] = NULL;
-	}
-	m_slices.clear();
-
-	sz = m_tris.size();
-	for (int i = sz - 1; i >= 0; i--)
-	{
-		delete m_tris[i];
-		m_tris[i] = NULL;
-	}
-	m_tris.clear();
-
-	m_Zs.clear();
-}
-
-void CSlice::LoadSTLModel(std::vector<CSTLModel*>& models)//载入stl模型
-{
-	int sz = models.size();
-	for (int i = 0; i<sz; i++)
-	{
-		models[i]->Topologize();//给每个模型建立拓扑结构
-
-		m_STLModels.push_back(models[i]);//再存入m_STLModels中
-	}
-	AfxMessageBox(_T("Load Finished!"), MB_OK, 0);
-}
-
-void CSlice::CalcTrisEigenHeight()//计算三角特征高度，用于自适应层切
-{
-	/*
-	CString str;
-	str.Format(_T("%f"),g_maxLayerHeight);
-	AfxMessageBox(str);
-
-
-	str.Format(_T("%f"),g_minLayerHeight);
-	AfxMessageBox(str);*/
-	int sz = m_tris.size();
-	double a_max = atan(g_maxLayerHeight / g_stairError);//最大层高除以残余高度的反余弦
-	double a_min = atan(g_minLayerHeight / g_stairError);
-	CVector3D v(0, 0, 1);
-	double a = 0;
-	for (int i = 0; i<sz; i++)
-	{
-		a = Angle(v, *m_tris[i]->n);   //得到面片法矢和xy平法矢的夹角
-		if (a > HALFPI)
-		{
-			a = PI - a;
-		}
-		if (a >= a_max)
-		{
-			m_tris[i]->eigenH = g_maxLayerHeight;
-		}
-		else if (a <= a_min)
-		{
-			m_tris[i]->eigenH = g_minLayerHeight;
-		}
-		else
-		{
-			m_tris[i]->eigenH = g_stairError*tan(a);
-		}
-	}
 
 }
-void CSlice::Slice()                          //开始切片
+
+void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
 {
-	AfxMessageBox(_T("Slice Start!"), MB_OK, 0);
-	int sZ = m_STLModels.size();                //这里应该是模型的数量
-	for (int i = 0; i<sZ; i++)
+	model->Topologize();//给模型建立拓扑结构
+	int szTri = model->m_ltris.size();
+	for (int j = 0; j<szTri; j++)
 	{
-		CSliceModel* pSlice = new CSliceModel();
-		//pSlice->SetSliceType(SLC_PART);   
-		pSlice->SetSTLModel(m_STLModels[i]);    //SetSTLModel是slicemodel的函数 所以定义一个其指针指向其函数
-												//把每个模型的指针转过去
-		m_slices.push_back(pSlice);             //将切片信息保存到m_slices数组中去
-		int szTris = m_STLModels[i]->m_ltris.size();//然后对应得到每个模型的面片数量
-		for (int j = 0; j<szTris; j++)
-		{
-			Triangle* pTri = new Triangle(m_STLModels[i]->m_ltris[j], pSlice);
-			m_tris.push_back(pTri);//将模型的面片信息和文件名信息都保存到新的tris中
-		}
+		m_tris_slice.push_back(model->m_ltris[j]);     //为CSlice对象拷贝一份三角面片数据
 	}
-	sort(m_tris.begin(), m_tris.end(), Triangle::IsLower);//排序
-
-														  //AfxMessageBox(_T("ca start!"),MB_OK,0);
-	CalcTrisEigenHeight(); //计算特征高度
-						   //AfxMessageBox(_T("ca end!"),MB_OK,0);
-	int szModel = m_STLModels.size();
-	double model_z_min = HUGE;
-	for (int i = 0; i<szModel; i++)
-	{
-		double ext[6];
-		m_STLModels[i]->FindExtreme(ext);//把每个模型都调过去找到极限尺寸
-		if (ext[4] < model_z_min)//z_min
-		{
-			model_z_min = ext[4];//找到模型的最小z
-		}
-	}
-
-	int szLayer = (model_z_min - g_baseLevel) / g_maxLayerHeight;//高度差除以最大层厚得到最小的层数
-	szLayer++;
-
-	double h = (model_z_min - g_baseLevel) / (double)szLayer;//得到层厚
-
-	for (int i = 1; i <= szLayer; i++)
-	{
-		m_Zs.push_back(g_baseLevel + (double)i*h);//将不断增加的高度值存到m_Zs这个数组里
-	}
-
-	vector<Triangle*> status;
-	int sz = m_tris.size(), szStatus, szSlice = m_slices.size();
-
-	double z_min = m_tris[0]->v1->z + 1.0e-10;//因为已经过排序，故而第一个面片的v1的z值就是最小的，又加一点？？
-	double z_max = m_tris[sz - 1]->v3->z;
-
-	double z = z_min;
-	int cnt = 0;
-	//AfxMessageBox(_T("开始循环"),MB_OK,0);
+}
+void CSlice::slice(CSTLModel* model)
+{
+	AfxMessageBox(_T("Slice Begin!!"), MB_OK, 0);
+	double z_Min, z_Max;  //模型极限尺寸
+	double z;  //切片高度
+	double dz;   //切片层厚
+	double ex[6];
+	model->FindExtreme(ex);   //查找模型的极限尺寸
+	z_Min = ex[4];
+	z_Max = ex[5];
+	z = z_Min + 0.1;  //第一个切片层
+	dz = 3;   //层高
 	while (true)
 	{
-		szStatus = status.size();
-		for (int i = szStatus - 1; i >= 0; i--)
-		{
-			if (status[i]->v3->z < z)//如果面片的最大z值都比切片值小
-			{
-				status.erase(status.begin() + i);//vector::erase()：从指定容器删除指定位置的元素或某段范围内的元素
-			}
-		}
-
-		while (true)
-		{
-			if (cnt < sz && m_tris[cnt]->v1->z <= z) //如果一个面片最小点的z值小于等于切片值时
-			{
-				if (m_tris[cnt]->v3->z >= z)//该面片的最大点的z值大于等于最小理论值
-				{
-					status.push_back(m_tris[cnt]);//把这个面片写入status数组
-				}
-				cnt++;
-			}
-			else//已经遍历完成
-			{
-				break;
-			}
-		}
-
-		szStatus = status.size();
-		CLineEx line;                                      //定义一个结构变量line 包含CSliceModel* pSlice信息
-//		std::vector<double> points;
-		for (int i = 0; i<szStatus; i++)
-		{
-			if (CalcTriXYPlaneInst(status[i], z, line))       //如果相交的话  返回的是 z高度值 和这条交线
-			{
-//				points.push_back (line.m_pt1.x);
-//				points.push_back(line.m_pt1.y); 
-//				points.push_back(line.m_pt1.z);
-//				points.push_back(line.m_pt2.x);
-//				points.push_back(line.m_pt2.y);
-//				points.push_back(line.m_pt2.z);
-				line.pSlice->PushToSpecifiedLayer(z, line);  //存入到对应的层片里
-			}
-		}
-/*		CString sFilePath = L"E:\\test.txt";
-		CStdioFile fileout;
-		
-		
-		if (fileout.Open(sFilePath, CFile::modeCreate | CFile::modeWrite))
-		{
-			CString str;
-			int pointSize = points.size();
-			for (int i = 0; i < pointSize; i += 6)
-			{
-				str.Format(_T("points  %.7f  %.7f  %.7f\n"),
-				points[i], points[i + 1], points[i + 2]);
-				fileout.WriteString(str);
-				str.Format(_T("points  %.7f  %.7f  %.7f\n"),
-				points[i + 3], points[i + 4], points[i + 5]);
-				fileout.WriteString(str);
-				fileout.WriteString(_T("\n"));
-			}
-		}
-		fileout.Close();
-*/
-		m_Zs.push_back(z);//将此时的z值存入m_Zs
-
-						  // next z calculation
-		double dz = HUGE;
-		for (int i = 0; i<szStatus; i++)
-		{
-			if (status[i]->eigenH < dz)
-			{
-				dz = status[i]->eigenH;
-			}
-		}
-
-		z += dz;//得到新的z值
-		if (z > z_max)//超出极限跳出
+		getpolylinePoints(z);
+		if (z >= (z_Max - dz))
 		{
 			break;
 		}
+		z += dz;
 	}
 
-	for (int i = 0; i<szSlice; i++)
-	{
-
-		m_slices[i]->GntLayerBoundaries();//得到层片轮廓
-
-	}
-	AfxMessageBox(_T("Slice Finished!"), MB_OK, 0);
 }
 
-
-bool CSlice::CalcTriXYPlaneInst(Triangle* pTri, double z, CLineEx& line)//判断与xy平面的关系？？
+void CSlice::getpolylinePoints(double z)
 {
-	if (::CalcTriXYPlaneInst(*pTri->v1, *pTri->v2, *pTri->v3, z, line))
+	vector<LTriangle*> status; //储存符合层高的，筛选出来的面片
+	int szTri = m_tris_slice.size();
+	for (int i = 0; i<szTri; i++)         //遍历所有面片,筛选出相交面片
 	{
-		line.pSlice = pTri->pSliceModel;
-		return true;
+		double z_min = ReturnZmin(m_tris_slice[i]);
+		double z_max = ReturnZmax(m_tris_slice[i]);
+		if (z_min <= z&&z_max >= z)
+		{
+			if (z_min == z_max)
+			{
+				//跳过面片与切片重合的面片
+			}
+			else {
+				status.push_back(m_tris_slice[i]);
+			}       //存储与切片层相交面片
+		}
 	}
-	else
+	int szStatus = status.size();
+	for (int i = 0; i<szStatus; i++)       //对相交面片进行面片分类
 	{
-		return false;
+		JudgeFaceType(z, status[i]);
+	}
+	LTriangle* pCurFace = new LTriangle();
+	//选第一个面片作为起始面片
+	pCurFace = status[0];
+	pCurFace->b_use = true;//把面片置为当前使用面片，标志位置为真
+	while (true)
+	{
+		PolyLine* m_polyline = new PolyLine();
+		InterSect(z, pCurFace);  //设定起始相交边，并存入m_Slice_edge容器
+		CPoint3D* tmpLinkPoint = new CPoint3D();
+		int sz0 = m_Slice_edge.size();
+		pCurFace->SelectIntersectLine = m_Slice_edge[sz0 - 1];
+		//由起始相交边求交点，并存入m_LinkPoint容器
+		CalInerSectPoint(z, pCurFace->SelectIntersectLine, pCurFace, tmpLinkPoint);
+		m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
+		//第一个面片的另一相交边求交点，并存入m_LinkPoint容器
+		JudgeOtherLine(z, pCurFace);
+		CalInerSectPoint(z, pCurFace->OtherIntersectLine, pCurFace, tmpLinkPoint);
+		m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
+		//上面是轮廓第一个面片的特殊处理
+		while (true)
+		{
+			//由最后存入相交边数组的边的伙伴半边寻找下一相交面片
+			int sz = m_Slice_edge.size();
+			pCurFace = m_Slice_edge[sz - 1]->e_adja->t;
+			pCurFace->b_use = true;//把面片置为当前使用面片，标志位置为真
+								   //最后存入m_Slice_edge的相交边是上一面片的第二条相交边，它的伙伴半边就是当前面片已选的相交边
+			pCurFace->SelectIntersectLine = m_Slice_edge[sz - 1]->e_adja;
+			//判断当前面片中的另一相交边，保存边
+			JudgeOtherLine(z, pCurFace);
+			//求交点，并保持点
+			CalInerSectPoint(z, pCurFace->OtherIntersectLine, pCurFace, tmpLinkPoint);
+			m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
+			int szlinkPoint = m_polyline->m_Linkpoints.size();
+			//判断交点是否为起始点，若是，跳出内层循环，此时生成一个轮廓点集，若否，直接返回内层循环
+			if (*(m_polyline->m_Linkpoints[0]) ^= *(m_polyline->m_Linkpoints[szlinkPoint - 1]))
+			{
+				Layer* pLayer = new Layer();
+				pLayer->z = z;
+				pLayer->m_Polylines.push_back(m_polyline);
+				m_layers.push_back(pLayer);
+				int szpoint = m_polyline->m_Linkpoints.size();
+				break;
+			}
+		}
+		//跳出内层循环来到这，判断status中是否还有未被使用的面片，
+		//如有，把面片置为当前，开始下一轮廓寻点；如没有，跳出外层循环
+		break;
+	}
+
+}
+
+void CSlice::drawpolyline()
+{
+	int szlayer = m_layers.size();
+	for (int i = 0; i<szlayer; i++)
+	{
+		int szpolyline = m_layers[i]->m_Polylines.size();
+		for (int j = 0; j<szpolyline; j++)
+		{
+			int szPoint = m_layers[i]->m_Polylines[j]->m_Linkpoints.size();
+			for (int k = 0; k<szPoint - 1; k++)
+			{
+				CPoint3D* point1 = new CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k]));
+				CPoint3D* point2 = new CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1]));
+				glLineWidth(1.5f);
+				glBegin(GL_LINES);
+				glColor3f(0.0f, 1.0f, 0.0f);
+				glVertex3f(point1->x, point1->y, point1->z);
+				glVertex3f(point2->x, point2->y, point2->z);
+				glEnd();
+			}
+		}
+	}
+
+}
+
+void CSlice::InterSect(double z, LTriangle* pCurFace)   //只要找到一条相交的边就可以跳出
+{
+	switch (pCurFace->FaceType)
+	{
+	case NO_POINT_ON_SURFACE:   //不相交的边不能选
+	{
+		if ((pCurFace->v1->z - z)*(pCurFace->v2->z - z)<0)   //说明e1边可以作为第一条相交的边
+		{
+			m_Slice_edge.push_back(pCurFace->e1);
+			goto ENDINIT1;
+		}
+		if ((pCurFace->v2->z - z)*(pCurFace->v3->z - z)<0)   //说明e2边可以作为第一条相交的边,第一条边不相交，第二条边肯定相交
+		{
+			m_Slice_edge.push_back(pCurFace->e2);
+			goto ENDINIT1;
+		}
+	ENDINIT1:
+		break;
+	}
+	case ONE_POINT_ON_SURFACE:  //因为三条边都相交，随便一条都可以作为起始边，选e1好了
+	{
+		m_Slice_edge.push_back(pCurFace->e1);
+		break;
+	}
+	case EDGE_ON_SURFACE:  //不能选在切平面上的边
+	{
+		if ((pCurFace->v1->z - z) != 0)   //v1不在切平面上，与之相连的两条边e1\e3都可选
+		{
+			m_Slice_edge.push_back(pCurFace->e1);
+			goto ENDINIT2;
+		}
+		if ((pCurFace->v2->z - z) != 0)   //v2不在切平面上，与之相连的两条边e1\e2都可选
+		{
+			m_Slice_edge.push_back(pCurFace->e2);
+			goto ENDINIT2;
+		}
+		if ((pCurFace->v3->z - z) != 0)   //v3不在切平面上，与之相连的两条边e2\e3都可选
+		{
+			m_Slice_edge.push_back(pCurFace->e3);
+			goto ENDINIT2;
+		}
+	ENDINIT2:
+		break;
+	}
+	case ONLY_ONE_POINT_ON_SURFACE:
+	{
+		if ((pCurFace->v1->z - z) == 0)   //v1在切平面上，与之相连的两条边e1\e3都可选
+		{
+			m_Slice_edge.push_back(pCurFace->e1);
+			goto ENDINIT3;
+		}
+		if ((pCurFace->v2->z - z) == 0)   //v2在切平面上，与之相连的两条边e1\e2都可选
+		{
+			m_Slice_edge.push_back(pCurFace->e2);
+			goto ENDINIT3;
+		}
+		if ((pCurFace->v3->z - z) == 0)   //v3在切平面上，与之相连的两条边e2\e3都可选
+		{
+			m_Slice_edge.push_back(pCurFace->e3);
+			goto ENDINIT3;
+		}
+	ENDINIT3:
+		break;
+	}
+	}
+
+}
+
+void CSlice::JudgeFaceType(double z, LTriangle* pCurFace)
+{
+	double z_min = ReturnZmin(pCurFace);
+	double z_max = ReturnZmax(pCurFace);
+	double z_mid = ReturnZmid(pCurFace);
+	//判断三角面片和切平面的相交情况,四种情况
+	if (z_min<z&&z_max>z&&z_mid != z)
+		pCurFace->FaceType = NO_POINT_ON_SURFACE;
+	if (z_min<z&&z_max>z&&z_mid == z)
+		pCurFace->FaceType = ONE_POINT_ON_SURFACE;
+	if ((z_min<z&&z_max == z&&z_mid == z) || (z_min == z&&z_max>z&&z_mid == z))
+		pCurFace->FaceType = EDGE_ON_SURFACE;
+	if ((z_min<z&&z_max == z&&z_mid != z) || (z_min == z&&z_max>z&&z_mid != z))
+		pCurFace->FaceType = ONLY_ONE_POINT_ON_SURFACE;
+}
+
+void CSlice::JudgeOtherLine(double z, LTriangle* pCurFace)
+{
+	switch (pCurFace->FaceType)
+	{
+	case NO_POINT_ON_SURFACE:
+	{
+		//已选的相交边的相邻前一边判断是否相交
+		if ((pCurFace->SelectIntersectLine->e_prev->v1->z - z)*(pCurFace->SelectIntersectLine->e_prev->v2->z - z)<0)
+			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+		else//否则另一条就是相交边
+			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+		break;
+	}
+	case ONE_POINT_ON_SURFACE:  //这种情况比较特殊，要先判断已选的相交边是哪种类型
+	{
+		//已选边的一端点在切平面上
+		if ((pCurFace->SelectIntersectLine->v1->z - z)*(pCurFace->SelectIntersectLine->v2->z - z) == 0)
+		{
+			//已选的相交边的相邻前一边判断是否相交
+			if ((pCurFace->SelectIntersectLine->e_prev->v1->z - z)*(pCurFace->SelectIntersectLine->e_prev->v2->z - z)<0)
+				pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+			else//否则另一条就是相交边
+				pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+		}
+		else//已选边的一端点不在切平面上，/任意一条相邻的边都可以作为另一相交边
+		{
+			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+		}
+		break;
+	}
+	case EDGE_ON_SURFACE:  //相交不能选在切平面上的边
+	{
+		//已选的相交边的相邻前一边判断是否有一个点不在z切平面上
+		if ((pCurFace->SelectIntersectLine->e_prev->v1->z - z) != 0 || (pCurFace->SelectIntersectLine->e_prev->v2->z - z) != 0)
+			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+		else//否则另一条就是相交边
+			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+		break;
+	}
+	case ONLY_ONE_POINT_ON_SURFACE:  //哪一条边其中的一个端点在切平面上，就是相交边
+	{
+
+		//已选的相交边的相邻前一边判断是否有一个点不在z切平面上
+		if ((pCurFace->SelectIntersectLine->e_prev->v1->z - z) == 0)
+			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+		else//否则另一条就是相交边
+			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+		break;
+	}
+	}
+	m_Slice_edge.push_back(pCurFace->OtherIntersectLine);
+}
+
+
+void CSlice::CalInerSectPoint(double z, LEdge * edge, LTriangle*pCurFace, CPoint3D* point)
+{
+	if (pCurFace->FaceType != ONLY_ONE_POINT_ON_SURFACE) {
+		if (edge->v1->z == z)   //如果点和切面重合，把端点赋值给交点
+		{
+			point->x = edge->v1->x;
+			point->y = edge->v1->y;
+		}
+		else if (edge->v2->z == z)
+		{
+			point->x = edge->v2->x;
+			point->y = edge->v2->y;
+		}
+		else    //两端点都不在切片面上
+		{
+			double lamda;
+			CPoint3D* vec = new CPoint3D();
+			lamda = (z - edge->v1->z) / (edge->v2->z - edge->v1->z);
+			vec->x = edge->v2->x - edge->v1->x;
+			vec->y = edge->v2->y - edge->v1->y;
+			point->x = edge->v1->x + lamda*vec->x;
+			point->y = edge->v1->y + lamda*vec->y;
+		}
+		point->z = z;
 	}
 }
+
+double CSlice::ReturnZmin(const LTriangle* Ltri)
+{
+	double z1, z2, z3;
+	z1 = Ltri->v1->z;
+	z2 = Ltri->v2->z;
+	z3 = Ltri->v3->z;
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	if (z2>z3)
+	{
+		swap(z2, z3);
+	}
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	return z1;
+
+}
+double CSlice::ReturnZmax(const LTriangle* Ltri)
+{
+	double z1, z2, z3;
+	z1 = Ltri->v1->z;
+	z2 = Ltri->v2->z;
+	z3 = Ltri->v3->z;
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	if (z2>z3)
+	{
+		swap(z2, z3);
+	}
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	return z3;
+}
+
+double CSlice::ReturnZmid(const LTriangle* Ltri)
+{
+	double z1, z2, z3;
+	z1 = Ltri->v1->z;
+	z2 = Ltri->v2->z;
+	z3 = Ltri->v3->z;
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	if (z2>z3)
+	{
+		swap(z2, z3);
+	}
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	return z2;
+}
+

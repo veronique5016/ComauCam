@@ -190,19 +190,13 @@
     <ClInclude Include="ComauCamView.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="GeomBase.h" />
-    <ClInclude Include="Global.h" />
-    <ClInclude Include="Layer.h" />
-    <ClInclude Include="Line.h" />
     <ClInclude Include="LVertex.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="OutputWnd.h" />
-    <ClInclude Include="PointSet.h" />
-    <ClInclude Include="Polyline.h" />
     <ClInclude Include="PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Slice.h" />
-    <ClInclude Include="SliceModel.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="STLModel.h" />
     <ClInclude Include="targetver.h" />
@@ -216,18 +210,12 @@
     <ClCompile Include="ComauCamView.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="GemoBase.cpp" />
-    <ClCompile Include="Global.cpp" />
-    <ClCompile Include="Layer.cpp" />
-    <ClCompile Include="Line.cpp" />
     <ClCompile Include="LVertex.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="OpenGL.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
-    <ClCompile Include="PointSet.cpp" />
-    <ClCompile Include="Polyline.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />
     <ClCompile Include="Slice.cpp" />
-    <ClCompile Include="SliceModel.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
