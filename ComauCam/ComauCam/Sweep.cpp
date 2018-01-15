@@ -2,7 +2,6 @@
 #include "Sweep.h"
 
 
-
 CSweep::CSweep():m_dDistance(5)
 {
 
@@ -35,13 +34,14 @@ void CSweep::Sweep()
 	{
 		if (i == 0)
 		{
-			CSweepLayer* layer =new CSweepLayer(*m_vecpSweepLayers[i]);
-			Offset(layer, -5);
-			unsigned int szB = layer->m_vecpOffsetBoundaries[0]->m_vecpSegments.size();
-			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[0]->m_ptStart));
+			CSweepLayer* layer =m_vecpSweepLayers[i];
+			CBoundary* tmp_boundary = new CBoundary(*layer->m_vecpBoundaries[0]);
+			Offset(tmp_boundary, -5, layer->m_vLayerCoordinate);
+			unsigned int szB = tmp_boundary->m_vecpSegments.size();
+			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(tmp_boundary->m_vecpSegments[0]->m_ptStart));
 			for (unsigned int j = 0; j < szB; j++)
 			{
-				m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[j]->m_ptEnd));
+				m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(tmp_boundary->m_vecpSegments[j]->m_ptEnd));
 			}
 		}
 		//将最外层轮廓存入路径中
@@ -52,8 +52,23 @@ void CSweep::Sweep()
 			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(m_vecpSweepLayers[i]->m_vecpBoundaries[0]->m_vecpSegments[j]->m_ptEnd));
 		}
 
+		int sum = 0;
+		CBoundary* tmp = m_vecpSweepLayers[i]->m_vecpBoundaries[0];
+		while (sum < 3)
+		{
+			CBoundary* offsetBoundary = new CBoundary(*tmp);
+			Offset(offsetBoundary, 2, m_vecpSweepLayers[i]->m_vLayerCoordinate);
+			unsigned int szOffset = offsetBoundary->m_vecpSegments.size();
+			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(offsetBoundary->m_vecpSegments[0]->m_ptStart));
+			for (unsigned int j = 0; j < szOffset; j++)
+			{
+				m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(offsetBoundary->m_vecpSegments[j]->m_ptEnd));
+			}
+			tmp = offsetBoundary;
+			sum++;
+		}
 		//变法向的层切面因为太小所以不切，只走轮廓
-		if (m_vecpSweepLayers[i]->m_vLayerCoordinate[2].dz == 1.0)
+		/*if (m_vecpSweepLayers[i]->m_vLayerCoordinate[2].dz == 1.0)
 		{
 			//设置偏置大小
 			Offset(m_vecpSweepLayers[i], 0.9);
@@ -99,7 +114,7 @@ void CSweep::Sweep()
 			}
 			CalACAngle(m_vecpSweepLayers[i]);
 			CalFiveAxisValue(m_vecpSweepLayers[i]);
-		}
+		}*/
 	}
 }
 
@@ -152,15 +167,15 @@ void CSweep::YaxisSweep(CSweepLayer* layer)
 }
 
 
-void CSweep::Offset(CSweepLayer* layer, double offset)
+void CSweep::Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 {
 	CPoint3D point_out;
-	unsigned int sz = layer->m_vecpBoundaries[0]->m_vecpSegments.size();
-	layer->m_vecpOffsetBoundaries.push_back(new CBoundary());
+	unsigned int sz = boundary->m_vecpSegments.size();
+	/*layer->m_vecpOffsetBoundaries.push_back(new CBoundary());
 	for (unsigned int i = 0; i < sz; i++)
 	{
 		layer->m_vecpOffsetBoundaries[0]->m_vecpSegments.push_back(new CSegment(*layer->m_vecpBoundaries[0]->m_vecpSegments[i]));
-	}
+	}*/
 	CVector3D offset_vec;
 	CPoint3D tmp_point;
 	CSegment line1, line2;
@@ -168,20 +183,20 @@ void CSweep::Offset(CSweepLayer* layer, double offset)
 	//将轮廓中所有的线段往内偏移一个距离
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		offset_vec = layer->m_vLayerCoordinate[2] * layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec;
+		offset_vec = coordinate[2] * boundary->m_vecpSegments[i]->m_vSegmentVec;
 		offset_vec.Normalize();
-		MoveSegment(layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[i], CVector3D(offset_vec*offset));
+		MoveSegment(boundary->m_vecpSegments[i], CVector3D(offset_vec*offset));
 	}
 
 	//对偏移后的线段求交点，形成偏移后的轮廓
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		line1 = *layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[i];	
-		line2 = *layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[(i + 1) % sz];
+		line1 = *boundary->m_vecpSegments[i];
+		line2 = *boundary->m_vecpSegments[(i + 1) % sz];
 
 		GetCrossPoint(point_out, line1, line2);
-		layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[i]->m_ptEnd = CLPoint(point_out);
-		layer->m_vecpOffsetBoundaries[0]->m_vecpSegments[(i + 1) % sz]->m_ptStart = CLPoint(point_out);
+		boundary->m_vecpSegments[i]->m_ptEnd = CLPoint(point_out);
+		boundary->m_vecpSegments[(i + 1) % sz]->m_ptStart = CLPoint(point_out);
 	}
 }
 

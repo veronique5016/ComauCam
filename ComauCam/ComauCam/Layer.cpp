@@ -64,6 +64,14 @@ CSegment::~CSegment()
 CBoundary::CBoundary()
 {
 }
+CBoundary::CBoundary(const CBoundary & boundary)
+{
+	unsigned int szSeg = boundary.m_vecpSegments.size();
+	for (unsigned int i = 0; i < szSeg; i++)
+	{
+		m_vecpSegments.push_back(new CSegment(*boundary.m_vecpSegments[i]));
+	}
+}
 CBoundary::~CBoundary()
 {
 	unsigned int szP = m_vecpSegments.size();

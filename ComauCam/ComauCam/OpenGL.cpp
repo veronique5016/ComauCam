@@ -2,7 +2,6 @@
 #include "OpenGL.h"
 
 
-
 COpenGLDC::COpenGLDC()
 {
 }
@@ -80,11 +79,10 @@ void COpenGLDC::DrawAxis()
 	glVertex3f(0.0f, 0.0f, 90.0f);
 
 	glEnd();
-	//glTranslatef(0.0f, 0.0f, 0.0f);//290.16
 }
 
 
-void COpenGLDC::DrawTriChip(CVector3D vec, CPoint3D pt1, CPoint3D pt2, CPoint3D pt3)
+void COpenGLDC::DrawTriFace(CVector3D vec, CPoint3D pt1, CPoint3D pt2, CPoint3D pt3)
 {
 	glBegin(GL_TRIANGLES);
 	glNormal3d(vec.dx, vec.dy, vec.dz);
@@ -141,7 +139,7 @@ void COpenGLDC::DrawSTLModel(CSTLModel * model, bool showTri)
 		for (int i = 0; i<sz; i++)
 		{
 			//model->m_vecpTris[i]->DrawTriangleFace(pDC);  //面片模式     
-			DrawTriChip(model->m_vecpTris[i]->Normal, model->m_vecpTris[i]->A, model->m_vecpTris[i]->B, model->m_vecpTris[i]->C);
+			DrawTriFace(model->m_vecpTris[i]->Normal, model->m_vecpTris[i]->A, model->m_vecpTris[i]->B, model->m_vecpTris[i]->C);
 		}
 	}
 	else
@@ -153,58 +151,69 @@ void COpenGLDC::DrawSTLModel(CSTLModel * model, bool showTri)
 	}
 }
 
+void COpenGLDC::DrawLayer(CSliceLayer * layer, bool showPolygon, double color[])
+{
+	CLPoint point;
+	unsigned int szpolyline = layer->m_vecpBoundaries.size();
+	for (unsigned int j = 0; j < szpolyline; j++)
+	{
+		unsigned int szLine = layer->m_vecpBoundaries[j]->m_vecpSegments.size();
+		glLineWidth(1.5f);
+
+		//绘制平面轮廓
+		if (showPolygon)
+		{
+			glBegin(GL_POLYGON);
+			glColor3f(color[0], color[1], color[2]);
+			for (unsigned int k = 0; k < szLine; k++)
+			{
+				point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
+				glVertex3f(point.x, point.y, point.z);
+				point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
+				glVertex3f(point.x, point.y, point.z);
+			}
+			glEnd();
+		}
+
+		//绘制线框轮廓
+		glColor3f(color[0], color[1], color[2]);
+		for (unsigned int k = 0; k<szLine; k++)
+		{
+			glBegin(GL_LINE_LOOP);
+			point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
+			glVertex3f(point.x, point.y, point.z);
+			point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
+			glVertex3f(point.x, point.y, point.z);
+			glEnd();
+		}
+	}
+}
+
 
 void COpenGLDC::DrawSliceModel(CSlice* model, bool showPolygon, int start, int end)
 {
 	double color[3];
 	unsigned int szlayer = model->m_vecpLayers.size();
-	CLPoint point, point2;
+	CLPoint point;
 	for (int i = (start - 1); i<end; i++)
-	{
-		unsigned int szpolyline = model->m_vecpLayers[i]->m_vecpBoundaries.size();
+	{	
 		if (model->m_vecpLayers[i]->m_vLayerCoordinate[2].dz == 1.0)
-		{
-			color[0] = 0.0;
-			color[1] = 1.0;
-			color[2] = 0.0;
-		}
-		else
 		{
 			color[0] = 1.0;
 			color[1] = 0.0;
 			color[2] = 0.0;
 		}
-		for (unsigned int j = 0; j < szpolyline; j++)
+		else
 		{
-			unsigned int szLine = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments.size();
-			glLineWidth(1.5f);
+			color[0] = 1.0;
+			color[1] = 1.0;
+			color[2] = 0.0;
+		}
+		DrawLayer(model->m_vecpLayers[i], showPolygon, color);
 
-			//绘制平面轮廓
-			if (showPolygon)
-			{
-				glBegin(GL_POLYGON);
-				glColor3f(color[0], color[1], color[2]);
-				for (unsigned int k = 0; k < szLine; k++)
-				{
-					point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
-					glVertex3f(point.x, point.y, point.z);
-					point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
-					glVertex3f(point.x, point.y, point.z);
-				}
-				glEnd();
-			}
-
-			//绘制线框轮廓
-			glColor3f(color[0], color[1], color[2]);
-			for (unsigned int k = 0; k<szLine; k++)
-			{
-				glBegin(GL_LINE_LOOP);
-				point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
-				glVertex3f(point.x, point.y, point.z);
-				point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
-				glVertex3f(point.x, point.y, point.z);
-				glEnd();
-			}
+		if (model->m_vecpLayers[i]->m_pAddictedLayer != NULL)
+		{
+			DrawLayer(model->m_vecpLayers[i]->m_pAddictedLayer, showPolygon, color);
 		}
 	}
 }

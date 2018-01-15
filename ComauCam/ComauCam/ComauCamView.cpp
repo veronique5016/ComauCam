@@ -3,7 +3,6 @@
 //
 
 #include "stdafx.h"
-#include "OpenGL.h"
 // SHARED_HANDLERS 可以在实现预览、缩略图和搜索筛选器句柄的
 // ATL 项目中进行定义，并允许与该项目共享文档代码。
 #ifndef SHARED_HANDLERS
@@ -299,7 +298,6 @@ void CComauCamView::SetLogicalPalette()
 //////////////////////////////////////////////////////////
 BOOL CComauCamView::RenderScene()
 {
-
 	::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//改变背景颜色
 	glClearColor(0.5f, 0.8f, 1.0f, 1.0f);
@@ -319,7 +317,7 @@ BOOL CComauCamView::RenderScene()
 	::glRotatef(m_fSceneRot[1], 0.0F, 1.0F, 0.0F);
 	::glRotatef(m_fSceneRot[2], 0.0F, 0.0F, 1.0F);
 
-	//////
+	//////绘图
 	m_pDC->DrawAxis();
 	if (m_bSTLDraw)
 	{
@@ -359,7 +357,6 @@ BOOL CComauCamView::RenderScene()
 void CComauCamView::Init()
 {
 	///////////////////////////
-
 
 	m_fCamPos[0] = 0.0f;
 	m_fCamPos[1] = 0.0f;//-30.0f

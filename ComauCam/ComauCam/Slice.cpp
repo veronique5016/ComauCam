@@ -68,7 +68,7 @@ void CSlice::Slice(CSTLModel* model)
 		RearrangeBoundary(m_vecpLayers[index]);
 
 		//判断是否需要变法向切片
-		unsigned int szL = m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments.size();		
+		/*unsigned int szL = m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments.size();		
 		for (unsigned int i = 0; i < szL; i++)
 		{
 			double angle = GetAngle(CVector3D(0, 0, 1), CVector3D(*m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_pTriangle->n))*180.0 / PI;
@@ -116,27 +116,8 @@ void CSlice::Slice(CSTLModel* model)
 				m_vecpLayers.push_back(pTurnLayer);
 
 				CSliceLayer* pAddedLayer = new CSliceLayer();
-				pAddedLayer->m_vLayerCoordinate[1] = pTurnLayer->m_vLayerCoordinate[1];
-				CVector3D vec1 = pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_vSegmentVec;
-				CVector3D vec2 = CVector3D(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart);
-				pAddedLayer->m_vLayerCoordinate[2] = vec2*vec1;
-				pAddedLayer->m_vLayerCoordinate[2].Normalize();
-				pAddedLayer->m_vLayerCoordinate[0] = pTurnLayer->m_vLayerCoordinate[1]* pTurnLayer->m_vLayerCoordinate[2];
-				pAddedLayer->m_vLayerCoordinate[0].Normalize();
-				pAddedLayer->m_ptLayerPoint = pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart;
-				pAddedLayer->m_vecpBoundaries.push_back(new CBoundary());
-
-				/*CSegment tmp_seg = CSegment(pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptEnd, pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart,NULL);
-				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
-				tmp_seg = CSegment(pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart, m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, NULL);
-				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
-				tmp_seg = CSegment(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptStart, NULL);
-				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
-				tmp_seg = CSegment(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptStart, pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptEnd, NULL);
-				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));*/
-				GetAddedLayerBoundary(pAddedLayer, *pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2], *m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]);
-				m_vecpLayers.push_back(pAddedLayer);
-				
+				GetAddedLayerBoundary(pAddedLayer, pTurnLayer, m_vecpLayers[index]);
+				pTurnLayer->m_pAddictedLayer = pAddedLayer;
 
 				double layer_dist = m_vecpLayers[index]->m_ptLayerPoint.z - pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart.z;
 				if (layer_dist >= dz / 2)
@@ -152,9 +133,13 @@ void CSlice::Slice(CSTLModel* model)
 					GetBoundaryPoints(pAddedTurnLayer);
 					OptimizeBoundary(pAddedTurnLayer);
 					ModifyTurnLayer(pAddedTurnLayer);
+
+					CSliceLayer* pAddedToAddedLayer = new CSliceLayer();
+					GetAddedLayerBoundary(pAddedToAddedLayer, pAddedTurnLayer, m_vecpLayers[index]);
+					pAddedTurnLayer->m_pAddictedLayer = pAddedToAddedLayer;
 				}
 			}
-		}
+		}*/
 		z += dz;
 	}
 }
@@ -204,7 +189,6 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 		CBoundary* m_boundary = new CBoundary();
 		CLPoint* tmpstartPoint = new CLPoint();
 		CLPoint* tmpendPoint = new CLPoint();
-		//Segment* tmpSegment = new Segment();
 
 		//设定起始相交边，并存入m_Slice_edge容器	
 		GetInterSectEdge(layer, pCurFace);  
@@ -242,7 +226,6 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 			//判断轮廓是否闭合
 			if ((m_boundary->m_vecpSegments[0]->m_ptStart) ^= (m_boundary->m_vecpSegments[szlinkline - 1]->m_ptEnd))
 			{
-				//m_vecpLayers[m_vecpLayers.size() - 1]->m_vecpBoundaries.push_back(m_boundary);
 				layer->m_vecpBoundaries.push_back(m_boundary);
 				break;
 			}
@@ -522,6 +505,28 @@ void CSlice::GetAddedLayerBoundary(CSliceLayer * layer, CSegment turnlayer_seg, 
 	tmp_seg = CSegment(layer_seg.m_ptEnd, layer_seg.m_ptStart, NULL);
 	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
 	tmp_seg = CSegment(layer_seg.m_ptStart, turnlayer_seg.m_ptEnd, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+}
+
+void CSlice::GetAddedLayerBoundary(CSliceLayer * layer, CSliceLayer * turn_layer, CSliceLayer * z_layer)
+{
+	layer->m_vLayerCoordinate[1] = turn_layer->m_vLayerCoordinate[1];
+	CVector3D vec1 = turn_layer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_vSegmentVec;
+	CVector3D vec2 = CVector3D(z_layer->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, turn_layer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart);
+	layer->m_vLayerCoordinate[2] = vec2*vec1;
+	layer->m_vLayerCoordinate[2].Normalize();
+	layer->m_vLayerCoordinate[0] = turn_layer->m_vLayerCoordinate[1] * turn_layer->m_vLayerCoordinate[2];
+	layer->m_vLayerCoordinate[0].Normalize();
+	layer->m_ptLayerPoint = turn_layer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart;
+	
+	layer->m_vecpBoundaries.push_back(new CBoundary());
+	CSegment tmp_seg = CSegment(turn_layer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptEnd, turn_layer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+	tmp_seg = CSegment(turn_layer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart, z_layer->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+	tmp_seg = CSegment(z_layer->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, z_layer->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptStart, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+	tmp_seg = CSegment(z_layer->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptStart, turn_layer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptEnd, NULL);
 	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
 }
 

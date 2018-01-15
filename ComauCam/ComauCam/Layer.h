@@ -52,6 +52,7 @@ struct CBoundary
 {
 public:
 	CBoundary();
+	CBoundary(const CBoundary& boundary);
 	~CBoundary();
 
 public:

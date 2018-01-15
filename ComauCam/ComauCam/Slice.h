@@ -38,6 +38,7 @@ public:
 
 public:
 	void GetAddedLayerBoundary(CSliceLayer* layer, CSegment turnlayer_seg, CSegment layer_seg);
+	void GetAddedLayerBoundary(CSliceLayer* layer, CSliceLayer* turn_layer, CSliceLayer* z_layer);
 
 public:
 	double CompareThreeNumber(double v1, double v2, double v3, int type);

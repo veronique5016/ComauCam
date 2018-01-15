@@ -28,7 +28,6 @@ public:
 	double ReturnZmax(const CTriangle* Ltri);
 	double ReturnZmin(const CTriangle* Ltri);
 
-
 public:
 	bool ReadBinarySTL(CFile& file);
 	bool ReadAsciiSTL(CStdioFile& file);
