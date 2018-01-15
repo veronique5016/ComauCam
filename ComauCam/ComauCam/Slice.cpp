@@ -6,8 +6,6 @@ LPoint::LPoint()
 {
 	p_prev = NULL;
 	p_next = NULL;
-	edge = NULL;
-	layer = NULL;
 }
 LPoint::~LPoint()
 {
@@ -23,6 +21,28 @@ LPoint::LPoint(const CPoint3D & pt)
 	x = pt.x;
 	y = pt.y;
 	z = pt.z;
+}
+LPoint::LPoint(double x, double y, double z)
+{
+	this->x = x;
+	this->y = y;
+	this->z = z;
+}
+
+LLine::LLine()
+{
+	pstart = LPoint(0,0,0);
+	pend = LPoint(0,0,0);
+	layer = NULL;
+}
+LLine::LLine(const LPoint* startpoint, const LPoint* endpoint)
+{
+	pstart = *startpoint;
+	pend = *endpoint;
+}
+
+LLine::~LLine()
+{
 }
 
 PolyLine::PolyLine()
@@ -41,7 +61,9 @@ PolyLine::~PolyLine()
 
 Layer::Layer()
 {
-	layer_gravity = CVector3D(0, 0, 1);
+	layer_coordinate[0] = CVector3D(1, 0, 0);
+	layer_coordinate[1] = CVector3D(0, 1, 0);
+	layer_coordinate[2] = CVector3D(0, 0, 1);
 }
 Layer::~Layer()
 {
@@ -57,7 +79,6 @@ Layer::~Layer()
 CSlice::CSlice(void)
 {
 	height = 10;
-	gravity = CVector3D(0, 0, 1);
 	need_support = false;
 }
 
@@ -88,7 +109,7 @@ CSlice::~CSlice(void)
 	m_tris_slice.clear();
 }
 
-void CSlice::LoadSTLModel(CSTLModel* model)//ÔØÈëstlÄ£ÐÍ
+void CSlice::loadSTLModel(CSTLModel* model)//ÔØÈëstlÄ£ÐÍ
 {
 	model->Topologize();//¸øÄ£ÐÍ½¨Á¢ÍØÆË½á¹¹
 	unsigned int szTri = model->m_ltris.size();
@@ -121,7 +142,7 @@ double CSlice::getTurnHeight()
 	else
 	{
 		//zmin_turn = ReturnZmin(m_tris_slice[0]);
-		zmin_turn = ReturnZtype(m_tris_slice[0]->v1->z, m_tris_slice[0]->v2->z, m_tris_slice[0]->v3->z, Z_MIN);
+		zmin_turn = compareThreeNumber(m_tris_slice[0]->v1->z, m_tris_slice[0]->v2->z, m_tris_slice[0]->v3->z, MIN);
 		return zmin_turn;
 	}
 }
@@ -171,8 +192,6 @@ void CSlice::slice(CSTLModel* model)
 	dz = height;
 	z = z_Min + dz;  //µÚÒ»¸öÇÐÆ¬²ã£¬ÎÞ·¨ÉèÎª z_Min
 
-
-
 	zmin_turn = getTurnHeight();
 	if (zmin_turn != 0.0)
 	{
@@ -188,7 +207,7 @@ void CSlice::slice(CSTLModel* model)
 		z_Max = zmin_turn;
 		begin3DSlice(z_Min, z_Max, z, dz);
 
-		z_Min = zmin_turn + dz;
+		z_Min = zmin_turn + 0.1;
 		z_Max = ex[5];
 
 		while (z < z_Min)
@@ -205,18 +224,19 @@ void CSlice::begin3DSlice(double z_min, double z_max, double &z, double dz)
 	{
 		Layer* tmp_layer = new Layer();
 		CPoint3D tmp_layer_point = CPoint3D(0, 0, z);
-		tmp_layer->layer_gravity = gravity;
+
 		tmp_layer->layerPoint = tmp_layer_point;
 
 		m_layers.push_back(tmp_layer);
 
-		getpolylinePoints(m_layers[m_layers.size() - 1]);
+		getPolylinePoints(m_layers[m_layers.size() - 1]);
 
 		bool isCCW = isBoundaryCCW(m_layers[m_layers.size() - 1]);
 		if (!isCCW)
 		{
 			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
 		}
+		deletePoints(m_layers[m_layers.size() - 1]);
 
 		if (z >= (z_max - dz))
 		{
@@ -236,12 +256,13 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 	{
 		Layer* tmp_layer = new Layer();
 		tmp_layer_point = CPoint3D(0, 0, z);
-		tmp_layer->layer_gravity = gravity;
+//		tmp_layer->layer_gravity = gravity;
 		tmp_layer->layerPoint = tmp_layer_point;
 
 		m_layers.push_back(tmp_layer);
 
-		getpolylinePoints(m_layers[m_layers.size() - 1]);
+		getPolylinePoints(m_layers[m_layers.size() - 1]);
+		deletePoints(m_layers[m_layers.size() - 1]);
 
 		// »ñÈ¡ÂÖÀªµãºó¶Ô²¿·ÖÂÖÀªµã½øÐÐÆ«ÖÃ
 		unsigned int sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
@@ -259,30 +280,60 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
 		}
 
+		double offset = EXTRUDER_DIAMETER * 2 * 5.0 / 4.0;
+
 		for (unsigned int i = 0; i < sz; i++)
 		{
-			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x == x_max)// ÅÐ¶ÏÐèÒªÐÞ¸Ä
+			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x >=30)// ÅÐ¶ÏÐèÒªÐÞ¸Ä
 			{
-				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x -= 2.0;
+				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x = 30;
 				cross_point.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]);
 				tmp_layer_point = *m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i];
 			}
 		}
-		cross_point.erase(cross_point.begin(), cross_point.begin() + 1);
+//		cross_point.erase(cross_point.begin(), cross_point.begin() + 1);
+		LPoint* y_min = new LPoint();
+//		*y_min = LPoint(*cross_point[0]);
+		LPoint* y_max = new LPoint();
+//		*y_max = LPoint(*cross_point[0]);
+		y_min->x = cross_point[0]->x;
+		y_min->y = cross_point[0]->y;
+		y_min->z = cross_point[0]->z;
+		y_max->x = cross_point[0]->x;
+		y_max->y = cross_point[0]->y;
+		y_max->z = cross_point[0]->z;
+		for (unsigned int i = 1; i < cross_point.size(); i++)
+		{
+			if (y_min->y > cross_point[i]->y)
+			{
+				y_min->x = cross_point[i]->x;
+				y_min->y = cross_point[i]->y;
+				y_min->z = cross_point[i]->z;
+			}
+			if (y_max->y < cross_point[i]->y)
+			{
+				y_max->x = cross_point[i]->x;
+				y_max->y = cross_point[i]->y;
+				y_max->z = cross_point[i]->z;
+			}
+		}
 
 		// Ð±ÇÐÃæ½øÐÐÇÐÆ¬
 		Layer* turn_layer = new Layer();
-		turn_layer->layer_gravity = getTurnVec();
+		turn_layer->layer_coordinate[2] = getTurnVec();
+		turn_layer->layer_coordinate[1] = CVector3D(0, 1, 0);
+		turn_layer->layer_coordinate[0] = turn_layer->layer_coordinate[1] * turn_layer->layer_coordinate[2];
 		turn_layer->layerPoint = tmp_layer_point;
 
 		m_layers.push_back(turn_layer);
 
-		getpolylinePoints(m_layers[m_layers.size() - 1]);
+		getPolylinePoints(m_layers[m_layers.size() - 1]);
 
 		if (!isBoundaryCCW(m_layers[m_layers.size() - 1]))
 		{
 			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
 		}
+		deletePoints(m_layers[m_layers.size() - 1]);
 
 		// ½«Á½¸öÇÐÆ¬Æ½ÃæÉú³ÉµÄÂÖÀªºÏ²¢
 		unsigned int tmp_sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
@@ -295,13 +346,45 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 			}
 		}
 
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin(), m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + 1);
+		LPoint* turn_min = new LPoint();
+		LPoint* turn_max = new LPoint();
+
+		turn_min->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
+		turn_min->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->y;
+		turn_min->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->z;
+		turn_max->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
+		turn_max->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->y;
+		turn_max->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->z;
+		for (unsigned int i = 1; i < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size(); i++)
+		{
+			if (turn_min->y > m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y)
+			{
+				turn_min->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x;
+				turn_min->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y;
+				turn_min->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->z;
+			}
+			if (turn_max->y < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y)
+			{
+				turn_max->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x;
+				turn_max->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y;
+				turn_max->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->z;
+			}
+		}
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.clear();
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_min);
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(turn_min);
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(turn_max);
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_max);
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_min);
+/*		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin(), m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + 1);
 		for (unsigned int i = 0; i < cross_point.size(); i++)
 		{
-			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(cross_point[cross_point.size() - i - 1]);
-		}
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]);
+			//m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(cross_point[cross_point.size() - i - 1]);
+			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_max);
+			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_min);
+		}*/
 
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]);
 
 		cross_point.clear();
 
@@ -313,21 +396,18 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 	}
 }
 
-void CSlice::getpolylinePoints(Layer* layer)
+void CSlice::getPolylinePoints(Layer* layer)
 {
-/////////////////////////
-////// É¸Ñ¡Ïà½»ÃæÆ¬
-/////////////////////////
-	vector<LTriangle*> status; //´¢´æ·ûºÏ²ã¸ßµÄ£¬É¸Ñ¡³öÀ´µÄÃæÆ¬
+	// É¸Ñ¡Ïà½»ÃæÆ¬
+	vector<LTriangle*> status;
 	double v1_dist, v2_dist, v3_dist;
 
 	unsigned int szTri = m_tris_slice.size();
 	for (unsigned int i = 0; i < szTri; i++)         //±éÀúËùÓÐÃæÆ¬,É¸Ñ¡³öÏà½»ÃæÆ¬
 	{
-		//////ReturnZtype ÎÞ·¨¶ÔÐ±ÇÐÆ½ÃæÉúÐ§£¬¸Ãº¯Êý¿É¿¼ÂÇÉáÈ¥£¬ÒòÎªº¯ÊýµÄ×÷ÓÃ¾ÍÊÇÎªÁËÅÐ¶ÏÈý½ÇÃæÆ¬ºÍÇÐÆ½ÃæÊÇ·ñÏà½»
-		v1_dist = ::CalPointtoPlane(*m_tris_slice[i]->v1, layer->layer_gravity, layer->layerPoint);
-		v2_dist = ::CalPointtoPlane(*m_tris_slice[i]->v2, layer->layer_gravity, layer->layerPoint);
-		v3_dist = ::CalPointtoPlane(*m_tris_slice[i]->v3, layer->layer_gravity, layer->layerPoint);
+		v1_dist = ::CalPointtoPlane(*m_tris_slice[i]->v1, layer->layer_coordinate[2], layer->layerPoint);
+		v2_dist = ::CalPointtoPlane(*m_tris_slice[i]->v2, layer->layer_coordinate[2], layer->layerPoint);
+		v3_dist = ::CalPointtoPlane(*m_tris_slice[i]->v3, layer->layer_coordinate[2], layer->layerPoint);
 
 		if(!((v1_dist<0&&v2_dist<0&&v3_dist<0)||(v1_dist>0&&v2_dist>0&&v3_dist>0)))
 		{
@@ -344,19 +424,16 @@ void CSlice::getpolylinePoints(Layer* layer)
 		}
 	}
 
-/////////////////////////
-////// ¶ÔÏà½»ÃæÆ¬½øÐÐÃæÆ¬·ÖÀà
-/////////////////////////
+	// ¶ÔÏà½»ÃæÆ¬½øÐÐÃæÆ¬·ÖÀà
 	unsigned int szStatus = status.size();
 	for (unsigned int i = 0; i<szStatus; i++)    
 	{
-		JudgeFaceType(layer, status[i]);
+		judgeFaceType(layer, status[i]);
 	}
 
-/////////////////////////
-////// ÇóÇÐÆ¬Æ½ÃæÓëÈý½ÇÃæÆ¬½»µã
-/////////////////////////
+	// ÇóÇÐÆ¬Æ½ÃæÓëÈý½ÇÃæÆ¬½»µã
 	LTriangle* pCurFace = new LTriangle();
+
 	//Ñ¡µÚÒ»¸öÃæÆ¬×÷ÎªÆðÊ¼ÃæÆ¬
 	pCurFace = status[0];
 	pCurFace->b_use = true;//°ÑÃæÆ¬ÖÃÎªµ±Ç°Ê¹ÓÃÃæÆ¬£¬±êÖ¾Î»ÖÃÎªÕæ
@@ -369,12 +446,12 @@ void CSlice::getpolylinePoints(Layer* layer)
 		unsigned int sz0 = m_Slice_edge.size();
 		pCurFace->IntersectLine1 = m_Slice_edge[sz0 - 1];
 		//ÓÉÆðÊ¼Ïà½»±ßÇó½»µã£¬²¢´æÈëm_LinkPointÈÝÆ÷
-		CalIntersectPoint(layer, pCurFace->IntersectLine1, pCurFace, tmpLinkPoint);
+		calIntersectPoint(layer, pCurFace->IntersectLine1, pCurFace, tmpLinkPoint);
 		m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
 
 		//µÚÒ»¸öÃæÆ¬µÄÁíÒ»Ïà½»±ßÇó½»µã£¬²¢´æÈëm_LinkPointÈÝÆ÷
-		JudgeOtherLine(layer, pCurFace);
-		CalIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
+		judgeOtherLine(layer, pCurFace);
+		calIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
 		m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
 		//ÉÏÃæÊÇÂÖÀªµÚÒ»¸öÃæÆ¬µÄÌØÊâ´¦Àí
 
@@ -387,11 +464,11 @@ void CSlice::getpolylinePoints(Layer* layer)
 								   //×îºó´æÈëm_Slice_edgeµÄÏà½»±ßÊÇÉÏÒ»ÃæÆ¬µÄµÚ¶þÌõÏà½»±ß£¬ËüµÄ»ï°é°ë±ß¾ÍÊÇµ±Ç°ÃæÆ¬ÒÑÑ¡µÄÏà½»±ß
 			pCurFace->IntersectLine1 = m_Slice_edge[sz - 1]->e_adja;
 			//ÅÐ¶Ïµ±Ç°ÃæÆ¬ÖÐµÄÁíÒ»Ïà½»±ß£¬±£´æ±ß
-			JudgeOtherLine(layer, pCurFace);
+			judgeOtherLine(layer, pCurFace);
 			//Çó½»µã£¬²¢±£³Öµã
 
 
-			CalIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
+			calIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
 			m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
 
 			unsigned int szlinkPoint = m_polyline->m_Linkpoints.size();
@@ -399,8 +476,8 @@ void CSlice::getpolylinePoints(Layer* layer)
 			if (*(m_polyline->m_Linkpoints[0]) ^= *(m_polyline->m_Linkpoints[szlinkPoint - 1]))
 			{
 				Layer* pLayer = new Layer();
-				//pLayer->z = z;
-				pLayer->layer_gravity = m_layers[m_layers.size() - 1]->layer_gravity;
+				
+				pLayer->layer_coordinate[2] = m_layers[m_layers.size() - 1]->layer_coordinate[2];
 				pLayer->m_Polylines.push_back(m_polyline);
 				m_layers[m_layers.size()-1] = pLayer;
 //				int szpoint = m_polyline->m_Linkpoints.size();
@@ -415,15 +492,15 @@ void CSlice::getpolylinePoints(Layer* layer)
 
 }
 
-void CSlice::drawpolyline(bool showPolygon)
+void CSlice::drawLayer(bool showPolygon, int start, int end)
 {
 	double color[3];
 	unsigned int szlayer = m_layers.size();
-	LPoint point1, point2;
-	for (unsigned int i = 0; i<szlayer; i++)
+	LPoint point, point2;
+	for (int i = (start-1); i<end; i++)
 	{
 		unsigned int szpolyline = m_layers[i]->m_Polylines.size();
-		if (m_layers[i]->layer_gravity.dz == 1.0)
+		if (m_layers[i]->layer_coordinate[2].dz == 1.0)
 		{
 			color[0] = 0.0;
 			color[1] = 1.0;
@@ -443,28 +520,25 @@ void CSlice::drawpolyline(bool showPolygon)
 			if (showPolygon)
 			{
 				glBegin(GL_POLYGON);
-				glPolygonMode(GL_FRONT, GL_FILL);
-				glPolygonMode(GL_BACK, GL_LINE);
-
-				glColor3f(color[0], color[1], color[2]);
+//				glPolygonMode(GL_FRONT, GL_FILL);
+//				glPolygonMode(GL_BACK, GL_LINE);
+				glColor3f(color[0], color[1], color[2]);			
 				for (unsigned int k = 0; k < szPoint; k++)
 				{
-					glVertex3f(m_layers[i]->m_Polylines[j]->m_Linkpoints[k]->x, m_layers[i]->m_Polylines[j]->m_Linkpoints[k]->y, m_layers[i]->m_Polylines[j]->m_Linkpoints[k]->z);
+					point = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k];
+					glVertex3f(point.x, point.y, point.z);
 				}
 				glEnd();
 			}
 
-			for (unsigned int k = 0; k<(szPoint-1); k++)
+			glBegin(GL_LINE_LOOP);
+			glColor3f(color[0], color[1], color[2]);
+			for (unsigned int k = 0; k<szPoint; k++)
 			{
-				point1 = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k];
-				point2 = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1];
-				glLineWidth(1.5f);
-				glBegin(GL_LINES);
-				glColor3f(color[0], color[1], color[2]);
-				glVertex3f(point1.x, point1.y, point1.z);
-				glVertex3f(point2.x, point2.y, point2.z);
-				glEnd();
+				point = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k];				
+				glVertex3f(point.x, point.y, point.z);				
 			}
+			glEnd();
 		}
 	}
 
@@ -487,9 +561,9 @@ void CSlice::getInterSectEdge(Layer* layer, LTriangle* pCurFace)   //Ö»ÒªÕÒµ½Ò»Ì
 	v3_tmp.x = pCurFace->v3->x;
 	v3_tmp.y = pCurFace->v3->y;
 
-	v1_plane = PointtoPlane(v1_tmp, layer->layer_gravity, layer->layerPoint);
-	v2_plane = PointtoPlane(v2_tmp, layer->layer_gravity, layer->layerPoint);
-	v3_plane = PointtoPlane(v3_tmp, layer->layer_gravity, layer->layerPoint);
+	v1_plane = PointtoPlane(v1_tmp, layer->layer_coordinate[2], layer->layerPoint);
+	v2_plane = PointtoPlane(v2_tmp, layer->layer_coordinate[2], layer->layerPoint);
+	v3_plane = PointtoPlane(v3_tmp, layer->layer_coordinate[2], layer->layerPoint);
 
 	switch (pCurFace->FaceType)
 	{
@@ -557,16 +631,16 @@ void CSlice::getInterSectEdge(Layer* layer, LTriangle* pCurFace)   //Ö»ÒªÕÒµ½Ò»Ì
 
 }
 
-void CSlice::JudgeFaceType(Layer* layer, LTriangle* pCurFace)
+void CSlice::judgeFaceType(Layer* layer, LTriangle* pCurFace)
 {
 	double min_dist, mid_dist, max_dist, v1_dist, v2_dist, v3_dist;
-	v1_dist = CalPointtoPlane(*pCurFace->v1, layer->layer_gravity, layer->layerPoint);
-	v2_dist = CalPointtoPlane(*pCurFace->v2, layer->layer_gravity, layer->layerPoint);
-	v3_dist = CalPointtoPlane(*pCurFace->v3, layer->layer_gravity, layer->layerPoint);
+	v1_dist = CalPointtoPlane(*pCurFace->v1, layer->layer_coordinate[2], layer->layerPoint);
+	v2_dist = CalPointtoPlane(*pCurFace->v2, layer->layer_coordinate[2], layer->layerPoint);
+	v3_dist = CalPointtoPlane(*pCurFace->v3, layer->layer_coordinate[2], layer->layerPoint);
 
-	min_dist = ReturnZtype(v1_dist, v2_dist, v3_dist, Z_MIN);
-	mid_dist = ReturnZtype(v1_dist, v2_dist, v3_dist, Z_MID);
-	max_dist = ReturnZtype(v1_dist, v2_dist, v3_dist, Z_MAX);
+	min_dist = compareThreeNumber(v1_dist, v2_dist, v3_dist, MIN);
+	mid_dist = compareThreeNumber(v1_dist, v2_dist, v3_dist, MID);
+	max_dist = compareThreeNumber(v1_dist, v2_dist, v3_dist, MAX);
 
 	//ÅÐ¶ÏÈý½ÇÃæÆ¬ºÍÇÐÆ½ÃæµÄÏà½»Çé¿ö,ËÄÖÖÇé¿ö
 	if ((min_dist < 0) && (max_dist > 0) && (mid_dist != 0))
@@ -581,7 +655,7 @@ void CSlice::JudgeFaceType(Layer* layer, LTriangle* pCurFace)
 		pCurFace->FaceType = ONLY_ONE_POINT_ON_SURFACE;
 }
 
-void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
+void CSlice::judgeOtherLine(Layer* layer, LTriangle* pCurFace)
 {
 	int v1_plane, v2_plane;
 	CPoint3D v1_tmp, v2_tmp;
@@ -594,8 +668,8 @@ void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
 	v2_tmp.y = pCurFace->IntersectLine1->e_prev->v2->y;
 	v2_tmp.z = pCurFace->IntersectLine1->e_prev->v2->z;
 
-	v1_plane = PointtoPlane(v1_tmp, layer->layer_gravity, layer->layerPoint);
-	v2_plane = PointtoPlane(v2_tmp, layer->layer_gravity, layer->layerPoint);
+	v1_plane = PointtoPlane(v1_tmp, layer->layer_coordinate[2], layer->layerPoint);
+	v2_plane = PointtoPlane(v2_tmp, layer->layer_coordinate[2], layer->layerPoint);
 
 	switch (pCurFace->FaceType)
 	{
@@ -649,7 +723,7 @@ void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
 }
 
 
-void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, LPoint* point)
+void CSlice::calIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, LPoint* point)
 {
 	int e1_plane, e2_plane;
 	CPoint3D e1_tmp, e2_tmp;
@@ -662,8 +736,8 @@ void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, L
 	e2_tmp.y = edge->v2->y;
 	e2_tmp.z = edge->v2->z;
 
-	e1_plane = PointtoPlane(e1_tmp, layer->layer_gravity, layer->layerPoint);
-	e2_plane = PointtoPlane(e2_tmp, layer->layer_gravity, layer->layerPoint);
+	e1_plane = PointtoPlane(e1_tmp, layer->layer_coordinate[2], layer->layerPoint);
+	e2_plane = PointtoPlane(e2_tmp, layer->layer_coordinate[2], layer->layerPoint);
 
 	if (pCurFace->FaceType != ONLY_ONE_POINT_ON_SURFACE) {
 		if (e1_plane==0)   //Èç¹ûµãºÍÇÐÃæÖØºÏ£¬°Ñ¶Ëµã¸³Öµ¸ø½»µã
@@ -683,7 +757,7 @@ void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, L
 			CPoint3D p = CPoint3D();
 			CVector3D vec = CVector3D(e1_tmp, e2_tmp);
 
-			p = ::CalPlaneLineIntersectPoint(layer->layer_gravity, layer->layerPoint, vec, e1_tmp);
+			p = ::CalPlaneLineIntersectPoint(layer->layer_coordinate[2], layer->layerPoint, vec, e1_tmp);
 
 			point->x = p.x;
 			point->y = p.y;
@@ -692,8 +766,6 @@ void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, L
 
 	}
 }
-
-
 
 
 bool CSlice::isBoundaryCCW(Layer* layer)
@@ -728,7 +800,7 @@ bool CSlice::isBoundaryCCW(Layer* layer)
 		{
 			vec.dz = 0;
 		}
-		angle = ::GetAngle(vec, layer->layer_gravity);
+		angle = ::GetAngle(vec, layer->layer_coordinate[2]);
 		if (angle > (PI / 2))
 			return false;
 		else
@@ -751,12 +823,65 @@ void CSlice::makeBoundaryCCW(Layer* layer)
 
 }
 
+void CSlice::deletePoints(Layer * layer)
+{
+	vector<LPoint*> tmp_points;
+	unsigned int szP = layer->m_Polylines[0]->m_Linkpoints.size();
+
+	// È¡³öµ¥¸ö²ãÇÐÃæÂÖÀªÖÐµÄËùÓÐ½»µã
+	for (unsigned int j = 0; j < szP; j++)
+	{
+		tmp_points.push_back(layer->m_Polylines[0]->m_Linkpoints[j]);
+	}
+	layer->m_Polylines[0]->m_Linkpoints.clear();
+
+	unsigned int szTemp = tmp_points.size();
+	for (unsigned int i = 0; i < szTemp; i++)
+	{
+		if (tmp_points[i]->x <= 0.0000001)
+			tmp_points[i]->x = 0;
+		if (tmp_points[i]->y <= 0.0000001)
+			tmp_points[i]->y = 0;
+		if (tmp_points[i]->z <= 0.0000001)
+			tmp_points[i]->z = 0;
+	}
+	CPoint3D pCur;
+	CPoint3D pNext;
+	CPoint3D pNextNext;
+//	CVector3D vec1, vec2;
+	while (szTemp >= 3)
+	{
+		for (unsigned int j = 0; j < szTemp; j++)
+		{
+			pCur = *tmp_points[j%szTemp];
+			pNext = *tmp_points[(j + 1) % szTemp];
+			pNextNext = *tmp_points[(j + 2) % szTemp];
+			double distance = CalPointtoLine(pNext, pCur, pNextNext);
+			if (distance <= 0.0000001)
+			{
+				tmp_points.erase(tmp_points.begin() + (j + 1) % szTemp);
+				szTemp = tmp_points.size();
+				j = -1;
+//				continue;
+			}
+		}
+		break;
+	}
+
+	//½«É¾³ý¹²ÏßµãÖ®ºóµÄµã´æ»Ø m_Linkpoints ÖÐ
+	for (unsigned int i = 0; i < tmp_points.size(); i++)
+	{
+		layer->m_Polylines[0]->m_Linkpoints.push_back(tmp_points[i]);
+	}
+
+}
+
 bool CSlice::lineNeedSupport()
 {
 	return false;
 }
 
-double CSlice::ReturnZtype(double v1, double v2, double v3, int ztype)
+double CSlice::compareThreeNumber(double v1, double v2, double v3, int type)
 {
 	double z1, z2, z3;
 	z1 = v1;
@@ -765,9 +890,9 @@ double CSlice::ReturnZtype(double v1, double v2, double v3, int ztype)
 	if (z1>z2) swap(z1, z2);
 	if (z2>z3) swap(z2, z3);
 	if (z1>z2) swap(z1, z2);
-	if (ztype == 1) 
+	if (type == 1) 
 		return z1;	
-	else if (ztype == 2) 
+	else if (type == 2) 
 		return z2;
 	else 
 		return z3;

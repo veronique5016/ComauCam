@@ -881,3 +881,15 @@ int PointtoPlane(const CPoint3D& point, const CVector3D& planeVector, const CPoi
 		return PLANE_MINUS;
 	}
 }
+
+double CalPointtoLine(const CPoint3D & point, const CPoint3D & startPoint, const CPoint3D & endPoint)
+{
+	double distance;
+	CVector3D line1 = CVector3D(startPoint, endPoint);
+	CVector3D line2 = CVector3D(startPoint, point);
+	double angle = ::GetAngle(line1, line2);
+	distance = ::GetDistance(startPoint, point) * sin(angle);
+	if (distance < 0)
+		distance = 0.0 - distance;
+	return distance;
+}

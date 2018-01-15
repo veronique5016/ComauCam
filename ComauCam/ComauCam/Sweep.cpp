@@ -93,13 +93,7 @@ void CSweep::sweep()
 		//删除共线的点，此算法需要优化
 		deletePoints(z);
 	
-/*		bool isCCW = isBoundaryCCW(m_Sweep_Layers[z], z);
-		if (!isCCW)
-		{
-			makeBoundaryCCW(m_Sweep_Layers[z], z);
-		}
-		isCCW = isBoundaryCCW(m_Sweep_Layers[z], z);*/
-		//对轮廓点进行重排，先找到 y 最小的点集，再找到 x 最小的点，设为起始点，逆时针连成轮廓
+
 		rearrange(ext, z);
 
 		offSet(m_Sweep_Layers[z], 1.0, z);
@@ -459,7 +453,7 @@ void CSweep::offSet(Layer* layer, double offset, int z)
 		line1.line_point1 = *m_Boundaries[z]->m_Boundary[i];
 		line1.line_vec = line_vec1;
 
-		tmp_norm = layer->layer_gravity*line_vec1;
+		tmp_norm = layer->layer_coordinate[2] * line_vec1;
 		tmp_norm.Normalize();
 
 		tmp_point.x = m_Boundaries[z]->m_Boundary[i]->x + offset*(tmp_norm.dx);
@@ -482,7 +476,7 @@ void CSweep::offSet(Layer* layer, double offset, int z)
 		line2.line_point1 = *m_Boundaries[z]->m_Boundary[i]->p_next;
 		line2.line_vec = line_vec2;
 
-		tmp_norm = layer->layer_gravity*line_vec2;
+		tmp_norm = layer->layer_coordinate[2] * line_vec2;
 		tmp_norm.Normalize();
 
 		tmp_point.x = m_Boundaries[z]->m_Boundary[i]->p_next->x + offset*(tmp_norm.dx);

@@ -11,6 +11,7 @@
 #include "SliceDlg.h"
 #include "SweepDlg.h"
 #include "DisplayDlg.h"
+#include "LayerDlg.h"
 
 class CComauCamView : public CView
 {
@@ -30,6 +31,8 @@ public:
 
 	bool m_ShowTriFace;
 	bool m_ShowPolygon;
+
+	int startLayer, endLayer;
 
 // 操作
 public:
@@ -108,6 +111,7 @@ public:
 	afx_msg void OnSweep();
 	afx_msg void OnWritegcode();
 	afx_msg void OnDisplaymode();
+	afx_msg void OnShowselectedlayer();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

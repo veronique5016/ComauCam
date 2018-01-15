@@ -12,7 +12,7 @@
 IMPLEMENT_DYNAMIC(DisplayDlg, CDialogEx)
 
 DisplayDlg::DisplayDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(IDD_DIALOG3, pParent)
+	: CDialogEx(IDD_DISPLAYDIALOG, pParent)
 	, m_ShowTriangle(FALSE)
 	, m_ShowFrame(FALSE)
 	, m_ShowPolygon(FALSE)

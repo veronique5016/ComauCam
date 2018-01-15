@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_Sweep, &CComauCamView::OnSweep)
 	ON_COMMAND(ID_WriteGCode, &CComauCamView::OnWritegcode)
 	ON_COMMAND(ID_DISPLAYMODE, &CComauCamView::OnDisplaymode)
+	ON_COMMAND(ID_SHOWSELECTEDLAYER, &CComauCamView::OnShowselectedlayer)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -57,6 +58,9 @@ CComauCamView::CComauCamView()
 
 	m_ShowTriFace = false;
 	m_ShowPolygon = false;
+	
+	startLayer = 1;
+	endLayer = 0;
 }
 
 CComauCamView::~CComauCamView()
@@ -326,7 +330,11 @@ BOOL CComauCamView::RenderScene()
 	{
 		for (unsigned int i = 0; i < m_slices.size(); i++)
 		{
-			m_slices[0]->drawpolyline(m_ShowPolygon);
+			if (endLayer == 0)
+			{
+				endLayer = m_slices[0]->m_layers.size();
+			}
+			m_slices[0]->drawLayer(m_ShowPolygon, startLayer, endLayer);
 		}
 	}
 	if (m_bCanSweepDraw)
@@ -567,6 +575,17 @@ void CComauCamView::OnDeletemodel()
 	m_models.clear();
 	m_slices.clear();
 	m_sweeps.clear();
+
+	m_bCanSTLDraw = false;
+	m_bCanSliceDraw = false;
+	m_bCanSweepDraw = false;
+
+	m_ShowTriFace = false;
+	m_ShowPolygon = false;
+
+	startLayer = 1;
+	endLayer = 0;
+
 	RenderScene();
 }
 
@@ -597,7 +616,7 @@ void CComauCamView::OnStartSlice()
 		{
 			CSlice* pSlice = new CSlice();
 			pSlice->height = dialog.m_sliceDistance;
-			pSlice->LoadSTLModel(m_models[i]);
+			pSlice->loadSTLModel(m_models[i]);
 			pSlice->slice(m_models[i]);
 			m_slices.push_back(pSlice);
 			m_bCanSliceDraw = true;
@@ -665,6 +684,30 @@ void CComauCamView::OnDisplaymode()
 		m_bCanSTLDraw = dialog.m_showStlModel;
 		m_bCanSliceDraw = dialog.m_showSliceModel;
 		m_bCanSweepDraw = dialog.m_showSweepModel;
+		Invalidate(TRUE);
+	}
+}
+
+
+void CComauCamView::OnShowselectedlayer()
+{
+	// TODO: 在此添加命令处理程序代码
+	LayerDlg dialog;
+	UpdateData(FALSE);
+	for (unsigned int i = 0; i < m_slices[0]->m_layers.size(); i++)
+	{
+		if (m_slices[0]->m_layers[i]->layer_coordinate[2].dz != 1.0)
+		{
+			dialog.firstTurnLayer = i;
+			break;
+		}
+	}
+	dialog.numberofLayers = m_slices[0]->m_layers.size();
+	if (dialog.DoModal() == IDOK)
+	{
+		UpdateData(TRUE);
+		startLayer = dialog.startLayer;
+		endLayer = dialog.endLayer;
 		Invalidate(TRUE);
 	}
 }

@@ -269,3 +269,6 @@ double AFX_API_EXPORT CalPointtoPlane(const CPoint3D& point, const CVector3D& pl
 
 // 判断点和平面的关系，若点在平面法向量的正方向，则为真，
 int  AFX_API_EXPORT PointtoPlane(const CPoint3D& point, const CVector3D& planeVector, const CPoint3D& planePoint);
+
+// 计算点到直线的距离
+double AFX_API_EXPORT CalPointtoLine(const CPoint3D& point, const CPoint3D& startPoint, const CPoint3D& endPoint);
