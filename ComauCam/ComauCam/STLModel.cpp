@@ -371,6 +371,105 @@ void CSTLModel::rotateModel(double angle, CVector3D vec)
 	}
 }
 
+CVector3D CSTLModel::onCenter()
+{
+	CVector3D vec;
+	double z = 5;
+	vector<CTriangle*> status;
+	int szTri = m_tris.GetSize();
+	for (int i = 0; i < szTri; i++)         //遍历所有面片,筛选出相交面片
+	{
+		double z_min = ReturnZmin(m_tris[i]);
+		double z_max = ReturnZmax(m_tris[i]);
+		if (z_min <= z&&z_max >= z)
+		{
+			if (z_min == z_max)
+			{
+				//跳过面片与切片重合的面片
+			}
+			else {
+				status.push_back(new CTriangle(m_tris[i]->A, m_tris[i]->B, m_tris[i]->C));
+			}       //存储与切片层相交面片
+		}
+	}
+	double x_min = status[0]->A.x;
+	double x_max = status[0]->A.x;
+	double y_min = status[0]->A.y;
+	double y_max = status[0]->A.y;
+	for (unsigned int i = 0; i < status.size(); i++)
+	{
+		if (x_min >= status[i]->A.x)
+			x_min = status[i]->A.x;
+		if (x_min >= status[i]->B.x)
+			x_min = status[i]->B.x;
+		if (x_min >= status[i]->C.x)
+			x_min = status[i]->C.x;
+		if (x_max <= status[i]->A.x)
+			x_max = status[i]->A.x;
+		if (x_max <= status[i]->B.x)
+			x_max = status[i]->B.x;
+		if (x_max <= status[i]->C.x)
+			x_max = status[i]->C.x;
+
+		if (y_min >= status[i]->A.y)
+			y_min = status[i]->A.y;
+		if (y_min >= status[i]->B.y)
+			y_min = status[i]->B.y;
+		if (y_min >= status[i]->C.y)
+			y_min = status[i]->C.y;
+		if (y_max <= status[i]->A.y)
+			y_max = status[i]->A.y;
+		if (y_max <= status[i]->B.y)
+			y_max = status[i]->B.y;
+		if (y_max <= status[i]->C.y)
+			y_max = status[i]->C.y;
+	}
+	vec = CVector3D(0.0-(x_max + x_min) / 2.0, 0.0-(y_max + y_min) / 2.0, 0);
+	return vec;
+}
+
+double CSTLModel::ReturnZmin(const CTriangle* Ltri)
+{
+	double z1, z2, z3;
+	z1 = Ltri->A.z;
+	z2 = Ltri->B.z;
+	z3 = Ltri->C.z;
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	if (z2>z3)
+	{
+		swap(z2, z3);
+	}
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	return z1;
+
+}
+double CSTLModel::ReturnZmax(const CTriangle* Ltri)
+{
+	double z1, z2, z3;
+	z1 = Ltri->A.z;
+	z2 = Ltri->B.z;
+	z3 = Ltri->C.z;
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	if (z2>z3)
+	{
+		swap(z2, z3);
+	}
+	if (z1>z2)
+	{
+		swap(z1, z2);
+	}
+	return z3;
+}
+
 void CSTLModel::Topologize()	// 建立拓扑关系
 {
 	vector<LVertex> tmp_vertices;

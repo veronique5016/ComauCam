@@ -27,6 +27,10 @@ public:
 	virtual void Draw(COpenGLDC* pDC, bool ShowTri);           // »æÍ¼
 	void moveModel(CVector3D vec);
 	void rotateModel(double angle, CVector3D vec);
+	CVector3D onCenter();
+	double CSTLModel::ReturnZmax(const CTriangle* Ltri);
+	double CSTLModel::ReturnZmin(const CTriangle* Ltri);
+
 
 public:
 	bool ReadBinarySTL(CFile& file);

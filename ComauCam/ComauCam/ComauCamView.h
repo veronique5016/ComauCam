@@ -117,6 +117,7 @@ public:
 	afx_msg void OnShowselectedlayer();
 	afx_msg void OnFiveaxisgcode();
 	afx_msg void Onmoveandrotate();
+	afx_msg void OnOncenter();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

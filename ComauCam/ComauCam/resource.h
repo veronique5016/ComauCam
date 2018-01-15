@@ -115,7 +115,6 @@
 #define IDC_ANGLE                       1018
 #define IDC_XAXIS                       1019
 #define IDC_YAXIS                       1020
-#define IDC_ANGLE4                      1021
 #define IDC_ZAXIS                       1021
 #define ID_STLOpen                      32772
 #define ID_DeleteModel                  32775
@@ -136,13 +135,15 @@
 #define ID_32794                        32794
 #define ID_32795                        32795
 #define ID_moveandRotate                32796
+#define ID_32797                        32797
+#define ID_ONCENTER                     32798
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        323
-#define _APS_NEXT_COMMAND_VALUE         32797
+#define _APS_NEXT_COMMAND_VALUE         32799
 #define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

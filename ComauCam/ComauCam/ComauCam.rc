@@ -225,6 +225,7 @@ BEGIN
     END
     POPUP "视图(&V)"
     BEGIN
+        MENUITEM "自动居中",                        ID_ONCENTER
         MENUITEM "平移旋转模型",                      ID_moveandRotate
         MENUITEM "显示设置",                        ID_DISPLAYMODE
         MENUITEM "显示特定层切面",                     ID_SHOWSELECTEDLAYER

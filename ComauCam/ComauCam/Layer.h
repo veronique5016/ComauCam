@@ -56,7 +56,6 @@ public:
 	~Boundary();
 
 public:
-//	vector<LPoint*> m_Linkpoints;
 	vector<Segment*> m_segments;
 };
 

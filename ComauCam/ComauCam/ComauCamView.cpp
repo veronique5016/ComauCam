@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_SHOWSELECTEDLAYER, &CComauCamView::OnShowselectedlayer)
 	ON_COMMAND(ID_FIVEAXISGCODE, &CComauCamView::OnFiveaxisgcode)
 	ON_COMMAND(ID_moveandRotate, &CComauCamView::Onmoveandrotate)
+	ON_COMMAND(ID_ONCENTER, &CComauCamView::OnOncenter)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -551,7 +552,6 @@ void CComauCamView::OnRButtonDown(UINT nFlags, CPoint point)
 	CView::OnRButtonDown(nFlags, point);
 }
 
-
 void CComauCamView::OnRButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
@@ -560,7 +560,6 @@ void CComauCamView::OnRButtonUp(UINT nFlags, CPoint point)
 	SetCamPos(1, (point.y - mouseprevpoint.y), TRUE, TRUE);
 	CView::OnRButtonUp(nFlags, point);
 }
-
 
 void CComauCamView::OnDeletemodel()
 {
@@ -619,7 +618,6 @@ void CComauCamView::OnStartSlice()
 	}
 }
 
-
 void CComauCamView::OnSweep()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -642,7 +640,6 @@ void CComauCamView::OnSweep()
 		}
 	}
 }
-
 
 void CComauCamView::OnWritegcode()
 {
@@ -702,7 +699,6 @@ void CComauCamView::OnDisplaymode()
 	}
 }
 
-
 void CComauCamView::OnShowselectedlayer()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -726,7 +722,6 @@ void CComauCamView::OnShowselectedlayer()
 	}
 }
 
-
 void CComauCamView::Onmoveandrotate()
 {
 	// TODO: 在此添加命令处理程序代码
@@ -738,7 +733,6 @@ void CComauCamView::Onmoveandrotate()
 		double ymove = dialog.y_move;
 		double zmove = dialog.z_move;
 		double angle = dialog.angle*PI / 180.0;
-		//double angle = 90.0*PI / 180.0;
 		double xaxis = dialog.x_axis;
 		double yaxis = dialog.y_axis;
 		double zaxis = dialog.z_axis;
@@ -746,9 +740,19 @@ void CComauCamView::Onmoveandrotate()
 		{
 			m_models[i]->moveModel(CVector3D(xmove, ymove, zmove));
 			m_models[i]->rotateModel(angle, CVector3D(xaxis, yaxis, zaxis));
-			//m_models[i]->moveModel(CVector3D(-15,-15, 0));
-			//m_models[i]->rotateModel(angle, CVector3D(0, 0, 1));
 		}
 		Invalidate(TRUE);
+	}
+}
+
+void CComauCamView::OnOncenter()
+{
+	// TODO: 在此添加命令处理程序代码
+	CVector3D offset_vec;
+	for (unsigned int i = 0; i < m_models.size(); i++)
+	{
+		offset_vec = m_models[i]->onCenter();
+		m_models[i]->moveModel(offset_vec);
+		RenderScene();
 	}
 }

@@ -87,13 +87,13 @@ void CSlice::slice(CSTLModel* model)
 				//求偏移后的线段与前后线段的交点,形成新的轮廓
 				CPoint3D point_out;
 				GetCrossPoint(point_out, m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i]->pend,
-					m_layers[index]->m_Boundaries[0]->m_segments[i - 1]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i-1]->pend);
+					m_layers[index]->m_Boundaries[0]->m_segments[(i - 1)%szL]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[(i - 1) % szL]->pend);
 				m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart = LPoint(point_out);
-				m_layers[index]->m_Boundaries[0]->m_segments[i - 1]->pend = LPoint(point_out);
+				m_layers[index]->m_Boundaries[0]->m_segments[(i - 1) % szL]->pend = LPoint(point_out);
 				GetCrossPoint(point_out, m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i]->pend,
-					m_layers[index]->m_Boundaries[0]->m_segments[i + 1]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i+1]->pend);
+					m_layers[index]->m_Boundaries[0]->m_segments[(i + 1) % szL]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[(i + 1) % szL]->pend);
 				m_layers[index]->m_Boundaries[0]->m_segments[i]->pend = LPoint(point_out);
-				m_layers[index]->m_Boundaries[0]->m_segments[i + 1]->pstart = LPoint(point_out);
+				m_layers[index]->m_Boundaries[0]->m_segments[(i + 1) % szL]->pstart = LPoint(point_out);
 
 				double tmpz = m_layers[index]->layerPoint.z;
 				//定义变法向切平面的坐标系和平面上一点

@@ -1,4 +1,39 @@
-﻿  Sweep.cpp
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(221): warning C4018: “<”: 有符号/无符号不匹配
-  ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
-  ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)
+﻿  stdafx.cpp
+  ViewTree.cpp
+  Triangle.cpp
+  TransferDlg.cpp
+  SweepDlg.cpp
+  Sweep.cpp
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\sweep.cpp(221): warning C4018: “<”: 有符号/无符号不匹配
+  STLModel.cpp
+  SliceDlg.cpp
+  Slice.cpp
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\slice.cpp(125): warning C4018: “<”: 有符号/无符号不匹配
+  PropertiesWnd.cpp
+  OutputWnd.cpp
+  OpenGL.cpp
+  MainFrm.cpp
+  LVertex.cpp
+  LayerDlg.cpp
+  Layer.cpp
+  GemoBase.cpp
+  GCode.cpp
+  FileView.cpp
+  DisplayDlg.cpp
+  ComauCamView.cpp
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\comaucamview.cpp(327): warning C4018: “<”: 有符号/无符号不匹配
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\comaucamview.cpp(693): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\comaucamview.cpp(694): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\comaucamview.cpp(695): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\comaucamview.cpp(696): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\comaucamview.cpp(697): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+  正在生成代码...
+e:\课题\程序资料\cam 各版本\comaucam-12-18\comaucam\gemobase.cpp(380): warning C4715: “CVector3D::GetC_Angle”: 不是所有的控件路径都返回值
+  正在编译...
+  ComauCamDoc.cpp
+  ComauCam.cpp
+  ClassView.cpp
+  正在生成代码...
+    正在创建库 E:\课题\程序资料\CAM 各版本\ComauCam-12-18\Debug\ComauCam.lib 和对象 E:\课题\程序资料\CAM 各版本\ComauCam-12-18\Debug\ComauCam.exp
+  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-12-18\Debug\ComauCam.exe
+  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-12-18\Debug\ComauCam.pdb (Partial PDB)
