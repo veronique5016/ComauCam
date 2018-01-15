@@ -738,6 +738,7 @@ void CComauCamView::Onmoveandrotate()
 		double ymove = dialog.y_move;
 		double zmove = dialog.z_move;
 		double angle = dialog.angle*PI / 180.0;
+		//double angle = 90.0*PI / 180.0;
 		double xaxis = dialog.x_axis;
 		double yaxis = dialog.y_axis;
 		double zaxis = dialog.z_axis;
@@ -745,6 +746,8 @@ void CComauCamView::Onmoveandrotate()
 		{
 			m_models[i]->moveModel(CVector3D(xmove, ymove, zmove));
 			m_models[i]->rotateModel(angle, CVector3D(xaxis, yaxis, zaxis));
+			//m_models[i]->moveModel(CVector3D(-15,-15, 0));
+			//m_models[i]->rotateModel(angle, CVector3D(0, 0, 1));
 		}
 		Invalidate(TRUE);
 	}

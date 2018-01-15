@@ -105,7 +105,6 @@ void CSweep::sweep()
 			calFiveAxisValue(m_sweep_layers[i]);
 		}
 	}
-	int test = 0;
 }
 
 void CSweep::yaxisSweep(SweepLayer * layer)
@@ -167,17 +166,17 @@ void CSweep::offSet(SweepLayer* layer, double offset)
 	{
 		layer->offsetBoundaries[0]->m_segments.push_back(new Segment(*layer->m_Boundaries[0]->m_segments[i]));
 	}
-	CVector3D tmp_norm;
+	CVector3D offset_vec;
 	CPoint3D tmp_point;
 	Segment line1, line2;
 
 	//将轮廓中所有的线段往内偏移一个距离
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		tmp_norm = layer->layer_coordinate[2] * layer->offsetBoundaries[0]->m_segments[i]->segment_vec;
-		tmp_norm.Normalize();
-		layer->offsetBoundaries[0]->m_segments[i]->pstart = layer->offsetBoundaries[0]->m_segments[i]->pstart + CVector3D(tmp_norm*offset);
-		layer->offsetBoundaries[0]->m_segments[i]->pend = layer->offsetBoundaries[0]->m_segments[i]->pend + CVector3D(tmp_norm*offset);
+		offset_vec = layer->layer_coordinate[2] * layer->offsetBoundaries[0]->m_segments[i]->segment_vec;
+		offset_vec.Normalize();
+		layer->offsetBoundaries[0]->m_segments[i]->pstart = layer->offsetBoundaries[0]->m_segments[i]->pstart + CVector3D(offset_vec*offset);
+		layer->offsetBoundaries[0]->m_segments[i]->pend = layer->offsetBoundaries[0]->m_segments[i]->pend + CVector3D(offset_vec*offset);
 	}
 
 	//对偏移后的线段求交点，形成偏移后的轮廓
