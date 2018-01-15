@@ -17,7 +17,7 @@
 #define new DEBUG_NEW
 #endif
 
-
+vector<CSTLModel*> models;
 // CComauCamView
 
 IMPLEMENT_DYNCREATE(CComauCamView, CView)
@@ -43,6 +43,7 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_FILE_SAVE, &CComauCamView::OnFileSave)
 	ON_COMMAND(ID_Triangle_Frame, &CComauCamView::OnTriangleFrame)
 	ON_COMMAND(ID_Triangle_Face, &CComauCamView::OnTriangleFace)
+	ON_COMMAND(ID_Start_Slice, &CComauCamView::OnStartSlice)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -53,10 +54,17 @@ CComauCamView::CComauCamView()
 	m_bCanSTLDraw = false;
 	m_STLModel = NULL;
 	m_ShowTriFace = false;
+	m_bCanSliceDraw = false;
+	m_STLModel = NULL;
+	m_slice = NULL;
 }
 
 CComauCamView::~CComauCamView()
 {
+	if (NULL != m_STLModel)
+		delete[]m_STLModel;
+	if (NULL != m_slice)
+		delete[]m_slice;
 }
 
 BOOL CComauCamView::PreCreateWindow(CREATESTRUCT& cs)
@@ -313,15 +321,17 @@ BOOL CComauCamView::RenderScene()
 	m_pDC->DrawAxis();
 	if (m_bCanSTLDraw)
 	{
-//		bool* CanShowTri = m_ShowTriFace;
 		for (int i = 0; i<m_entities.GetSize(); i++)
 		{
 			m_entities.GetAt(i)->Draw(m_pDC, m_ShowTriFace);
 		}
 
+	} 
+	if (m_bCanSliceDraw)
+	{
+		m_slice->m_slices[0]->Draw(m_pDC, true);
 	}
-
-
+	// ondeletemodel 释放 DC 
 	::glPopMatrix();
 	::SwapBuffers(m_pDC1->GetSafeHdc());		//交互缓冲区
 	return TRUE;
@@ -403,7 +413,7 @@ void CComauCamView::OnStlopen()
 		m_STLModel->ReadSTL(str);
 		m_bCanSTLDraw = true;
 		m_ShowTriFace = true;
-		//models.push_back(m_STLmodel);
+		models.push_back(m_STLModel);
 		m_entities.Add(m_STLModel);   //把m_STLmodel指针存入m_entities
 									  //models.push_back(m_STLmodel);
 		Invalidate(TRUE);
@@ -588,5 +598,18 @@ void CComauCamView::OnTriangleFace()
 {
 	// TODO: Add your command handler code here
 	m_ShowTriFace = true;
+	RenderScene();
+}
+
+
+void CComauCamView::OnStartSlice()
+{
+	// TODO: 在此添加命令处理程序代码
+	CSlice* m_slice = new CSlice();
+	m_slice->LoadSTLModel(models);
+	m_slice->Slice();
+//	m_slice->m_slices[0]->Draw(m_pDC, true);
+//	m_bCanSTLDraw = false;
+	m_bCanSliceDraw = true;
 	RenderScene();
 }

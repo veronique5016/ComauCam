@@ -12,7 +12,7 @@ class AFX_CLASS_EXPORT CSliceModel : public CEntity
 public:
 	CSliceModel();
 	~CSliceModel(void);
-	virtual void Draw(COpenGLDC* pDC);   // 里面是空的，后面可能要自己重写
+	virtual void Draw(COpenGLDC* pDC, bool ShowTri);   // 里面是空的，后面可能要自己重写
 	void SetSTLModel(CSTLModel* pSTLModel);
 
 	void PushToSpecifiedLayer(double zValue, const CLine& line);   //将横截面的线存到对应的层片里

@@ -58,68 +58,35 @@ void CSliceModel::GntLayerBoundaries()//»ñÈ¡²ãÆ¬ÂÖÀª
 	//AfxMessageBox(_T("LinesToBoundaries finish!"),MB_OK,0);
 }
 
-void CSliceModel::Draw(COpenGLDC *pDC)
-{/*
- int szLayer=m_layers.size();
- if (0==szLayer)
- {
- return;
- }
+void CSliceModel::Draw(COpenGLDC *pDC, bool ShowTri)
+{
+/*	
+	 int szLayer=m_layers.size();
+	 if (0==szLayer)
+	 {
+		return;
+	 }
 
- if (m_nDisplayLayer>=0 && m_nDisplayLayer<szLayer)
- {
- int szBoundary=m_layers[m_nDisplayLayer]->m_boundaries.size();
- for (int j=0;j<szBoundary;j++)
- {
- m_layers[m_nDisplayLayer]->m_boundaries[j]->Draw(pDC);
- }
- m_layers[m_nDisplayLayer]->m_scanPath.Draw(pDC);
- }
- else if (m_nDisplayLayer<0)
- {
- for (int i=0;i<szLayer;i=i+1)
- {
- int szBoundary=m_layers[i]->m_boundaries.size();
- for (int j=0;j<szBoundary;j++)
- {
- m_layers[i]->m_boundaries[j]->Draw(pDC);
- }
- m_layers[i]->m_scanPath.Draw(pDC);
- }
- }
- */
- //////////////////////////////////////////////////////////////////////////
- // for STL
-
- // 	int szLine=m_layers[0]->m_boundaryLines.size();
- // 	for (int j=0;j<szLine;j++)
- // 	{
- // 		m_layers[1]->m_boundaryLines[j].SetColor(255,0,0);
- // 		m_layers[1]->m_boundaryLines[j].Draw(pDC);
- // 	}
-
- // test
- /*
- for (int i=0;i<1;i++)
- {
- int szLine=m_layers[i]->m_boundaryLines.size();
- for (int j=0;j<szLine;j++)
- {
- m_layers[i]->m_boundaryLines[j].SetColor(255,0,0);
- m_layers[i]->m_boundaryLines[j].Draw(pDC);
- }
- }
- */
-
-
- // 	for (int i=0;i<1;i=i+1)
- // 	{
- // 		int szBoundary=m_layers[i]->m_boundaries.size();
- //  		for (int j=0;j<szBoundary;j++)
- //  		{
- // 			m_layers[i]->m_boundaries[0]->Draw(pDC);
- // 		}
- // 	}
-
+ //if (m_nDisplayLayer>=0 && m_nDisplayLayer<szLayer)
+ //{
+	int szBoundary=m_layers[0]->m_boundaryLines.size();
+	glBegin(GL_LINE_LOOP);
+	CPoint3D point;
+	glVertex3d(100.0, 100.0, m_layers[0]->m_z);
+	for (int j = 0; j<szBoundary; j++)
+	{
+		point.x = m_layers[0]->m_boundaryLines[j].m_pt1.x;
+		point.y = m_layers[0]->m_boundaryLines[j].m_pt1.y;
+		point.z = m_layers[0]->m_z;
+		glVertex3d(point.x, point.y, m_layers[0]->m_z);
+	}
+	glVertex3d(100.0, 100.0, m_layers[0]->m_z);
+	glEnd();
+*/
+	glBegin(GL_LINE);
+	glColor3f(0.9, 0.2, 0.1);
+	glVertex3d(100.0, 100.0, 0.0);
+	glVertex3d(10.0, 10.0, 0.0);
+	glEnd();
 }
 

@@ -25,7 +25,8 @@ protected:
 	CSliceModel* m_pSliceModel;
 public:
 	typedef vector<CBoundary*> Boundaries;
-protected:
+
+public:
 	bool IsOutMost(CBoundary* pCurBoundary, vector<CBoundary*>& boundaries);//£¿£¿£¿
 
 																			// Test if pContainer contains pElement

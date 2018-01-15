@@ -201,6 +201,7 @@
     <ClInclude Include="Polyline.h" />
     <ClInclude Include="PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="Slice.h" />
     <ClInclude Include="SliceModel.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="STLModel.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="PointSet.cpp" />
     <ClCompile Include="Polyline.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />
+    <ClCompile Include="Slice.cpp" />
     <ClCompile Include="SliceModel.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

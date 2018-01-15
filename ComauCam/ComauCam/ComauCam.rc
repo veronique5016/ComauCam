@@ -17,7 +17,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (Simplified, PRC) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
@@ -218,6 +218,7 @@ BEGIN
     POPUP "编辑(&E)"
     BEGIN
         MENUITEM "删除模型",                        ID_DeleteModel
+        MENUITEM "开始切片",                        ID_Start_Slice
     END
     POPUP "视图(&V)"
     BEGIN
@@ -551,7 +552,7 @@ BEGIN
     IDS_FIND_TAB            "查找"
 END
 
-#endif    // Chinese (Simplified, PRC) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

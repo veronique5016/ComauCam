@@ -249,3 +249,96 @@ bool smaller(LinkPoint* sp1, LinkPoint* sp2)
 		return false;
 	}
 }
+
+
+bool CalcTriXYPlaneInst(const CPoint3D& A, const CPoint3D& B, const CPoint3D& C, double z, CLine& line_out)
+{
+	if (A.z >= z && B.z >= z && C.z >= z)//如果所有顶点z值都大于，说明不相交
+		return false;
+	if (A.z <= z && B.z <= z && C.z <= z)//如果所有顶点z值都小于，说明不相交
+		return false;
+
+	CPoint3D A_, B_, C_;
+	CVector3D vec1, vec2;
+	double lamda1, lamda2;
+
+	//与平面有两个交点的情况
+	if ((A.z - z)*(B.z - z)>0)//说明ab在同一侧
+	{
+		A_ = C;//孤立点赋给A
+		B_ = A;
+		C_ = B;//其他点与原顺序一致
+		goto NO_POINT_ON_SURFACE;
+	}
+	if ((B.z - z)*(C.z - z)>0)//说明cb在同一侧
+	{
+		A_ = A;//孤立点赋给A
+		B_ = B;
+		C_ = C;//其他点与原顺序一致
+		goto NO_POINT_ON_SURFACE;
+	}
+	if ((A.z - z)*(C.z - z)>0)//说明ac在同一侧
+	{
+		A_ = B;//孤立点赋给A
+		B_ = A;
+		C_ = C;//其他点与原顺序一致
+		goto NO_POINT_ON_SURFACE;
+	}
+	//两个交点其中一个是顶点的情况
+	if (A.z == z)//恰好是a点在平面上
+	{
+		A_ = A;
+		B_ = B;
+		C_ = C;
+		goto ONE_POINT_ON_SURFACE;
+	}
+	if (B.z == z)//恰好是b点在平面上
+	{
+		A_ = B;
+		B_ = A;
+		C_ = C;
+		goto ONE_POINT_ON_SURFACE;
+	}
+	if (C.z == z)//恰好是c点在平面上
+	{
+		A_ = C;
+		B_ = B;
+		C_ = A;
+		goto ONE_POINT_ON_SURFACE;
+	}
+
+NO_POINT_ON_SURFACE://没有顶点在平面上
+	lamda1 = (z - A_.z) / (B_.z - A_.z);
+	lamda2 = (z - A_.z) / (C_.z - A_.z);
+	vec1 = B_ - A_;
+	vec2 = C_ - A_;
+	line_out.m_pt1 = A_ + vec1*lamda1;//即通过此二式算出了两个交点的坐标
+	line_out.m_pt2 = A_ + vec2*lamda2;//因为在一条直线上坐标满足相同的比例
+	line_out.m_pt1.z = z;  // 修正z  
+	line_out.m_pt2.z = z; //为什么需要修正呢？？理论上计算出来的就是实际值，是为了防止计算中精度不同吗
+	if (line_out.m_pt1 == line_out.m_pt2)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+
+
+ONE_POINT_ON_SURFACE://恰好一个顶点是交点
+	lamda1 = (z - B_.z) / (C_.z - B_.z);
+	vec1 = C_ - B_;
+	line_out.m_pt1 = A_;
+	line_out.m_pt2 = B_ + vec1*lamda1;
+	line_out.m_pt1.z = z;  // 修正z
+	line_out.m_pt2.z = z;
+	if (line_out.m_pt1 == line_out.m_pt2)//说明只有一个顶点在平面上，这种不算相交
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}

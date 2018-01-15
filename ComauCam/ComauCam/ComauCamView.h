@@ -6,6 +6,7 @@
 
 #include "OpenGL.h"
 #include "STLModel.h"
+#include "Slice.h"
 
 class CComauCamView : public CView
 {
@@ -16,6 +17,11 @@ protected: // 仅从序列化创建
 // 特性
 public:
 	CComauCamDoc* GetDocument() const;
+	CSTLModel* m_STLModel;
+	CSlice* m_slice;
+	bool m_bCanSTLDraw;
+	bool m_ShowTriFace;
+	bool m_bCanSliceDraw;
 
 // 操作
 public:
@@ -64,10 +70,7 @@ public:
 	void SetCamPos(int axis, int value, BOOL increment, BOOL apply);
 	void SetScenePos(int axis, int value, BOOL increment, BOOL apply);
 
-public:
-	CSTLModel* m_STLModel;
-	bool m_bCanSTLDraw;
-	bool m_ShowTriFace;
+
 
 private:
 	CStringArray m_sIgesLines;
@@ -92,9 +95,10 @@ public:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnDeletemodel();
 	afx_msg void OnFileSave();
-	afx_msg void OnSwitchTriangle();
+//	afx_msg void OnSwitchTriangle();
 	afx_msg void OnTriangleFrame();
 	afx_msg void OnTriangleFace();
+	afx_msg void OnStartSlice();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

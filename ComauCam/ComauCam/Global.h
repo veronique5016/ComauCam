@@ -36,3 +36,9 @@ int SearchInLps(LinkPoint* pLP, vector<LinkPoint*> LPs);//在连接点中搜索
 int FindAnUnusedLP(vector<LinkPoint*> LPs);
 bool smaller_planar(LinkPoint* sp1, LinkPoint* sp2);
 bool smaller(LinkPoint* sp1, LinkPoint* sp2);
+
+bool CalcTriXYPlaneInst(const CPoint3D& A,
+	const CPoint3D& B,
+	const CPoint3D& C,
+	double z,
+	CLine& line_out);
