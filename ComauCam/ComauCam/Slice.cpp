@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Slice.h"
 #include <algorithm>
-#include <math.h>
 
 CSlice::CSlice(void)
 {
@@ -64,11 +63,11 @@ void CSlice::Slice(CSTLModel* model)
 		GetBoundaryPoints(m_vecpLayers[index]);
 
 		//将轮廓逆时针排列并删除共线点
-		OptimizeBoundary(m_vecpLayers[index]);
-		RearrangeBoundary(m_vecpLayers[index]);
+		m_vecpLayers[index]->OptimizeBoundary();
+		m_vecpLayers[index]->RearrangeBoundary();
 
 		//判断是否需要变法向切片
-		/*unsigned int szL = m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments.size();		
+		unsigned int szL = m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments.size();		
 		for (unsigned int i = 0; i < szL; i++)
 		{
 			double angle = GetAngle(CVector3D(0, 0, 1), CVector3D(*m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_pTriangle->n))*180.0 / PI;
@@ -78,8 +77,8 @@ void CSlice::Slice(CSTLModel* model)
 				CVector3D offset_vec = m_vecpLayers[index]->m_vLayerCoordinate[2] * m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec;
 				offset_vec.Normalize();
 				//此段有 bug 存在，当一个层切面有多条线段需要变法向切且法向量不同时，zaxis_distance 应该不同，但此处相同了
-				double zmin_tmp = ZminofLayer(m_vecpLayers[index]);
-				double zmin_prev = ZminofLayer(m_vecpLayers[index - 1]);
+				double zmin_tmp = m_vecpLayers[index]->ZminofLayer();
+				double zmin_prev = m_vecpLayers[index - 1]->ZminofLayer();
 				double zaxis_distance = zmin_tmp - zmin_prev;
 				double offset = zaxis_distance * tan(GetAngle(CVector3D(0,0,1), CVector3D(*m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_pTriangle->n*m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec)));
 				MoveSegment(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i], CVector3D(offset_vec*offset));
@@ -93,23 +92,19 @@ void CSlice::Slice(CSTLModel* model)
 				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd = CLPoint(point_out);
 				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[(i + 1) % szL]->m_ptStart = CLPoint(point_out);
 
-				//double tmpz = m_vecpLayers[index]->m_ptLayerPoint.z;
 				//定义变法向切平面的坐标系和平面上一点
 				CSliceLayer* pTurnLayer = new CSliceLayer();
 				pTurnLayer->m_vLayerCoordinate[0] = CVector3D(*m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_pTriangle->n);
 				pTurnLayer->m_vLayerCoordinate[1] = CVector3D(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec);
 				pTurnLayer->m_vLayerCoordinate[2] = pTurnLayer->m_vLayerCoordinate[0] * pTurnLayer->m_vLayerCoordinate[1];
-				//pTurnLayer->m_ptLayerPoint = CPoint3D(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart);
 				
 				CPoint3D layer_point = CPoint3D(m_vecpLayers[index - 1]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart);
 				layer_point = layer_point + pTurnLayer->m_vLayerCoordinate[2] * dz;
 				pTurnLayer->m_ptLayerPoint = layer_point;
-				
-				//m_vecpLayers.push_back(pTurnLayer);
 
-				//int szLayer = m_vecpLayers.size();
+
 				GetBoundaryPoints(pTurnLayer);
-				OptimizeBoundary(pTurnLayer);
+				pTurnLayer->OptimizeBoundary();
 
 				ModifyTurnLayer(pTurnLayer);
 				
@@ -131,7 +126,7 @@ void CSlice::Slice(CSTLModel* model)
 					pAddedTurnLayer->m_ptLayerPoint = added_layer_point;
 					m_vecpLayers.push_back(pAddedTurnLayer);
 					GetBoundaryPoints(pAddedTurnLayer);
-					OptimizeBoundary(pAddedTurnLayer);
+					pAddedTurnLayer->OptimizeBoundary();
 					ModifyTurnLayer(pAddedTurnLayer);
 
 					CSliceLayer* pAddedToAddedLayer = new CSliceLayer();
@@ -139,7 +134,7 @@ void CSlice::Slice(CSTLModel* model)
 					pAddedTurnLayer->m_pAddictedLayer = pAddedToAddedLayer;
 				}
 			}
-		}*/
+		}
 		z += dz;
 	}
 }
@@ -240,19 +235,10 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 void CSlice::GetInterSectEdge(CSliceLayer* layer, CLTriangle* pCurFace)   //只要找到一条相交的边就可以跳出
 {
 	int v1_plane, v2_plane, v3_plane;
-	CPoint3D v1_tmp, v2_tmp, v3_tmp;
 
-	v1_tmp.x = pCurFace->v1->x;
-	v1_tmp.y = pCurFace->v1->y;
-	v1_tmp.z = pCurFace->v1->z;
-	
-	v2_tmp.x = pCurFace->v2->x;
-	v2_tmp.y = pCurFace->v2->y;
-	v2_tmp.z = pCurFace->v2->z;
-	
-	v3_tmp.z = pCurFace->v3->z;
-	v3_tmp.x = pCurFace->v3->x;
-	v3_tmp.y = pCurFace->v3->y;
+	CPoint3D v1_tmp = CPoint3D(*pCurFace->v1);
+	CPoint3D v2_tmp = CPoint3D(*pCurFace->v2);
+	CPoint3D v3_tmp = CPoint3D(*pCurFace->v3);
 
 	v1_plane = PointtoPlane(v1_tmp, layer->m_vLayerCoordinate[2], layer->m_ptLayerPoint);
 	v2_plane = PointtoPlane(v2_tmp, layer->m_vLayerCoordinate[2], layer->m_ptLayerPoint);
@@ -321,7 +307,6 @@ void CSlice::GetInterSectEdge(CSliceLayer* layer, CLTriangle* pCurFace)   //只要
 		break;
 	}
 	}
-
 }
 
 void CSlice::JudgeFaceType(CSliceLayer* layer, CLTriangle* pCurFace)
@@ -331,9 +316,9 @@ void CSlice::JudgeFaceType(CSliceLayer* layer, CLTriangle* pCurFace)
 	v2_dist = CalPointtoPlane(*pCurFace->v2, layer->m_vLayerCoordinate[2], layer->m_ptLayerPoint);
 	v3_dist = CalPointtoPlane(*pCurFace->v3, layer->m_vLayerCoordinate[2], layer->m_ptLayerPoint);
 
-	min_dist = CompareThreeNumber(v1_dist, v2_dist, v3_dist, MIN);
-	mid_dist = CompareThreeNumber(v1_dist, v2_dist, v3_dist, MID);
-	max_dist = CompareThreeNumber(v1_dist, v2_dist, v3_dist, MAX);
+	min_dist = ::CompareThreeNumber(v1_dist, v2_dist, v3_dist, MIN);
+	mid_dist = ::CompareThreeNumber(v1_dist, v2_dist, v3_dist, MID);
+	max_dist = ::CompareThreeNumber(v1_dist, v2_dist, v3_dist, MAX);
 
 	//判断三角面片和切平面的相交情况,四种情况
 	if ((min_dist < 0) && (max_dist > 0) && (mid_dist != 0))
@@ -403,7 +388,6 @@ void CSlice::JudgeOtherLine(CSliceLayer* layer, CLTriangle* pCurFace)
 	}
 	case ONLY_ONE_POINT_ON_SURFACE:  //哪一条边其中的一个端点在切平面上，就是相交边
 	{
-
 		//已选的相交边的相邻前一边判断是否有一个点不在z切平面上
 		if (v1_plane == 0)
 			pCurFace->m_pIntersectLine2= pCurFace->m_pIntersectLine1->e_prev;
@@ -459,43 +443,6 @@ void CSlice::CalIntersectPoint(CSliceLayer* layer, CLEdge * edge, CLTriangle*pCu
 	}
 }
 
-double CSlice::ZminofLayer(CSliceLayer * layer)
-{
-	double zmin;
-	zmin = layer->m_vecpBoundaries[0]->m_vecpSegments[0]->m_ptStart.z;
-	unsigned int sz = layer->m_vecpBoundaries[0]->m_vecpSegments.size();
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		if (zmin > layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd.z)
-			zmin = layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd.z;
-	}
-	return zmin;
-}
-
-int CSlice::FindLowestSegment(CSliceLayer* layer)
-{
-	int index = -1;
-	if (layer->m_vLayerCoordinate[2].dz == 1.0)
-	{
-		return index;
-	}
-	else
-	{
-		int szP = layer->m_vecpBoundaries[0]->m_vecpSegments.size();
-		double height = layer->m_vecpBoundaries[0]->m_vecpSegments[0]->m_ptStart.z + layer->m_vecpBoundaries[0]->m_vecpSegments[0]->m_ptEnd.z;
-		for (unsigned int i = 0; i < szP; i++)
-		{
-			double tmp_height = layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart.z + layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd.z;
-			if (height >= tmp_height)
-			{
-				height = tmp_height;
-				index = i;
-			}
-		}
-		return index;
-	}
-}
-
 void CSlice::GetAddedLayerBoundary(CSliceLayer * layer, CSegment turnlayer_seg, CSegment layer_seg)
 {
 	CSegment tmp_seg = CSegment(turnlayer_seg.m_ptEnd, turnlayer_seg.m_ptStart, NULL);
@@ -538,7 +485,7 @@ void CSlice::ModifyTurnLayer(CSliceLayer* layer)
 		tmp_boundary.push_back(layer->m_vecpBoundaries[0]->m_vecpSegments[i]);
 	}
 
-	int seg_index = FindLowestSegment(layer);
+	int seg_index = layer->FindLowestSegment();
 	CSegment* start_seg = new CSegment(*layer->m_vecpBoundaries[0]->m_vecpSegments[seg_index]);
 	layer->m_vecpBoundaries[0]->m_vecpSegments.clear();
 
@@ -562,169 +509,3 @@ void CSlice::ModifyTurnLayer(CSliceLayer* layer)
 	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(tmp_boundary[(seg_index - 1 + tmp_boundary.size()) % tmp_boundary.size()]);
 	tmp_boundary.clear();
 }
-
-void CSlice::OptimizeBoundary(CSliceLayer* layer)
-{
-	bool isCCW = IsBoundaryCCW(layer);
-	if (!isCCW)
-		MakeBoundaryCCW(layer);
-	isCCW = IsBoundaryCCW(layer);
-	DeletePoints(layer);
-}
-
-//取出轮廓中点集的三等分点判断轮廓是否逆时针
-bool CSlice::IsBoundaryCCW(CSliceLayer* layer)
-{
-	unsigned int sz = layer->m_vecpBoundaries[0]->m_vecpSegments.size();
-	double angle = -1.0;
-	CPoint3D p1, p2;
-	CVector3D vec1, vec2;
-	CVector3D vec = CVector3D(0, 0, 0);
-	if (sz < 3)
-	{
-		return false;
-	}
-	else
-	{
-		p1 = CPoint3D(layer->m_vecpBoundaries[0]->m_vecpSegments[0]->m_ptStart);
-		p2 = CPoint3D(layer->m_vecpBoundaries[0]->m_vecpSegments[sz/3]->m_ptStart);
-		vec1 = CVector3D(p1, p2);
-		p1 = CPoint3D(layer->m_vecpBoundaries[0]->m_vecpSegments[sz/3]->m_ptStart);
-		p2 = CPoint3D(layer->m_vecpBoundaries[0]->m_vecpSegments[(sz/3)*2]->m_ptStart);
-		vec2 = CVector3D(p1, p2);
-		vec = vec1 * vec2;
-		vec.Normalize();
-
-		angle = GetAngle(vec, layer->m_vLayerCoordinate[2]);
-		if(angle == 0.0)
-			return true;
-		else
-			return false;
-	}
-}
-
-void CSlice::MakeBoundaryCCW(CSliceLayer* layer)
-{
-	unsigned int sz = layer->m_vecpBoundaries[0]->m_vecpSegments.size();
-	vector<CSegment*> tmp;
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		tmp.push_back(layer->m_vecpBoundaries[0]->m_vecpSegments[sz - 1 - i]);
-	}
-	layer->m_vecpBoundaries[0]->m_vecpSegments.clear();
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(*tmp[i]));
-		layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart = CLPoint(tmp[i]->m_ptEnd);
-		layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd = CLPoint(tmp[i]->m_ptStart);
-		layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec = CVector3D(CPoint3D(layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart), CPoint3D(layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd));
-		layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec.Normalize();
-	}
-}
-
-void CSlice::RearrangeBoundary(CSliceLayer* layer)
-{
-	unsigned int szP = layer->m_vecpBoundaries[0]->m_vecpSegments.size();
-	double position = layer->m_vecpBoundaries[0]->m_vecpSegments[0]->m_ptStart.x + layer->m_vecpBoundaries[0]->m_vecpSegments[0]->m_ptStart.y;
-	int index = 0;
-	for (unsigned int i = 0; i < szP; i++)
-	{
-		CLPoint tmp_point = layer->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart;
-		double tmp_position = tmp_point.x + tmp_point.y;
-		if (tmp_position < position)
-		{
-			position = tmp_position;
-			index = i;
-		}
-	}
-	vector<CSegment*> tmp_segments;
-	for (unsigned int i = 0; i < szP; i++)
-	{
-		tmp_segments.push_back(layer->m_vecpBoundaries[0]->m_vecpSegments[(i+index)%szP]);
-	}
-	layer->m_vecpBoundaries[0]->m_vecpSegments.clear();
-	for (unsigned int i = 0; i < szP; i++)
-	{
-		layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(tmp_segments[i]);
-	}
-	tmp_segments.clear();
-}
-
-void CSlice::DeletePoints(CSliceLayer* layer)
-{
-	vector<CSegment*> tmp_segments;
-	unsigned int szP = layer->m_vecpBoundaries[0]->m_vecpSegments.size();
-
-	// 取出单个层切面轮廓中的所有线段
-	for (unsigned int j = 0; j < szP; j++)
-	{
-		tmp_segments.push_back(layer->m_vecpBoundaries[0]->m_vecpSegments[j]);
-	}
-	layer->m_vecpBoundaries[0]->m_vecpSegments.clear();
-
-	unsigned int szTemp = tmp_segments.size();
-	for (unsigned int i = 0; i < szTemp; i++)
-	{
-		if (fabs(tmp_segments[i]->m_ptStart.x) <= 0.0000001)
-			tmp_segments[i]->m_ptStart.x = 0;
-		if (fabs(tmp_segments[i]->m_ptStart.y) <= 0.0000001)
-			tmp_segments[i]->m_ptStart.y = 0;
-		if (fabs(tmp_segments[i]->m_ptStart.z) <= 0.0000001)
-			tmp_segments[i]->m_ptStart.z = 0;
-		if (fabs(tmp_segments[i]->m_ptEnd.x) <= 0.0000001)
-			tmp_segments[i]->m_ptEnd.x = 0;
-		if (fabs(tmp_segments[i]->m_ptEnd.y) <= 0.0000001)
-			tmp_segments[i]->m_ptEnd.y = 0;
-		if (fabs(tmp_segments[i]->m_ptEnd.z) <= 0.0000001)
-			tmp_segments[i]->m_ptEnd.z = 0;
-	}
-
-	CPoint3D pCur, pNext, pNextNext;
-	while (szTemp >= 3)
-	{
-		for (unsigned int j = 0; j < szTemp; j++)
-		{
-			pCur = tmp_segments[j%szTemp]->m_ptStart;
-			pNext = tmp_segments[j%szTemp]->m_ptEnd;
-			pNextNext = tmp_segments[(j + 1) % szTemp]->m_ptEnd;
-			double distance = CalPointtoLine(pNext, pCur, pNextNext);
-			if (distance <= 0.0001)
-			{
-				tmp_segments[j%szTemp]->m_ptEnd = tmp_segments[(j + 1) % szTemp]->m_ptEnd;
-				CPoint3D p1 = CPoint3D(tmp_segments[j%szTemp]->m_ptStart);
-				CPoint3D p2 = CPoint3D(tmp_segments[j%szTemp]->m_ptEnd);
-				tmp_segments[j%szTemp]->m_vSegmentVec = CVector3D(p1, p2);
-				tmp_segments[j%szTemp]->m_vSegmentVec.Normalize();
-				tmp_segments.erase(tmp_segments.begin() + (j + 1) % szTemp);
-				szTemp = tmp_segments.size();
-				j = -1;
-			}
-		}
-		break;
-	}
-
-	//将删除共线点之后的线段存回 m_vecpSegments 中
-	for (unsigned int i = 0; i < tmp_segments.size(); i++)
-	{
-		layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(tmp_segments[i]);
-	}
-	tmp_segments.clear();
-}
-
-double CSlice::CompareThreeNumber(double v1, double v2, double v3, int type)
-{
-	double z1, z2, z3;
-	z1 = v1;
-	z2 = v2;
-	z3 = v3;
-	if (z1>z2) swap(z1, z2);
-	if (z2>z3) swap(z2, z3);
-	if (z1>z2) swap(z1, z2);
-	if (type == 1) 
-		return z1;	
-	else if (type == 2) 
-		return z2;
-	else 
-		return z3;
-}
-

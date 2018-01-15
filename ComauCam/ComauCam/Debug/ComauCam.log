@@ -1,44 +1,12 @@
-﻿  stdafx.cpp
-  ViewTree.cpp
-  Triangle.cpp
-  TransferDlg.cpp
-  SweepDlg.cpp
-  Sweep.cpp
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “z”: 未引用的局部变量
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_max”: 未引用的局部变量
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_min”: 未引用的局部变量
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x”: 未引用的局部变量
-  STLModel.cpp
-  SliceDlg.cpp
-  Slice.cpp
-e:\project\program files\camversion\comaucam\comaucam\slice.cpp(486): warning C4018: “<”: 有符号/无符号不匹配
-  PropertiesWnd.cpp
-  OutputWnd.cpp
-  OpenGL.cpp
-e:\project\program files\camversion\comaucam\comaucam\opengl.cpp(224): warning C4018: “<”: 有符号/无符号不匹配
-  MainFrm.cpp
-  LVertex.cpp
-  LayerDlg.cpp
+﻿  Slice.cpp
   Layer.cpp
-  GemoBase.cpp
+e:\project\program files\camversion\comaucam\comaucam\layer.cpp(275): warning C4018: “<”: 有符号/无符号不匹配
+  正在生成代码...
+  正在跳过...(未检测到相关更改)
+  Sweep.cpp
+  OpenGL.cpp
   GCode.cpp
-  FileView.cpp
-  DisplayDlg.cpp
   ComauCamView.cpp
-e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(324): warning C4018: “<”: 有符号/无符号不匹配
-e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(690): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(691): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(692): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(693): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(694): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-  正在生成代码...
-e:\project\program files\camversion\comaucam\comaucam\gemobase.cpp(380): warning C4715: “CVector3D::GetC_Angle”: 不是所有的控件路径都返回值
-  正在编译...
-  ComauCamDoc.cpp
   ComauCam.cpp
-  ClassView.cpp
-  正在生成代码...
-  LINK : 没有找到 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exe 或上一个增量链接没有生成它；正在执行完全链接
-    正在创建库 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.lib 和对象 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exp
   ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.pdb (Partial PDB)

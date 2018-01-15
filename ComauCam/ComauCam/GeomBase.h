@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+using namespace std;
+
 #define  AXIS_X     1
 #define  AXIS_Y     2
 #define  AXIS_Z     3
@@ -17,6 +20,10 @@
 #define PLANE_ON 0
 
 #define  POINT_EQUAL_ERROR    0.0000000001
+
+#define MIN 1
+#define MID 2
+#define MAX 3
 
 
 
@@ -270,3 +277,6 @@ int  AFX_API_EXPORT PointtoPlane(const CPoint3D& point, const CVector3D& planeVe
 
 // 计算点到直线的距离
 double AFX_API_EXPORT CalPointtoLine(const CPoint3D& point, const CPoint3D& startPoint, const CPoint3D& endPoint);
+
+//比较三个数并获得对应的值
+double AFX_API_EXPORT CompareThreeNumber(double v1, double v2, double v3, int type);

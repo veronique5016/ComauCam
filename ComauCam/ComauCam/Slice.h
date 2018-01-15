@@ -33,22 +33,12 @@ public:
 	void GetInterSectEdge(CSliceLayer* layer, CLTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
 	void JudgeFaceType(CSliceLayer* layer, CLTriangle* pCurFace);    //判断与切片平面相交面片的类型
 	void JudgeOtherLine(CSliceLayer* layer, CLTriangle* pCurFace);   //判断另一条相交线
-	double ZminofLayer(CSliceLayer* layer);
-	int FindLowestSegment(CSliceLayer* layer);
 
 public:
 	void GetAddedLayerBoundary(CSliceLayer* layer, CSegment turnlayer_seg, CSegment layer_seg);
 	void GetAddedLayerBoundary(CSliceLayer* layer, CSliceLayer* turn_layer, CSliceLayer* z_layer);
-
-public:
-	double CompareThreeNumber(double v1, double v2, double v3, int type);
-	void ModifyTurnLayer(CSliceLayer* layer);	//对变法向切平面轮廓进行修改
-	void OptimizeBoundary(CSliceLayer* layer);
-	bool IsBoundaryCCW(CSliceLayer* layer);		//判断轮廓是否逆时针
-	void MakeBoundaryCCW(CSliceLayer* layer);
-	void RearrangeBoundary(CSliceLayer* layer);
-	void DeletePoints(CSliceLayer* layer);		//删除冗余点
-
+	void ModifyTurnLayer(CSliceLayer* layer);	//对变法向切平面轮廓进行修改	
+	
 public:
 	vector<CLEdge*> m_vecpSliceEdge;     //存储相交边
 	vector<CSliceLayer*> m_vecpLayers;     //存储片层

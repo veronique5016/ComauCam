@@ -67,6 +67,15 @@ public:
 	~CSliceLayer();
 
 public:
+	bool IsBoundaryCCW();
+	void MakeBoundaryCCW();
+	void RearrangeBoundary();
+	void DeletePoints();
+	void OptimizeBoundary();
+	double ZminofLayer();
+	int FindLowestSegment();
+
+public:
 	CPoint3D m_ptLayerPoint;
 	CVector3D m_vLayerCoordinate[3];
 	vector<CBoundary*> m_vecpBoundaries;   //截交得到的轮廓，不经修改 size = 1, 如果轮廓内部有空洞或其他情况，则 size 会增加

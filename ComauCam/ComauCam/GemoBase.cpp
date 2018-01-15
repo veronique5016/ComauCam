@@ -919,3 +919,19 @@ double CalPointtoLine(const CPoint3D & point, const CPoint3D & startPoint, const
 		distance = 0.0 - distance;
 	return distance;
 }
+
+double CompareThreeNumber(double v1, double v2, double v3, int type)
+{
+	double z1 = v1;
+	double z2 = v2;
+	double z3 = v3;
+	if (z1>z2) swap(z1, z2);
+	if (z2>z3) swap(z2, z3);
+	if (z1>z2) swap(z1, z2);
+	if (type == 1)
+		return z1;
+	else if (type == 2)
+		return z2;
+	else
+		return z3;
+}
