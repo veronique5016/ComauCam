@@ -1,80 +1,7 @@
 #include "stdafx.h"
 #include "Slice.h"
 #include <algorithm>
-
-LPoint::LPoint()
-{
-	p_prev = NULL;
-	p_next = NULL;
-}
-LPoint::~LPoint()
-{
-}
-LPoint::LPoint(const LPoint& lpoint)
-{
-	x = lpoint.x;
-	y = lpoint.y;
-	z = lpoint.z;
-}
-LPoint::LPoint(const CPoint3D & pt)
-{
-	x = pt.x;
-	y = pt.y;
-	z = pt.z;
-}
-LPoint::LPoint(double x, double y, double z)
-{
-	this->x = x;
-	this->y = y;
-	this->z = z;
-}
-
-LLine::LLine()
-{
-	pstart = LPoint(0,0,0);
-	pend = LPoint(0,0,0);
-	layer = NULL;
-}
-LLine::LLine(const LPoint* startpoint, const LPoint* endpoint)
-{
-	pstart = *startpoint;
-	pend = *endpoint;
-}
-
-LLine::~LLine()
-{
-}
-
-PolyLine::PolyLine()
-{
-}
-PolyLine::~PolyLine()
-{
-	unsigned int szP = m_Linkpoints.size();
-	for (unsigned int i = 0; i < szP; i++)
-	{
-		delete m_Linkpoints[i];
-		m_Linkpoints[i] = NULL;
-	}
-	m_Linkpoints.clear();
-}
-
-Layer::Layer()
-{
-	layer_coordinate[0] = CVector3D(1, 0, 0);
-	layer_coordinate[1] = CVector3D(0, 1, 0);
-	layer_coordinate[2] = CVector3D(0, 0, 1);
-}
-Layer::~Layer()
-{
-	unsigned int szP = m_Polylines.size();
-	for (unsigned int i = 0; i < szP; i++)
-	{
-		delete m_Polylines[i];
-		m_Polylines[i] = NULL;
-	}
-	m_Polylines.clear();
-}
+#include <math.h>
 
 CSlice::CSlice(void)
 {
@@ -119,9 +46,9 @@ void CSlice::loadSTLModel(CSTLModel* model)//载入stl模型
 	}
 }
 
+//获取最小转折点的 z 坐标
 double CSlice::getTurnHeight()
 {
-
 	unsigned int sz = m_tris_slice.size();
 	CVector3D* tmp_normal = NULL;	
 
@@ -250,7 +177,6 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 {
 
 	CPoint3D tmp_layer_point = CPoint3D(0, 0, 0);
-	vector<LPoint*> cross_point;	// 用于存放 z 向切平面上进行过偏移的轮廓点
 	double x_max;
 	while (true)
 	{
@@ -264,7 +190,7 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 		getPolylinePoints(m_layers[m_layers.size() - 1]);
 		deletePoints(m_layers[m_layers.size() - 1]);
 
-		// 获取轮廓点后对部分轮廓点进行偏置
+	 // 获取轮廓点后对部分轮廓点进行偏置
 		unsigned int sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
 		x_max = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
 		for (unsigned int i = 0; i < sz; i++)
@@ -287,34 +213,7 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x >=30)// 判断需要修改
 			{
 				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x = 30;
-				cross_point.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]);
 				tmp_layer_point = *m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i];
-			}
-		}
-//		cross_point.erase(cross_point.begin(), cross_point.begin() + 1);
-		LPoint* y_min = new LPoint();
-//		*y_min = LPoint(*cross_point[0]);
-		LPoint* y_max = new LPoint();
-//		*y_max = LPoint(*cross_point[0]);
-		y_min->x = cross_point[0]->x;
-		y_min->y = cross_point[0]->y;
-		y_min->z = cross_point[0]->z;
-		y_max->x = cross_point[0]->x;
-		y_max->y = cross_point[0]->y;
-		y_max->z = cross_point[0]->z;
-		for (unsigned int i = 1; i < cross_point.size(); i++)
-		{
-			if (y_min->y > cross_point[i]->y)
-			{
-				y_min->x = cross_point[i]->x;
-				y_min->y = cross_point[i]->y;
-				y_min->z = cross_point[i]->z;
-			}
-			if (y_max->y < cross_point[i]->y)
-			{
-				y_max->x = cross_point[i]->x;
-				y_max->y = cross_point[i]->y;
-				y_max->z = cross_point[i]->z;
 			}
 		}
 
@@ -335,6 +234,7 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 		}
 		deletePoints(m_layers[m_layers.size() - 1]);
 
+
 		// 将两个切片平面生成的轮廓合并
 		unsigned int tmp_sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
 		for (unsigned int i = 0; i < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size(); i++)
@@ -345,48 +245,6 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 				i = 0;
 			}
 		}
-
-		LPoint* turn_min = new LPoint();
-		LPoint* turn_max = new LPoint();
-
-		turn_min->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
-		turn_min->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->y;
-		turn_min->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->z;
-		turn_max->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
-		turn_max->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->y;
-		turn_max->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->z;
-		for (unsigned int i = 1; i < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size(); i++)
-		{
-			if (turn_min->y > m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y)
-			{
-				turn_min->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x;
-				turn_min->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y;
-				turn_min->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->z;
-			}
-			if (turn_max->y < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y)
-			{
-				turn_max->x = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x;
-				turn_max->y = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->y;
-				turn_max->z = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->z;
-			}
-		}
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.clear();
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_min);
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(turn_min);
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(turn_max);
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_max);
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_min);
-/*		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin(), m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + 1);
-		for (unsigned int i = 0; i < cross_point.size(); i++)
-		{
-			//m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(cross_point[cross_point.size() - i - 1]);
-			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_max);
-			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(y_min);
-		}*/
-
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]);
-
-		cross_point.clear();
 
 		if (z >= (z_max - dz))
 		{
@@ -403,7 +261,7 @@ void CSlice::getPolylinePoints(Layer* layer)
 	double v1_dist, v2_dist, v3_dist;
 
 	unsigned int szTri = m_tris_slice.size();
-	for (unsigned int i = 0; i < szTri; i++)         //遍历所有面片,筛选出相交面片
+	for (unsigned int i = 0; i < szTri; i++)
 	{
 		v1_dist = ::CalPointtoPlane(*m_tris_slice[i]->v1, layer->layer_coordinate[2], layer->layerPoint);
 		v2_dist = ::CalPointtoPlane(*m_tris_slice[i]->v2, layer->layer_coordinate[2], layer->layerPoint);
@@ -418,9 +276,7 @@ void CSlice::getPolylinePoints(Layer* layer)
 				//跳过面片与切片重合的面片
 			}
 			else
-			{
 				status.push_back(m_tris_slice[i]);
-			}
 		}
 	}
 
@@ -436,23 +292,31 @@ void CSlice::getPolylinePoints(Layer* layer)
 
 	//选第一个面片作为起始面片
 	pCurFace = status[0];
-	pCurFace->b_use = true;//把面片置为当前使用面片，标志位置为真
+	pCurFace->b_use = true;
 	
 	while (true)
 	{
 		PolyLine* m_polyline = new PolyLine();
 		LPoint* tmpLinkPoint = new LPoint();
-		getInterSectEdge(layer, pCurFace);  //设定起始相交边，并存入m_Slice_edge容器	
+		LSegment* tmpSegment = new LSegment();
+
+		//设定起始相交边，并存入m_Slice_edge容器	
+		getInterSectEdge(layer, pCurFace);  
 		unsigned int sz0 = m_Slice_edge.size();
 		pCurFace->IntersectLine1 = m_Slice_edge[sz0 - 1];
+
 		//由起始相交边求交点，并存入m_LinkPoint容器
 		calIntersectPoint(layer, pCurFace->IntersectLine1, pCurFace, tmpLinkPoint);
 		m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
+		tmpSegment->pstart =new LPoint(*tmpLinkPoint);
+		tmpSegment->triangle = pCurFace;
 
 		//第一个面片的另一相交边求交点，并存入m_LinkPoint容器
 		judgeOtherLine(layer, pCurFace);
 		calIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
 		m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
+		tmpSegment->pend =new LPoint(*tmpLinkPoint);
+		m_polyline->m_Linklines.push_back(new LSegment(*tmpSegment));
 		//上面是轮廓第一个面片的特殊处理
 
 		while (true)
@@ -467,20 +331,23 @@ void CSlice::getPolylinePoints(Layer* layer)
 			judgeOtherLine(layer, pCurFace);
 			//求交点，并保持点
 
-
 			calIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
 			m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
 
-			unsigned int szlinkPoint = m_polyline->m_Linkpoints.size();
+			tmpSegment->pstart =new LPoint(*m_polyline->m_Linklines[m_polyline->m_Linklines.size() - 1]->pend);
+			tmpSegment->pend = new LPoint(*tmpLinkPoint);
+			tmpSegment->triangle = pCurFace;
+			m_polyline->m_Linklines.push_back(new LSegment(*tmpSegment));
+
+			unsigned int szlinkline = m_polyline->m_Linklines.size();
+
 			//判断交点是否为起始点，若是，跳出内层循环，此时生成一个轮廓点集，若否，直接返回内层循环
-			if (*(m_polyline->m_Linkpoints[0]) ^= *(m_polyline->m_Linkpoints[szlinkPoint - 1]))
+			if (*(m_polyline->m_Linklines[0]->pstart) ^= *(m_polyline->m_Linklines[szlinkline - 1]->pend))
 			{
-				Layer* pLayer = new Layer();
-				
+				Layer* pLayer = new Layer();				
 				pLayer->layer_coordinate[2] = m_layers[m_layers.size() - 1]->layer_coordinate[2];
 				pLayer->m_Polylines.push_back(m_polyline);
 				m_layers[m_layers.size()-1] = pLayer;
-//				int szpoint = m_polyline->m_Linkpoints.size();
 				break;
 			}
 		}
@@ -514,31 +381,36 @@ void CSlice::drawLayer(bool showPolygon, int start, int end)
 		}
 		for (unsigned int j = 0; j < szpolyline; j++)
 		{
-			unsigned int szPoint = m_layers[i]->m_Polylines[j]->m_Linkpoints.size();
+			unsigned int szLine = m_layers[i]->m_Polylines[j]->m_Linklines.size();
 
 			glLineWidth(1.5f);
+
+			//绘制平面轮廓
 			if (showPolygon)
 			{
 				glBegin(GL_POLYGON);
-//				glPolygonMode(GL_FRONT, GL_FILL);
-//				glPolygonMode(GL_BACK, GL_LINE);
 				glColor3f(color[0], color[1], color[2]);			
-				for (unsigned int k = 0; k < szPoint; k++)
+				for (unsigned int k = 0; k < szLine; k++)
 				{
-					point = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k];
+					point = *m_layers[i]->m_Polylines[j]->m_Linklines[k]->pstart;
+					glVertex3f(point.x, point.y, point.z);
+					point = *m_layers[i]->m_Polylines[j]->m_Linklines[k]->pend;
 					glVertex3f(point.x, point.y, point.z);
 				}
 				glEnd();
 			}
 
-			glBegin(GL_LINE_LOOP);
+			//绘制线框轮廓
 			glColor3f(color[0], color[1], color[2]);
-			for (unsigned int k = 0; k<szPoint; k++)
+			for (unsigned int k = 0; k<szLine; k++)
 			{
-				point = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k];				
-				glVertex3f(point.x, point.y, point.z);				
+				glBegin(GL_LINE_LOOP);
+				point = *m_layers[i]->m_Polylines[j]->m_Linklines[k]->pstart;
+				glVertex3f(point.x, point.y, point.z);
+				point = *m_layers[i]->m_Polylines[j]->m_Linklines[k]->pend;
+				glVertex3f(point.x, point.y, point.z);
+				glEnd();
 			}
-			glEnd();
 		}
 	}
 
@@ -770,110 +642,120 @@ void CSlice::calIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, L
 
 bool CSlice::isBoundaryCCW(Layer* layer)
 {
-	unsigned int sz = layer->m_Polylines[0]->m_Linkpoints.size();
-	int i = 0;
-	double angle = 0.0;
-	CVector3D vec, vec1, vec2;
+	unsigned int sz = layer->m_Polylines[0]->m_Linklines.size();
+	double angle = -1.0;
+	CPoint3D p1, p2;
+	CVector3D vec1, vec2;
+	CVector3D vec = CVector3D(0, 0, 0);
 	if (sz < 3)
 	{
 		return false;
 	}
 	else
 	{
-		while (angle==0.0)
+		for (unsigned int i = 0; i < sz-1; i++)
 		{
-			vec1 = CVector3D(*layer->m_Polylines[0]->m_Linkpoints[i], *layer->m_Polylines[0]->m_Linkpoints[i+1]);
-			vec2 = CVector3D(*layer->m_Polylines[0]->m_Linkpoints[i+1], *layer->m_Polylines[0]->m_Linkpoints[i+2]);
-			if (vec1.dz < 0.00001&&vec1.dz>-0.00001)
-			{
-				vec1.dz = 0;
-			}
-			if (vec2.dz < 0.00001&&vec2.dz>-0.00001)
-			{
-				vec2.dz = 0;
-			}
-			angle = ::GetAngle(vec1, vec2);
-			i += 1;
+			p1.x = layer->m_Polylines[0]->m_Linklines[i]->pstart->x;
+			p1.y = layer->m_Polylines[0]->m_Linklines[i]->pstart->y;
+			p1.z = layer->m_Polylines[0]->m_Linklines[i]->pstart->z;
+			p2.x = layer->m_Polylines[0]->m_Linklines[i]->pend->x;
+			p2.y = layer->m_Polylines[0]->m_Linklines[i]->pend->y;
+			p2.z = layer->m_Polylines[0]->m_Linklines[i]->pend->z;
+			vec1 = CVector3D(p1, p2);
+			p1.x = layer->m_Polylines[0]->m_Linklines[i+1]->pstart->x;
+			p1.y = layer->m_Polylines[0]->m_Linklines[i+1]->pstart->y;
+			p1.z = layer->m_Polylines[0]->m_Linklines[i+1]->pstart->z;
+			p2.x = layer->m_Polylines[0]->m_Linklines[i+1]->pend->x;
+			p2.y = layer->m_Polylines[0]->m_Linklines[i+1]->pend->y;
+			p2.z = layer->m_Polylines[0]->m_Linklines[i+1]->pend->z;
+			vec2 = CVector3D(p1, p2);
+			vec = vec1 * vec2;
+			vec.Normalize();
+			if (!vec.IsZeroLength())
+				break;
 		}
-		vec = vec1*vec2;
-		if (vec.dz < 0.00001&&vec.dz>-0.00001)
-		{
-			vec.dz = 0;
-		}
-		angle = ::GetAngle(vec, layer->layer_coordinate[2]);
-		if (angle > (PI / 2))
-			return false;
-		else
+		angle = GetAngle(vec, layer->layer_coordinate[2]);
+		if(angle == 0.0)
 			return true;
+		else
+			return false;
 	}
 }
 
 void CSlice::makeBoundaryCCW(Layer* layer)
 {
-	unsigned int sz = layer->m_Polylines[0]->m_Linkpoints.size();
-	vector<LPoint*> tmp;
+	unsigned int sz = layer->m_Polylines[0]->m_Linklines.size();
+	vector<LSegment*> tmp;
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		tmp.push_back(layer->m_Polylines[0]->m_Linkpoints[sz - 1 - i]);
+		tmp.push_back(layer->m_Polylines[0]->m_Linklines[sz - 1 - i]);
 	}
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		layer->m_Polylines[0]->m_Linkpoints[i] = tmp[i];
+		layer->m_Polylines[0]->m_Linklines[i] = tmp[i];
 	}
-
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		LPoint tmp_point = *layer->m_Polylines[0]->m_Linklines[i]->pstart;
+		*layer->m_Polylines[0]->m_Linklines[i]->pstart = *layer->m_Polylines[0]->m_Linklines[i]->pend;
+		*layer->m_Polylines[0]->m_Linklines[i]->pend = tmp_point;
+	}
 }
 
 void CSlice::deletePoints(Layer * layer)
 {
-	vector<LPoint*> tmp_points;
-	unsigned int szP = layer->m_Polylines[0]->m_Linkpoints.size();
+	vector<LSegment*> tmp_segments;
+	unsigned int szP = layer->m_Polylines[0]->m_Linklines.size();
 
-	// 取出单个层切面轮廓中的所有交点
+	// 取出单个层切面轮廓中的所有线段
 	for (unsigned int j = 0; j < szP; j++)
 	{
-		tmp_points.push_back(layer->m_Polylines[0]->m_Linkpoints[j]);
+		tmp_segments.push_back(layer->m_Polylines[0]->m_Linklines[j]);
 	}
-	layer->m_Polylines[0]->m_Linkpoints.clear();
+	layer->m_Polylines[0]->m_Linklines.clear();
 
-	unsigned int szTemp = tmp_points.size();
+	unsigned int szTemp = tmp_segments.size();
 	for (unsigned int i = 0; i < szTemp; i++)
 	{
-		if (tmp_points[i]->x <= 0.0000001)
-			tmp_points[i]->x = 0;
-		if (tmp_points[i]->y <= 0.0000001)
-			tmp_points[i]->y = 0;
-		if (tmp_points[i]->z <= 0.0000001)
-			tmp_points[i]->z = 0;
+		if (fabs(tmp_segments[i]->pstart->x) <= 0.0000001)
+			tmp_segments[i]->pstart->x = 0;
+		if (fabs(tmp_segments[i]->pstart->y) <= 0.0000001)
+			tmp_segments[i]->pstart->y = 0;
+		if (fabs(tmp_segments[i]->pstart->z) <= 0.0000001)
+			tmp_segments[i]->pstart->z = 0;
+		if (fabs(tmp_segments[i]->pend->x) <= 0.0000001)
+			tmp_segments[i]->pend->x = 0;
+		if (fabs(tmp_segments[i]->pend->y) <= 0.0000001)
+			tmp_segments[i]->pend->y = 0;
+		if (fabs(tmp_segments[i]->pend->z) <= 0.0000001)
+			tmp_segments[i]->pend->z = 0;
 	}
-	CPoint3D pCur;
-	CPoint3D pNext;
-	CPoint3D pNextNext;
-//	CVector3D vec1, vec2;
+
+	CPoint3D pCur, pNext, pNextNext;
 	while (szTemp >= 3)
 	{
 		for (unsigned int j = 0; j < szTemp; j++)
 		{
-			pCur = *tmp_points[j%szTemp];
-			pNext = *tmp_points[(j + 1) % szTemp];
-			pNextNext = *tmp_points[(j + 2) % szTemp];
+			pCur = *tmp_segments[j%szTemp]->pstart;
+			pNext = *tmp_segments[j%szTemp]->pend;
+			pNextNext = *tmp_segments[(j + 1) % szTemp]->pend;
 			double distance = CalPointtoLine(pNext, pCur, pNextNext);
 			if (distance <= 0.0000001)
 			{
-				tmp_points.erase(tmp_points.begin() + (j + 1) % szTemp);
-				szTemp = tmp_points.size();
+				*tmp_segments[j%szTemp]->pend = *tmp_segments[(j + 1) % szTemp]->pend;
+				tmp_segments.erase(tmp_segments.begin() + (j + 1) % szTemp);
+				szTemp = tmp_segments.size();
 				j = -1;
-//				continue;
 			}
 		}
 		break;
 	}
 
-	//将删除共线点之后的点存回 m_Linkpoints 中
-	for (unsigned int i = 0; i < tmp_points.size(); i++)
+	//将删除共线点之后的线段存回 m_Linklines 中
+	for (unsigned int i = 0; i < tmp_segments.size(); i++)
 	{
-		layer->m_Polylines[0]->m_Linkpoints.push_back(tmp_points[i]);
+		layer->m_Polylines[0]->m_Linklines.push_back(tmp_segments[i]);
 	}
-
 }
 
 bool CSlice::lineNeedSupport()

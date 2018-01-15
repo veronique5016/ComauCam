@@ -191,6 +191,7 @@
     <ClInclude Include="DisplayDlg.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="GeomBase.h" />
+    <ClInclude Include="Layer.h" />
     <ClInclude Include="LayerDlg.h" />
     <ClInclude Include="LVertex.h" />
     <ClInclude Include="MainFrm.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="DisplayDlg.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="GemoBase.cpp" />
+    <ClCompile Include="Layer.cpp" />
     <ClCompile Include="LayerDlg.cpp" />
     <ClCompile Include="LVertex.cpp" />
     <ClCompile Include="MainFrm.cpp" />
