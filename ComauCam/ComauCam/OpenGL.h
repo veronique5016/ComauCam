@@ -12,7 +12,7 @@
 #pragma comment(lib,"glut.lib")     // 和上面一样的,包含一个就可以了
 #pragma comment(lib,"GlAux.Lib")    // 官方发行的辅助库
 
-#include "GemoBase.h"
+#include "GeomBase.h"
 
 #define LS_SOLID        0   // line style
 #define LS_DASH         1

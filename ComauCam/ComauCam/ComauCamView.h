@@ -67,6 +67,7 @@ public:
 public:
 	CSTLModel* m_STLModel;
 	bool m_bCanSTLDraw;
+	bool m_ShowTriFace;
 
 private:
 	CStringArray m_sIgesLines;
@@ -91,6 +92,9 @@ public:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnDeletemodel();
 	afx_msg void OnFileSave();
+	afx_msg void OnSwitchTriangle();
+	afx_msg void OnTriangleFrame();
+	afx_msg void OnTriangleFace();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

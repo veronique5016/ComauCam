@@ -8,6 +8,12 @@ CSTLModel::CSTLModel(void)
 
 CSTLModel::~CSTLModel(void)
 {
+	int sz = m_tris.GetSize();
+	for (int i = 0; i < sz; i++)
+	{
+		delete m_tris[i];
+	}
+	m_tris.RemoveAll();
 }
 
 
@@ -78,7 +84,7 @@ bool CSTLModel::ReadBinarySTL(CFile& file)
 		file.Read(&b, 1);
 	}
 
-	return true;
+return true;
 }
 
 bool CSTLModel::ReadAsciiSTL(CStdioFile& file)
@@ -125,7 +131,7 @@ void CSTLModel::WriteSTL(CString sFilePath)
 		int sz = m_tris.GetSize();
 		//int sz=m_tris.size();
 		CString str;
-		for (int i = 0; i<sz; i++)
+		for (int i = 0; i < sz; i++)
 		{
 			str.Format(_T("  facet normal %.7f %.7f %.7f\n"),
 				m_tris[i]->Normal.dx, m_tris[i]->Normal.dy, m_tris[i]->Normal.dz);
@@ -146,15 +152,61 @@ void CSTLModel::WriteSTL(CString sFilePath)
 		fileout.WriteString(_T("endsolid OBJECT\n"));
 		fileout.Close();
 	}
-	AfxMessageBox(_T("finish"));
 }
 
 void CSTLModel::ReleaseMem()
 {
 	int sz = m_tris.GetSize();
-	for (int i = 0; i<sz; i++)
+	for (int i = 0; i < sz; i++)
 		delete m_tris[i];
 	m_tris.RemoveAll();
+}
+
+void CSTLModel::FindExtreme(double ext[]) // 找到 m_vertices 中 x、y、z 坐标的极值
+{
+
+	double x_min = m_vertices[0]->x;
+	double x_max = x_min;
+	double y_min = m_vertices[0]->y;
+	double y_max = y_min;
+	double z_min = m_vertices[0]->z;
+	double z_max = z_min;
+
+	int sz = m_vertices.size();
+	for (int i = 1; i<sz; i++)
+	{
+		if (m_vertices[i]->x > x_max)
+		{
+			x_max = m_vertices[i]->x;
+		}
+		if (m_vertices[i]->x < x_min)
+		{
+			x_min = m_vertices[i]->x;
+		}
+		if (m_vertices[i]->y > y_max)
+		{
+			y_max = m_vertices[i]->y;
+		}
+		if (m_vertices[i]->y < y_min)
+		{
+			y_min = m_vertices[i]->y;
+		}
+		if (m_vertices[i]->z > z_max)
+		{
+			z_max = m_vertices[i]->z;
+		}
+		if (m_vertices[i]->z < z_min)
+		{
+			z_min = m_vertices[i]->z;
+		}
+	}
+
+	ext[0] = x_min;
+	ext[1] = x_max;
+	ext[2] = y_min;
+	ext[3] = y_max;
+	ext[4] = z_min;
+	ext[5] = z_max;
 }
 
 CPoint3D CSTLModel::FindCord(CString str)
@@ -280,7 +332,7 @@ BOOL CSTLModel::IsSpace(TCHAR ch)
 	}
 }
 
-void CSTLModel::Draw(COpenGLDC* pDC)
+void CSTLModel::Draw(COpenGLDC* pDC, bool ShowTri)
 {
 	COLORREF oldClr;
 
@@ -291,12 +343,146 @@ void CSTLModel::Draw(COpenGLDC* pDC)
 	//	pDC->SetMaterialColor(m_clr);
 
 	int sz = m_tris.GetSize();
-
-	for (int i = 0; i<sz; i++)
+	if (ShowTri)
 	{
-		m_tris[i]->DrawTriangleFace(pDC);            //面片模式
-		//m_tris[i]->DrawTriangleFrame(pDC);       //线框模式
+		for (int i = 0; i<sz; i++)
+		{
+			m_tris[i]->DrawTriangleFace(pDC);  //面片模式     
+		}
+	}
+	else
+	{
+		for (int i = 0; i < sz; i++)
+		{
+			m_tris[i]->DrawTriangleFrame(pDC);  //线框模式
+		}
+	}
+	//pDC->SetMaterialColor(oldClr);
+}
+
+void CSTLModel::Topologize()	// 建立拓扑关系
+{
+	vector<LVertex> tmp_vertices;
+
+	int szTri = m_tris.GetSize();    // 得到面片的数量
+	for (int i = 0; i < szTri; i++)	 //将m_tris里存储的面片的顶点导入到新建的这个拓扑数组中
+	{
+		tmp_vertices.push_back(LVertex(m_tris[i]->A));
+		tmp_vertices.push_back(LVertex(m_tris[i]->B));
+		tmp_vertices.push_back(LVertex(m_tris[i]->C));
 	}
 
-	//pDC->SetMaterialColor(oldClr);
+	sort(tmp_vertices.begin(), tmp_vertices.end());	//sort函数对给定区间所有元素进行排序
+
+	int szV = tmp_vertices.size();    // szV == 3* szTri
+
+	LVertex* pVertex = new LVertex(tmp_vertices[0]);
+	m_vertices.push_back(pVertex); //将tmp_vertices里的顶点信息存到半边结构定义的m_vertices里去
+
+	for (int i = 1; i < szV; i++)
+	{
+		if (tmp_vertices[i] == tmp_vertices[i - 1])
+		{
+			continue;
+		}
+		else
+		{
+			LVertex* pVertex = new LVertex(tmp_vertices[i]); //将不同的点存到半边结构定义的m_vertices里去
+			m_vertices.push_back(pVertex);
+		}
+
+	}
+
+	for (int i = 0; i<szTri; i++)
+	{
+		LTriangle* pFace = new LTriangle();
+		CVector3D* pNormal = new CVector3D(m_tris[i]->Normal);
+		m_normals.push_back(pNormal);     //将原来存在m_tris里的向量信息存在半边结构定义的m_normals里去
+
+		pFace->v1 = SearchPtInVertices(m_tris[i]->A);//即将面表和顶点表对应了起来
+		pFace->v2 = SearchPtInVertices(m_tris[i]->B);
+		pFace->v3 = SearchPtInVertices(m_tris[i]->C);
+		pFace->n = pNormal;                           //将面表和向量表也对应了起来
+
+													  //将信息全部存在了半边结构的面数组里
+		m_ltris.push_back(pFace);   // 在faces序列中三角面片还是随机排放的
+	}
+
+	for (int i = 0; i<szTri; i++)
+	{
+		LEdge *e1, *e2, *e3;
+		e1 = new LEdge(m_ltris[i]->v1, m_ltris[i]->v2);    //1、2两点组成第一条边
+		e2 = new LEdge(m_ltris[i]->v2, m_ltris[i]->v3);
+		e3 = new LEdge(m_ltris[i]->v3, m_ltris[i]->v1);
+		e1->t = e2->t = e3->t = m_ltris[i];            //三条边都属于同一个三角片
+
+		e1->e_prev = e2->e_next = e3;     //第一条边的前一条和第二条边的后一条边即为第三边
+		e2->e_prev = e3->e_next = e1;
+		e3->e_prev = e1->e_next = e2;     //即建立了边的顺序关系
+
+		m_edges.push_back(e1);            //然后将这些边存入了半边结构的边数组中
+		m_edges.push_back(e2);
+		m_edges.push_back(e3);
+
+
+		m_ltris[i]->e1 = e1;    //将面和边建立联系 对应关系
+		m_ltris[i]->e2 = e2;
+		m_ltris[i]->e3 = e3;
+	}
+
+	int szE = m_edges.size();
+	vector<LEdgeHull> edgeHulls;
+	LEdgeHull edgeHull;            //定义一个结构变量
+	for (int i = 0; i<szE; i++)
+	{
+		edgeHull.edge = m_edges[i];//先将半边结构中的边存到结构变量中
+		edgeHulls.push_back(edgeHull);//再将结构变量中的数据存到动态数组中
+	}
+
+	sort(edgeHulls.begin(), edgeHulls.end());//排序？？？
+
+	for (int i = 0; i<szE - 1; i++)
+	{
+		if (edgeHulls[i].IsOpposite(edgeHulls[i + 1]))//如果两条边的方向是相反的
+		{
+			edgeHulls[i].edge->e_adja = edgeHulls[i + 1].edge;//说明两条边互成半边关系！！！
+			edgeHulls[i + 1].edge->e_adja = edgeHulls[i].edge;//互为伙伴半边
+			i++;
+		}
+	}
+}
+
+LVertex* CSTLModel::SearchPtInVertices(const CPoint3D& pt) //在半边结构的顶点数组中寻找这个点								  
+{
+	LVertex vertex(pt);
+	int sz = m_vertices.size();
+	int min_i = 0;              //最小编号
+	int max_i = sz - 1;           //最大编号
+
+	if (*m_vertices[min_i] == vertex)
+	{
+		return m_vertices[min_i];
+	}
+	if (*m_vertices[max_i] == vertex)     //如果刚好是最大或最小编号的那个则直接返回
+	{
+		return m_vertices[max_i];
+	}
+
+	int mid_i;
+	while (true)
+	{
+		mid_i = (min_i + max_i) / 2;//中间编号
+		if (*m_vertices[mid_i] < vertex)   //否则的话用二分法直到在顶点数组中找到这个点为止 
+		{
+			min_i = mid_i;
+		}
+		else if (*m_vertices[mid_i] > vertex)
+		{
+			max_i = mid_i;
+		}
+		else     //即刚好相等的情况
+		{
+			return m_vertices[mid_i];
+		}
+	}
 }

@@ -21,7 +21,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AF6EFE7A-5E0D-436F-B29D-3BB16516E8CF}</ProjectGuid>
     <RootNamespace>ComauCam</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <Keyword>MFCProj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -190,7 +189,8 @@
     <ClInclude Include="ComauCamDoc.h" />
     <ClInclude Include="ComauCamView.h" />
     <ClInclude Include="FileView.h" />
-    <ClInclude Include="GemoBase.h" />
+    <ClInclude Include="GeomBase.h" />
+    <ClInclude Include="LVertex.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="OutputWnd.h" />
@@ -209,6 +209,7 @@
     <ClCompile Include="ComauCamView.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="GemoBase.cpp" />
+    <ClCompile Include="LVertex.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="OpenGL.cpp" />
     <ClCompile Include="OutputWnd.cpp" />

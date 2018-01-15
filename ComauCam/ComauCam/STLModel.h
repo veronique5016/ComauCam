@@ -1,11 +1,15 @@
 #pragma once
-#include "GemoBase.h"
+#include "GeomBase.h"
 #include "Triangle.h"
 #include "OpenGL.h"
+#include "LVertex.h"
+
+#include <algorithm>
+#include <vector>
 
 
 
-class CSTLModel :public CObject
+class CSTLModel :public CObject, public TopologySTL
 {
 public:
 	CSTLModel(void);
@@ -18,7 +22,9 @@ public:
 	bool ReadSTL(CString sFilePath); // 读取模型判断是二进制还是ASCII格式
 	void WriteSTL(CString sFilePath);
 	void ReleaseMem();
-	virtual void Draw(COpenGLDC* pDC);           // 绘图
+	void Topologize();
+	void FindExtreme(double ext[]);
+	virtual void Draw(COpenGLDC* pDC, bool ShowTri);           // 绘图
 
 protected:
 	bool ReadBinarySTL(CFile& file);
@@ -27,7 +33,7 @@ protected:
 	CVector3D FindNormal(CString str);
 	BOOL IsNumber(TCHAR ch); // 是否是数字
 	BOOL IsSpace(TCHAR ch);  // 是否是空格
-
+	LVertex* SearchPtInVertices(const CPoint3D& pt);//还是在半边结构的顶点数组中寻找这个点
 };
 
 

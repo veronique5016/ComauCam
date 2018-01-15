@@ -132,3 +132,5 @@ void COpenGLDC::DrawLine(const CPoint3D& sp, const CPoint3D& ep, int lineStyle/*
 
 	//SetColor(oldClr);
 }
+
+

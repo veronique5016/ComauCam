@@ -1,6 +1,6 @@
 #pragma once
 #include "afx.h"
-#include "GemoBase.h"
+#include "GeomBase.h"
 #include "OpenGL.h"
 
 class CTriangle :

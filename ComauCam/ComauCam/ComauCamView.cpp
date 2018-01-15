@@ -37,9 +37,12 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
+	ON_COMMAND(ID_FILE_OPEN, &CComauCamView::OnStlopen)
 	ON_COMMAND(ID_STLOpen, &CComauCamView::OnStlopen)
 	ON_COMMAND(ID_DeleteModel, &CComauCamView::OnDeletemodel)
 	ON_COMMAND(ID_FILE_SAVE, &CComauCamView::OnFileSave)
+	ON_COMMAND(ID_Triangle_Frame, &CComauCamView::OnTriangleFrame)
+	ON_COMMAND(ID_Triangle_Face, &CComauCamView::OnTriangleFace)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -49,7 +52,7 @@ CComauCamView::CComauCamView()
 	// TODO: 在此处添加构造代码
 	m_bCanSTLDraw = false;
 	m_STLModel = NULL;
-
+	m_ShowTriFace = false;
 }
 
 CComauCamView::~CComauCamView()
@@ -310,10 +313,12 @@ BOOL CComauCamView::RenderScene()
 	m_pDC->DrawAxis();
 	if (m_bCanSTLDraw)
 	{
+//		bool* CanShowTri = m_ShowTriFace;
 		for (int i = 0; i<m_entities.GetSize(); i++)
 		{
-			m_entities.GetAt(i)->Draw(m_pDC);
+			m_entities.GetAt(i)->Draw(m_pDC, m_ShowTriFace);
 		}
+
 	}
 
 
@@ -397,6 +402,7 @@ void CComauCamView::OnStlopen()
 		str = filedlg.GetPathName();
 		m_STLModel->ReadSTL(str);
 		m_bCanSTLDraw = true;
+		m_ShowTriFace = true;
 		//models.push_back(m_STLmodel);
 		m_entities.Add(m_STLModel);   //把m_STLmodel指针存入m_entities
 									  //models.push_back(m_STLmodel);
@@ -568,4 +574,19 @@ void CComauCamView::OnFileSave()
 		m_STLModel->WriteSTL(strFilePath);
 		SetDlgItemText(ID_FILE_SAVE, strFilePath);
 	}
+}
+
+void CComauCamView::OnTriangleFrame()
+{
+	// TODO: Add your command handler code here
+	m_ShowTriFace = false;
+	RenderScene();
+}
+
+
+void CComauCamView::OnTriangleFace()
+{
+	// TODO: Add your command handler code here
+	m_ShowTriFace = true;
+	RenderScene();
 }
