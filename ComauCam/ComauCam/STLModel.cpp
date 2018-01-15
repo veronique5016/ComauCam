@@ -77,6 +77,8 @@ bool CSTLModel::ReadBinarySTL(CFile& file)
 
 		v.Normalize();//¼´½«ÏòÁ¿µ¥Î»»¯
 		CTriangle* pTri = new CTriangle(v, A, B, C);//·ÖÅäÒ»¸öÐÂµÄÈý½Ç
+
+		RoundFour(pTri);
 		m_tris.Add(pTri);
 		//m_tris.push_back(pTri);
 
@@ -114,6 +116,7 @@ bool CSTLModel::ReadAsciiSTL(CStdioFile& file)
 		file.ReadString(str);
 		file.ReadString(str);
 
+		RoundFour(pTriangle);
 		m_tris.Add(pTriangle);
 	}
 
@@ -439,6 +442,12 @@ void CSTLModel::Topologize()	// ½¨Á¢ÍØÆË¹ØÏµ
 			i++;
 		}
 	}
+
+	for (int i = 0; i < m_edges.size(); i++)
+	{
+		if(m_edges[i]->e_adja == NULL)
+			AfxMessageBox(_T("Topologize failed!!"), MB_OK, 0);
+	}
 }
 
 LVertex* CSTLModel::SearchPtInVertices(const CPoint3D& pt) //ÔÚ°ë±ß½á¹¹µÄ¶¥µãÊý×éÖÐÑ°ÕÒÕâ¸öµã								  
@@ -474,4 +483,25 @@ LVertex* CSTLModel::SearchPtInVertices(const CPoint3D& pt) //ÔÚ°ë±ß½á¹¹µÄ¶¥µãÊý×
 			return m_vertices[mid_i];
 		}
 	}
+}
+
+void CSTLModel::RoundFour(CTriangle* pTri)
+{
+	int number = 4;
+	pTri->A.x = Round(pTri->A.x, number);
+	pTri->A.y = Round(pTri->A.y, number);
+	pTri->A.z = Round(pTri->A.z, number);
+
+	pTri->B.x = Round(pTri->B.x, number);
+	pTri->B.y = Round(pTri->B.y, number);
+	pTri->B.z = Round(pTri->B.z, number);
+
+	pTri->C.x = Round(pTri->C.x, number);
+	pTri->C.y = Round(pTri->C.y, number);
+	pTri->C.z = Round(pTri->C.z, number);
+
+	pTri->Normal.dx = Round(pTri->Normal.dx, number);
+	pTri->Normal.dy = Round(pTri->Normal.dy, number);
+	pTri->Normal.dz = Round(pTri->Normal.dz, number);
+
 }

@@ -445,7 +445,6 @@ int CComauCamView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pDC1 = new CClientDC(this);
 	InitializeOpenGL(m_pDC1);   //设置为当前RC...产生绘制环境（RC），并使之成为当前的绘制环境
 	Init();
-
 	return 0;
 }
 

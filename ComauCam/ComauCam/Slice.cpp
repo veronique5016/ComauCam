@@ -30,7 +30,7 @@ Layer::~Layer()
 	m_Polylines.clear();
 }
 
-CSlice::CSlice(void):height(0.2)
+CSlice::CSlice(void):height(10)
 {
 
 }
@@ -71,6 +71,7 @@ void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
 		m_tris_slice.push_back(model->m_ltris[j]);     //为CSlice对象拷贝一份三角面片数据
 	}
 }
+
 void CSlice::slice(CSTLModel* model)
 {
 	//AfxMessageBox(_T("Slice Begin!!"), MB_OK, 0);
@@ -81,13 +82,13 @@ void CSlice::slice(CSTLModel* model)
 	model->FindExtreme(ex);   //查找模型的极限尺寸
 	z_Min = ex[4];
 	z_Max = ex[5];
-	z = z_Min + 0.1;  //第一个切片层
+	z = z_Min+0.2;  //第一个切片层，无法设为 z_Min
 	dz = height;   //层高
 	while (true)
 	{
 		getpolylinePoints(z);
 		if (z >= (z_Max - dz))
-		{
+		{    
 			break;
 		}
 		z += dz;
@@ -109,7 +110,8 @@ void CSlice::getpolylinePoints(double z)
 			{
 				//跳过面片与切片重合的面片
 			}
-			else {
+			else 
+			{
 				status.push_back(m_tris_slice[i]);
 			}       //存储与切片层相交面片
 		}
@@ -138,6 +140,7 @@ void CSlice::getpolylinePoints(double z)
 		CalInerSectPoint(z, pCurFace->OtherIntersectLine, pCurFace, tmpLinkPoint);
 		m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
 		//上面是轮廓第一个面片的特殊处理
+
 		while (true)
 		{
 			//由最后存入相交边数组的边的伙伴半边寻找下一相交面片
@@ -151,6 +154,7 @@ void CSlice::getpolylinePoints(double z)
 			//求交点，并保持点
 			CalInerSectPoint(z, pCurFace->OtherIntersectLine, pCurFace, tmpLinkPoint);
 			m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
+
 			int szlinkPoint = m_polyline->m_Linkpoints.size();
 			//判断交点是否为起始点，若是，跳出内层循环，此时生成一个轮廓点集，若否，直接返回内层循环
 			if (*(m_polyline->m_Linkpoints[0]) ^= *(m_polyline->m_Linkpoints[szlinkPoint - 1]))
@@ -159,7 +163,7 @@ void CSlice::getpolylinePoints(double z)
 				pLayer->z = z;
 				pLayer->m_Polylines.push_back(m_polyline);
 				m_layers.push_back(pLayer);
-				int szpoint = m_polyline->m_Linkpoints.size();
+//				int szpoint = m_polyline->m_Linkpoints.size();
 				break;
 			}
 		}

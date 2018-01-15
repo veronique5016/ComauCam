@@ -26,7 +26,7 @@ public:
 	void FindExtreme(double ext[]);
 	virtual void Draw(COpenGLDC* pDC, bool ShowTri);           // 绘图
 
-protected:
+public:
 	bool ReadBinarySTL(CFile& file);
 	bool ReadAsciiSTL(CStdioFile& file);
 	CPoint3D FindCord(CString str);
@@ -34,6 +34,8 @@ protected:
 	BOOL IsNumber(TCHAR ch); // 是否是数字
 	BOOL IsSpace(TCHAR ch);  // 是否是空格
 	LVertex* SearchPtInVertices(const CPoint3D& pt);//还是在半边结构的顶点数组中寻找这个点
+
+	void RoundFour(CTriangle* pTri);
 };
 
 

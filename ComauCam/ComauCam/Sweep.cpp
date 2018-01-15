@@ -14,14 +14,6 @@ SweepPoint::SweepPoint(double ix, double iy, double iz, bool left)
 SweepPoint::~SweepPoint()
 {
 }
-/*
-double SweepPoint::getLength(const SweepPoint* p1, const SweepPoint* p2)
-{
-	double length = 0;
-	length = sqrt((p1->x - p2->x)*(p1->x - p2->x)+ (p1->y - p2->y)*(p1->y - p2->y)+ (p1->z - p2->z)*(p1->z - p2->z));
-	return length;
-}
-*/
 
 Boundary::Boundary()
 {
@@ -38,7 +30,7 @@ Boundary::~Boundary()
 }
 
 
-CSweep::CSweep():distance(1)
+CSweep::CSweep():distance(10)
 {
 
 }
@@ -76,10 +68,13 @@ void CSweep::sweep()
 	{
 		//int height = m_Sweep_Layers[z]->z;
 
+		//删除共线的点，此算法需要优化
 		deletePoints(z);
 
+		//对轮廓点进行重排，先找到 y 最小的点集，再找到 x 最小的点，设为起始点，逆时针连成轮廓
 		rearrange(ext, z);
 
+		//分别找到 x 、y 方向的极值点
 		findExtreme(ext, z);
 
 		double x_min, x_max, y_min, y_max;	// 轮廓的极限尺寸
@@ -327,6 +322,8 @@ void CSweep::deletePoints(int z)
 		}
 		break;
 	}
+
+	//将删除共线点之后的点存回 m_Boundaries 中
 	int num = 0;
 
 	Boundary* tmp_boundary = new Boundary();
@@ -349,9 +346,9 @@ void CSweep::rearrange(int ext[], int z)
 
 	int szTmp = tmp_points.size();
 	CPoint3D* minpoint = tmp_points[0];
-	CPoint3D* maxpoint = tmp_points[0];
+//	CPoint3D* maxpoint = tmp_points[0];
 	ext[0] = 0;
-	ext[1] = 0;
+//	ext[1] = 0;
 	for (int j = 1; j < szTmp; j++)
 	{
 		if (minpoint->y > tmp_points[j]->y)
@@ -369,6 +366,7 @@ void CSweep::rearrange(int ext[], int z)
 		}
 		else {}
 	}
+	/*
 	for (int j = 1; j < szTmp; j++)
 	{
 		if (maxpoint->y < tmp_points[j]->y)
@@ -386,7 +384,7 @@ void CSweep::rearrange(int ext[], int z)
 		}
 		else {}
 	}
-
+	*/
 	int num = 0;
 	
 	Boundary* tmp_boundary = new Boundary();

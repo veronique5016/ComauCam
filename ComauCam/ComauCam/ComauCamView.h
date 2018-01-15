@@ -78,7 +78,7 @@ public:
 
 
 private:
-	CStringArray m_sIgesLines;
+//	CStringArray m_sIgesLines;
 	CTypedPtrArray<CObArray, CSTLModel*> m_entities;
 
 // 生成的消息映射函数

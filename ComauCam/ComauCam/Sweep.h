@@ -16,7 +16,6 @@ public:
 	SweepPoint(double ix, double iy, double iz, bool left);
 	~SweepPoint();
 	bool isLeft;
-//	double getLength(const SweepPoint* p1, const SweepPoint* p2);
 };
 
 struct Boundary
@@ -51,5 +50,5 @@ public:
 	vector<Layer*> m_Sweep_Layers;	//保存一份切平面，作为初始数据
 	vector<SweepPoint*> m_Routine;	//保存路径
 
-	double distance;
+	double distance;	//扫描路径间距
 };
