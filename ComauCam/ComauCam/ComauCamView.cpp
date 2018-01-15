@@ -652,7 +652,7 @@ void CComauCamView::OnSweep()
 			pSweep->sweep();
 			m_sweeps.push_back(pSweep);
 			m_bCanSweepDraw = true;
-			//		m_bCanSTLDraw = false;
+			m_bCanSTLDraw = false;
 			m_bCanSliceDraw = false;
 			Invalidate(TRUE);
 		}

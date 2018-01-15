@@ -1,4 +1,9 @@
 ﻿  Slice.cpp
-    正在创建库 E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.lib 和对象 E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.exp
-  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.exe
-  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.pdb (Partial PDB)
+c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(257): warning C4101: “max_dist”: 未引用的局部变量
+c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(255): warning C4101: “min_plane”: 未引用的局部变量
+c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(255): warning C4101: “max_plane”: 未引用的局部变量
+c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(257): warning C4101: “mid_dist”: 未引用的局部变量
+c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(257): warning C4101: “min_dist”: 未引用的局部变量
+c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(598): warning C4101: “lamda”: 未引用的局部变量
+  ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
+  ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)

@@ -12,6 +12,10 @@
 #define ZERO      0.0      
 #define ONE       1.0
 
+#define PLANE_PLUS 1
+#define PLANE_MINUS -1
+#define PLANE_ON 0
+
 #define  POINT_EQUAL_ERROR    0.0000000001
 
 
@@ -68,7 +72,7 @@ public:
 	CVector3D(const double& ix, const double& iy, const double& iz);     // 构造函数
 	CVector3D(const double* p);                         // 构造函数：用数组构造
 	CVector3D(const CVector3D& v);                        // 构造函数：用向量构造
-	CVector3D(const CPoint3D* p1, const CPoint3D* p2);
+	CVector3D(const CPoint3D p1, const CPoint3D p2);
 	virtual ~CVector3D();                         // 析构函数
 
 public:
@@ -256,5 +260,11 @@ double AFX_API_EXPORT GetDist2PtToSeg(const CPoint3D& pt,
 	const CPoint3D& ptE_seg);
 
 
-// 参数依次为平面法向量、平面上任一点、直线方向向量、直线上任一点
+// 求直线与平面交点，参数依次为平面法向量、平面上任一点、直线方向向量、直线上任一点
 CPoint3D AFX_API_EXPORT CalPlaneLineIntersectPoint(const CVector3D& planeVector, const CPoint3D& planePoint, const CVector3D& lineVector, const CPoint3D& linePoint);
+
+// 计算点到平面的距离
+double AFX_API_EXPORT CalPointtoPlane(const CPoint3D& point, const CVector3D& planeVector, const CPoint3D& planePoint);
+
+// 判断点和平面的关系，若点在平面法向量的正方向，则为真，
+int  AFX_API_EXPORT PointtoPlane(const CPoint3D& point, const CVector3D& planeVector, const CPoint3D& planePoint);

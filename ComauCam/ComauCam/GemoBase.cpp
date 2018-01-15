@@ -166,11 +166,11 @@ CVector3D::CVector3D(const CVector3D& v)
 	dy = v.dy;
 	dz = v.dz;
 }
-CVector3D::CVector3D(const CPoint3D* p1, const CPoint3D* p2)
+CVector3D::CVector3D(const CPoint3D p1, const CPoint3D p2)
 {
-	dx = p2->x - p1->x;
-	dy = p2->y - p1->y;
-	dz = p2->z - p1->z;
+	dx = p2.x - p1.x;
+	dy = p2.y - p1.y;
+	dz = p2.z - p1.z;
 }
 const CVector3D& CVector3D::operator=(const CVector3D& v)
 {
@@ -819,7 +819,7 @@ double GetDist2PtToSeg(const CPoint3D& pt,
 	return 0.0;
 }
 
-CPoint3D AFX_API_EXPORT CalPlaneLineIntersectPoint(const CVector3D& planeVector, const CPoint3D& planePoint, const CVector3D& lineVector, const CPoint3D& linePoint)
+CPoint3D CalPlaneLineIntersectPoint(const CVector3D& planeVector, const CPoint3D& planePoint, const CVector3D& lineVector, const CPoint3D& linePoint)
 {
 	CPoint3D ret;
 	double vp1, vp2, vp3, n1, n2, n3, v1, v2, v3, m1, m2, m3, t, vpt;
@@ -854,4 +854,30 @@ CPoint3D AFX_API_EXPORT CalPlaneLineIntersectPoint(const CVector3D& planeVector,
 	return ret;
 }
 
+double CalPointtoPlane(const CPoint3D& point, const CVector3D& planeVector, const CPoint3D& planePoint)
+{
+	double distance;
+//	double ptp;
+//	ptp = ::GetDistance(point, planePoint);
+	CVector3D v = CVector3D(planePoint, point);
+	distance = (v | planeVector) / planeVector.GetLength();
+	return distance;
+}
 
+int PointtoPlane(const CPoint3D& point, const CVector3D& planeVector, const CPoint3D& planePoint)
+{
+	double angle = 0;
+	CVector3D v = CVector3D(planePoint, point);
+	if ((v | planeVector) > 0)
+	{
+		return PLANE_PLUS;
+	}
+	else if ((v | planeVector) == 0)
+	{
+		return PLANE_ON;
+	}
+	else
+	{
+		return PLANE_MINUS;
+	}
+}
