@@ -1,7 +1,9 @@
-﻿  Slice.cpp
-  正在生成代码...
-  正在跳过...(未检测到相关更改)
-  ComauCamView.cpp
-  ComauCam.cpp
+﻿  Sweep.cpp
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(76): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(84): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(99): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(147): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(161): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(171): warning C4018: “<”: 有符号/无符号不匹配
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)

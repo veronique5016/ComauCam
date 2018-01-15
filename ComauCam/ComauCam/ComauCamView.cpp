@@ -19,6 +19,7 @@
 
 vector<CSTLModel*> models;
 vector<CSlice*> m_slices;
+vector<CSweep*> m_sweeps;
 // CComauCamView
 
 IMPLEMENT_DYNCREATE(CComauCamView, CView)
@@ -45,6 +46,7 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_Triangle_Frame, &CComauCamView::OnTriangleFrame)
 	ON_COMMAND(ID_Triangle_Face, &CComauCamView::OnTriangleFace)
 	ON_COMMAND(ID_Start_Slice, &CComauCamView::OnStartSlice)
+	ON_COMMAND(ID_Sweep, &CComauCamView::OnSweep)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -56,8 +58,10 @@ CComauCamView::CComauCamView()
 	m_STLModel = NULL;
 	m_ShowTriFace = false;
 	m_bCanSliceDraw = false;
+	m_bCanSweepDraw = false;
 	m_STLModel = NULL;
 	m_slice = NULL;
+	m_sweep = NULL;
 }
 
 CComauCamView::~CComauCamView()
@@ -331,6 +335,10 @@ BOOL CComauCamView::RenderScene()
 	if (m_bCanSliceDraw)
 	{
 		m_slices[0]->drawpolyline();
+	}
+	if (m_bCanSweepDraw)
+	{
+		m_sweeps[0]->drawRoute();
 	}
 	// ondeletemodel 释放 DC 
 	::glPopMatrix();
@@ -616,5 +624,24 @@ void CComauCamView::OnStartSlice()
 		m_slices.push_back(pSlice);
 		m_bCanSliceDraw = true;
 		Invalidate(TRUE);
+	}
+}
+
+
+void CComauCamView::OnSweep()
+{
+	// TODO: 在此添加命令处理程序代码
+	int szSlice = m_slices.size();
+	for (int i = 0; i < szSlice; i++)
+	{
+		CSweep* pSweep = new CSweep();
+		pSweep->loadSliceModel(m_slices[i]);
+		pSweep->sweep();
+//		pSweep->drawRoute();
+		m_sweeps.push_back(pSweep);
+		m_bCanSweepDraw = true;
+		Invalidate(TRUE);
+		m_bCanSTLDraw = false;
+		RenderScene();
 	}
 }

@@ -7,6 +7,7 @@
 #include "OpenGL.h"
 #include "STLModel.h"
 #include "Slice.h"
+#include "Sweep.h"
 
 class CComauCamView : public CView
 {
@@ -19,9 +20,11 @@ public:
 	CComauCamDoc* GetDocument() const;
 	CSTLModel* m_STLModel;
 	CSlice* m_slice;
+	CSweep* m_sweep;
 	bool m_bCanSTLDraw;
 	bool m_ShowTriFace;
 	bool m_bCanSliceDraw;
+	bool m_bCanSweepDraw;
 
 // 操作
 public:
@@ -98,6 +101,7 @@ public:
 	afx_msg void OnTriangleFrame();
 	afx_msg void OnTriangleFace();
 	afx_msg void OnStartSlice();
+	afx_msg void OnSweep();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

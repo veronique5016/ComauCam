@@ -166,7 +166,12 @@ CVector3D::CVector3D(const CVector3D& v)
 	dy = v.dy;
 	dz = v.dz;
 }
-
+CVector3D::CVector3D(const CPoint3D* p1, const CPoint3D* p2)
+{
+	dx = p2->x - p1->x;
+	dy = p2->y - p1->y;
+	dz = p2->z - p1->z;
+}
 const CVector3D& CVector3D::operator=(const CVector3D& v)
 {
 	dx = v.dx;
@@ -622,6 +627,14 @@ double GetDistance(const CPoint3D& pt1, const CPoint3D& pt2)
 BOOL IsParallel(const CVector3D& v1, const CVector3D& v2)
 {
 	if (0.0 == (v1*v2).dz)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL IsParallel(const CVector3D* v1, const CVector3D* v2)
+{
+	if (0.0 == (v1->dx*v2->dy - v1->dy*v2->dx))
 		return TRUE;
 	else
 		return FALSE;

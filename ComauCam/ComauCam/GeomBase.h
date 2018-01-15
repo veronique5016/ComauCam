@@ -65,6 +65,7 @@ public:
 	CVector3D(const double& ix, const double& iy, const double& iz);     // 构造函数
 	CVector3D(const double* p);                         // 构造函数：用数组构造
 	CVector3D(const CVector3D& v);                        // 构造函数：用向量构造
+	CVector3D(const CPoint3D* p1, const CPoint3D* p2);
 	virtual ~CVector3D();                         // 析构函数
 
 public:
@@ -226,6 +227,7 @@ double AFX_API_EXPORT GetAngle(CVector3D v1, CVector3D v2);
 double AFX_API_EXPORT Angle(const CVector3D& v1, const CVector3D& v2); // v1, v2 has been normlized
 double AFX_API_EXPORT GetDistance(const CPoint3D& pt1, const CPoint3D& pt2);
 BOOL   AFX_API_EXPORT IsParallel(const CVector3D& v1, const CVector3D& v2);
+BOOL   AFX_API_EXPORT IsParallel(const CVector3D* v1, const CVector3D* v2);
 BOOL   AFX_API_EXPORT IsOrhogonal(const CVector3D& v1, const CVector3D& v2);
 double AFX_API_EXPORT Round(const double& d, const int& iHowManyAfterDot = 5); // 保留小数点后三位
 
