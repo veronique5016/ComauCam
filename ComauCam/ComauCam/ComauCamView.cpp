@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_Triangle_Face, &CComauCamView::OnTriangleFace)
 	ON_COMMAND(ID_Start_Slice, &CComauCamView::OnStartSlice)
 	ON_COMMAND(ID_Sweep, &CComauCamView::OnSweep)
+	ON_COMMAND(ID_WriteGCode, &CComauCamView::OnWritegcode)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -620,7 +621,6 @@ void CComauCamView::OnStartSlice()
 		CSlice* pSlice = new CSlice();
 		pSlice->LoadSTLModel(models[i]);
 		pSlice->slice(models[i]);
-//		pSlice->drawpolyline();
 		m_slices.push_back(pSlice);
 		m_bCanSliceDraw = true;
 		Invalidate(TRUE);
@@ -637,11 +637,31 @@ void CComauCamView::OnSweep()
 		CSweep* pSweep = new CSweep();
 		pSweep->loadSliceModel(m_slices[i]);
 		pSweep->sweep();
-//		pSweep->drawRoute();
 		m_sweeps.push_back(pSweep);
 		m_bCanSweepDraw = true;
-		Invalidate(TRUE);
 		m_bCanSTLDraw = false;
-		RenderScene();
+		m_bCanSliceDraw = false;
+		Invalidate(TRUE);
 	}
+}
+
+
+void CComauCamView::OnWritegcode()
+{
+	// TODO: 在此添加命令处理程序代码
+	int sz = m_sweeps.size();
+	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
+	CFileDialog fileDlg(FALSE, _T("doc"), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
+	CString strFilePath;
+
+	if (IDOK == fileDlg.DoModal())
+	{
+		strFilePath = fileDlg.GetPathName();
+		for (int i = 0; i < sz; i++)
+		{
+			m_sweeps[i]->writeGCode(strFilePath);
+		}
+		SetDlgItemText(ID_WriteGCode, strFilePath);
+	}
+
 }

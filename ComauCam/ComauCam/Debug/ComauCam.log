@@ -1,9 +1,10 @@
 ﻿  Sweep.cpp
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(76): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(84): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(99): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(147): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(161): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(171): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(59): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(108): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(116): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(131): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(193): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(208): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(218): warning C4018: “<”: 有符号/无符号不匹配
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)

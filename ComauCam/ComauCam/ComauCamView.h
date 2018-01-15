@@ -102,6 +102,7 @@ public:
 	afx_msg void OnTriangleFace();
 	afx_msg void OnStartSlice();
 	afx_msg void OnSweep();
+	afx_msg void OnWritegcode();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

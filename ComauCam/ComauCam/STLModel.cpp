@@ -122,7 +122,6 @@ bool CSTLModel::ReadAsciiSTL(CStdioFile& file)
 
 void CSTLModel::WriteSTL(CString sFilePath)
 {
-
 	CStdioFile fileout;
 	//CStdioFile file (sFilePath,CFile::modeCreate | CFile::modeWrite);
 	if (fileout.Open(sFilePath, CFile::modeCreate | CFile::modeWrite))

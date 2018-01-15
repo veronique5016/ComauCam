@@ -46,7 +46,7 @@ void CSlice::slice(CSTLModel* model)
 	z_Min = ex[4];
 	z_Max = ex[5];
 	z = z_Min + 0.1;  //第一个切片层
-	dz = 3;   //层高
+	dz = 0.2;   //层高
 	while (true)
 	{
 		getpolylinePoints(z);
@@ -143,7 +143,7 @@ void CSlice::drawpolyline()
 		for (int j = 0; j<szpolyline; j++)
 		{
 			int szPoint = m_layers[i]->m_Polylines[j]->m_Linkpoints.size();
-			for (int k = 0; k<szPoint - 1; k++)
+			for (int k = 0; k<(szPoint-1); k++)
 			{
 				CPoint3D* point1 = new CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k]));
 				CPoint3D* point2 = new CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1]));
