@@ -5,7 +5,7 @@
 
 using namespace std;
 
-struct Layer;
+//struct SliceLayer;
 
 struct LPoint : public CPoint3D
 {
@@ -16,42 +16,101 @@ public:
 	LPoint(const CPoint3D& pt);
 	LPoint(double x, double y, double z);
 
+	LPoint operator+=(const CVector3D& v);                 // 点和向量加等
 public:
-	LPoint *p_prev, *p_next;
+	//LPoint *p_prev, *p_next;
 };
 
-struct LSegment
+struct Segment
 {
 public:
-	LSegment();
-	LSegment(const LSegment& lsegment);
-	LSegment(LPoint* startpoint, LPoint* endpoint, LTriangle* tri);
-	~LSegment();
+	Segment();
+	Segment(const Segment& lsegment);
+	Segment(LPoint startpoint, LPoint endpoint, LTriangle* tri);
+	~Segment();
 
 public:
-	LPoint *pstart, *pend;
+	LPoint pstart, pend;
 	LTriangle* triangle;
+	CVector3D segment_vec;
 };
 
-struct PolyLine
+struct Boundary
 {
 public:
-	PolyLine();
-	~PolyLine();
+	Boundary();
+	~Boundary();
 
 public:
-	vector<LPoint*> m_Linkpoints;
-	vector<LSegment*> m_Linklines;
+//	vector<LPoint*> m_Linkpoints;
+	vector<Segment*> m_segments;
 };
 
-struct Layer
+//切片平面
+struct SliceLayer
 {
 public:
-	Layer();
-	~Layer();
+	SliceLayer();
+	~SliceLayer();
 
 public:
 	CPoint3D layerPoint;
 	CVector3D layer_coordinate[3];
-	vector<PolyLine*> m_Polylines;   //截交得到的轮廓，不经修改 size = 1
+	vector<Boundary*> m_Boundaries;   //截交得到的轮廓，不经修改 size = 1, 如果轮廓内部有空洞或其他情况，则 size 会增加
 };
+
+//扫描路径与轮廓相交得到的交点
+struct SweepPoint : public CPoint3D
+{
+public:
+	SweepPoint();
+	SweepPoint(double ix, double iy, double iz, bool left);
+	~SweepPoint();
+	bool isLeft;
+};
+
+struct SweepLine
+{
+public:
+	SweepLine();
+	~SweepLine();
+
+public:
+	CPoint3D line_point;
+	CVector3D line_vec;
+	CVector3D line_normal;
+};
+
+struct SweepLayer : public SliceLayer
+{
+public:
+	SweepLayer();
+	SweepLayer(const SliceLayer& sliceLayer);
+	~SweepLayer();
+
+public:
+	vector<SweepLine*> m_sweeplines;
+	vector<Boundary*> offsetBoundaries;
+	vector<CPoint3D*> m_Route;
+};
+
+/*
+struct Boundary
+{
+public:
+Boundary();
+~Boundary();
+vector<PolyLine*> m_Boundary;
+};
+*/
+//用于轮廓偏置
+/*
+struct CLine
+{
+public:
+CLine();
+~CLine();
+CPoint3D line_point1;
+CPoint3D line_point2;
+CVector3D line_vec;
+};*/

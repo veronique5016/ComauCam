@@ -31,24 +31,25 @@ public:
 	CVector3D getTurnVec();
 	void begin3DSlice(double z_min, double z_max, double& z, double dz);
 	void begin5DSlice(double z_min, double z_max, double& z, double dz);
-	void getPolylinePoints(Layer* layer);
-	void calIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, LPoint* point);	// 求轮廓点
-	void getInterSectEdge(Layer* layer, LTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
+	void getBoundaryPoints(SliceLayer* layer);
+	void calIntersectPoint(SliceLayer* layer, LEdge * edge, LTriangle*pCurFace, LPoint* point);	// 求轮廓点
+	void getInterSectEdge(SliceLayer* layer, LTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
 
 public:
-	void judgeFaceType(Layer* layer, LTriangle* pCurFace);    //判断与切片平面相交面片的类型
-	void judgeOtherLine(Layer* layer, LTriangle* pCurFace);   //判断另一条相交线
+	void judgeFaceType(SliceLayer* layer, LTriangle* pCurFace);    //判断与切片平面相交面片的类型
+	void judgeOtherLine(SliceLayer* layer, LTriangle* pCurFace);   //判断另一条相交线
 	double compareThreeNumber(double v1, double v2, double v3, int type);
-	bool isBoundaryCCW(Layer* layer);	//函数存在很大问题，当向量的某个分量的值非常小时，可能会出现一些莫名其妙的问题 
-	void makeBoundaryCCW(Layer* layer);
-	void deletePoints(Layer* layer);
+	bool isBoundaryCCW(SliceLayer* layer);	//函数存在很大问题，当向量的某个分量的值非常小时，可能会出现一些莫名其妙的问题 
+	void makeBoundaryCCW(SliceLayer* layer);
+	void deletePoints(SliceLayer* layer);
 	void drawLayer(bool showPolygon, int start, int end);
 	bool lineNeedSupport();
 
 public:
 	vector<LEdge*> m_Slice_edge;     //存储相交边
-	vector<Layer*> m_layers;         //存储片层
+	vector<SliceLayer*> m_layers;         //存储片层
 	vector<LTriangle*> m_tris_slice;   //保存一份三角面片，作为初始数据
+
 	vector<LTriangle*> z_tris;
 
 	double height;

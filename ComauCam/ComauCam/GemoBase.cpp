@@ -13,7 +13,7 @@
 CPoint3D::CPoint3D()
 {
 	x = y = z = 0;
-	p_prev = p_next = NULL;
+	//p_prev = p_next = NULL;
 }
 
 CPoint3D::CPoint3D(const double& ix, const double& iy, const double& iz)
@@ -52,6 +52,7 @@ const CPoint3D& CPoint3D::operator=(const CPoint3D& pt)
 
 CPoint3D CPoint3D::operator+(const CVector3D& v) const
 {
+	//return CPoint3D(x + CPoint3D(v.dx,0,0).x, y + CPoint3D(0, v.dy, 0).y, z + CPoint3D(0, 0, v.dz).z);
 	return CPoint3D(x + v.dx, y + v.dy, z + v.dz);
 }
 

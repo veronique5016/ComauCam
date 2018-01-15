@@ -52,7 +52,7 @@ public:     ////// operator
 	void operator*=(const CMatrix3D& matrix);            // µ„≥À“‘æÿ’Û   
 
 public:
-	CPoint3D *p_prev, *p_next;
+	//CPoint3D *p_prev, *p_next;
 
 
 public:
