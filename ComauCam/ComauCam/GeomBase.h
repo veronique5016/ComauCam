@@ -27,7 +27,7 @@ class CMatrix3D;    ////////////////////////////////////////////////
 					//////////////////////////////////////////////////////////////////////////
 					// 点
 					//////////////////////////////////////////////////////////////////////////
-class  AFX_CLASS_EXPORT CPoint3D :public CObject
+class  AFX_CLASS_EXPORT CPoint3D : public CObject
 {
 public:     ////// constructor
 	CPoint3D();                                  // 构造函数：构造零点                                           
@@ -65,7 +65,7 @@ typedef CTypedPtrArray<CObArray, CPoint3D*> Point3DAry;
 //////////////////////////////////////////////////////////////////////////
 // 向量
 //////////////////////////////////////////////////////////////////////////
-class AFX_CLASS_EXPORT CVector3D :public CObject
+class AFX_CLASS_EXPORT CVector3D : public CObject
 {
 public:
 	CVector3D();                                  // 构造函数，构造零向量
@@ -110,6 +110,9 @@ public:
 
 	BOOL IsZeroLength() const;                           // 判断向量模是不是零
 
+	void ProjectionX0Y(CVector3D v);
+	double GetC_Angle(CVector3D v1, CVector3D v_y);
+
 public:
 	double dx;
 	double dy;
@@ -121,7 +124,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // 矩阵
 //////////////////////////////////////////////////////////////////////////
-class AFX_CLASS_EXPORT CMatrix3D :public CObject
+class AFX_CLASS_EXPORT CMatrix3D : public CObject
 {
 public:
 	CMatrix3D();                                         // 构造函数，构造单位矩阵

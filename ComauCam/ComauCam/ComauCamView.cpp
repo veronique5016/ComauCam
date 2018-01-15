@@ -45,6 +45,7 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_WriteGCode, &CComauCamView::OnWritegcode)
 	ON_COMMAND(ID_DISPLAYMODE, &CComauCamView::OnDisplaymode)
 	ON_COMMAND(ID_SHOWSELECTEDLAYER, &CComauCamView::OnShowselectedlayer)
+	ON_COMMAND(ID_FIVEAXISGCODE, &CComauCamView::OnFiveaxisgcode)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -341,7 +342,7 @@ BOOL CComauCamView::RenderScene()
 	{
 		for (unsigned int i = 0; i < m_sweeps.size(); i++)
 		{
-			m_sweeps[0]->drawRoute();
+			m_sweeps[0]->drawRoute(startLayer, endLayer);
 		}
 	}
 
@@ -423,7 +424,7 @@ void CComauCamView::OnStlopen()
 		stlModel->ReadSTL(str);
 		m_bCanSTLDraw = true;
 		m_ShowTriFace = true;
-		
+		stlModel->moveModel(CVector3D(-15,-15,0));
 		m_models.push_back(stlModel);
 
 		Invalidate(TRUE);
@@ -668,9 +669,26 @@ void CComauCamView::OnWritegcode()
 		}
 		SetDlgItemText(ID_WriteGCode, strFilePath);
 	}
-
 }
 
+void CComauCamView::OnFiveaxisgcode()
+{
+	// TODO: 在此添加命令处理程序代码
+	unsigned int sz = m_sweeps.size();
+	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
+	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
+	CString strFilePath;
+
+	if (IDOK == fileDlg.DoModal())
+	{
+		strFilePath = fileDlg.GetPathName();
+		for (unsigned int i = 0; i < sz; i++)
+		{
+			m_sweeps[i]->writeFiveAxisGCode(strFilePath);
+		}
+		SetDlgItemText(ID_WriteGCode, strFilePath);
+	}
+}
 
 void CComauCamView::OnDisplaymode()
 {
@@ -711,3 +729,5 @@ void CComauCamView::OnShowselectedlayer()
 		Invalidate(TRUE);
 	}
 }
+
+

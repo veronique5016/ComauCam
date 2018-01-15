@@ -353,6 +353,15 @@ void CSTLModel::Draw(COpenGLDC* pDC, bool ShowTri)
 	}
 }
 
+void CSTLModel::moveModel(CVector3D vec)
+{
+	unsigned int sz = m_tris.GetSize();
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		m_tris[i]->Move(vec);
+	}
+}
+
 void CSTLModel::Topologize()	// 建立拓扑关系
 {
 	vector<LVertex> tmp_vertices;

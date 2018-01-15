@@ -114,30 +114,6 @@ SweepLine::~SweepLine()
 {
 }
 
-/*
-CLine::CLine()
-{
-}
-CLine::~CLine()
-{
-}*/
-
-/*
-Boundary::Boundary()
-{
-}
-Boundary::~Boundary()
-{
-	unsigned int sz = m_Boundary.size();
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		delete m_Boundary[i];
-		m_Boundary[i] = NULL;
-	}
-	m_Boundary.clear();
-}
-*/
-
 SweepLayer::SweepLayer()
 {
 }
@@ -151,6 +127,36 @@ SweepLayer::SweepLayer(const SliceLayer & sliceLayer)
 	for (unsigned int i = 0; i < sz; i++)
 	{
 		m_Boundaries.push_back(sliceLayer.m_Boundaries[i]);
+	}
+}
+SweepLayer::SweepLayer(const SweepLayer & sweepLayer)
+{
+	layerPoint = sweepLayer.layerPoint;
+	layer_coordinate[0] = sweepLayer.layer_coordinate[0];
+	layer_coordinate[1] = sweepLayer.layer_coordinate[1];
+	layer_coordinate[2] = sweepLayer.layer_coordinate[2];
+	unsigned int sz = sweepLayer.m_Boundaries.size();
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		m_Boundaries.push_back(sweepLayer.m_Boundaries[i]);
+	}
+
+	unsigned int szL = sweepLayer.m_sweeplines.size();
+	for (unsigned int i = 0; i < szL; i++)
+	{
+		m_sweeplines.push_back(sweepLayer.m_sweeplines[i]);
+	}
+
+	unsigned int szP = sweepLayer.m_Route.size();
+	for (unsigned int i = 0; i < szP; i++)
+	{
+		m_Route.push_back(new CPoint3D(*sweepLayer.m_Route[i]));
+	}
+
+	unsigned int szT = sweepLayer.m_turnRoute.size();
+	for (unsigned int i = 0; i < szT; i++)
+	{
+		m_turnRoute.push_back(new FPoint(*sweepLayer.m_turnRoute[i]));
 	}
 }
 SweepLayer::~SweepLayer()
@@ -178,4 +184,47 @@ SweepLayer::~SweepLayer()
 		m_sweeplines[i] = NULL;
 	}
 	m_sweeplines.clear();
+
+	unsigned int szT = m_turnRoute.size();
+	for (unsigned int i = 0; i < szT; i++)
+	{
+		delete m_turnRoute[i];
+		m_turnRoute[i] = NULL;
+	}
+	m_turnRoute.clear();
+}
+
+FPoint::FPoint()
+{
+}
+
+FPoint::~FPoint()
+{
+}
+
+FPoint::FPoint(const CPoint3D & pt, double a, double c)
+{
+	x = pt.x;
+	y = pt.y;
+	z = pt.z;
+	A = a;
+	C = c;
+}
+
+FPoint::FPoint(const CPoint3D & pt)
+{
+	x = pt.x;
+	y = pt.y;
+	z = pt.z;
+	A = 0;
+	C = 0;
+}
+
+FPoint::FPoint(const FPoint & pt)
+{
+	x = pt.x;
+	y = pt.y;
+	z = pt.z;
+	A = pt.A;
+	C = pt.C;
 }

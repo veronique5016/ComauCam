@@ -15,6 +15,7 @@ c:\users\veronique\desktop\comaucam\comaucam\debug\mainfrm.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\opengl.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\outputwnd.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\propertieswnd.obj
+c:\users\veronique\desktop\comaucam\comaucam\debug\slice.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\slicedlg.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\stlmodel.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\sweep.obj
@@ -22,7 +23,6 @@ c:\users\veronique\desktop\comaucam\comaucam\debug\sweepdlg.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\triangle.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\viewtree.obj
 c:\users\veronique\desktop\comaucam\comaucam\debug\classview.obj
-c:\users\veronique\desktop\comaucam\comaucam\debug\slice.obj
 c:\users\veronique\desktop\comaucam\debug\comaucam.lib
 c:\users\veronique\desktop\comaucam\debug\comaucam.exp
 c:\users\veronique\desktop\comaucam\debug\comaucam.ilk

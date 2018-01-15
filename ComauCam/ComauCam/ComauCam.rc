@@ -221,6 +221,7 @@ BEGIN
         MENUITEM "开始切片",                        ID_Start_Slice
         MENUITEM "生成路径",                        ID_Sweep
         MENUITEM "生成G代码",                       ID_WriteGCode
+        MENUITEM "生成五轴G代码",                     ID_FIVEAXISGCODE
     END
     POPUP "视图(&V)"
     BEGIN

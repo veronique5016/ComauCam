@@ -150,7 +150,6 @@ void CSlice::begin3DSlice(double z_min, double z_max, double &z, double dz)
 	while (true)
 	{
 		SliceLayer* tmp_layer = new SliceLayer();
-		CPoint3D tmp_layer_point = CPoint3D(0, 0, z);
 
 		tmp_layer->layerPoint = CPoint3D(0, 0, z);
 
@@ -165,8 +164,23 @@ void CSlice::begin3DSlice(double z_min, double z_max, double &z, double dz)
 		}
 		deletePoints(m_layers[m_layers.size() - 1]);
 
-		if (z >= (z_max - dz))
+		if (z >= (z_max -dz) )
 		{
+			SliceLayer* tmp_layer = new SliceLayer();
+			CPoint3D tmp_layer_point = CPoint3D(0, 0, z_max);
+
+			tmp_layer->layerPoint = CPoint3D(0, 0, z_max);
+
+			m_layers.push_back(tmp_layer);
+
+			getBoundaryPoints(m_layers[m_layers.size() - 1]);
+
+			bool isCCW = isBoundaryCCW(m_layers[m_layers.size() - 1]);
+			if (!isCCW)
+			{
+				makeBoundaryCCW(m_layers[m_layers.size() - 1]);
+			}
+			deletePoints(m_layers[m_layers.size() - 1]);
 			break;
 		}
 		z += dz;
@@ -181,7 +195,7 @@ void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
 	while (true)
 	{
 		SliceLayer* tmp_layer = new SliceLayer();
-		//tmp_layer_point = CPoint3D(0, 0, z);
+
 		tmp_layer->layerPoint = CPoint3D(0, 0, z);
 
 		m_layers.push_back(tmp_layer);

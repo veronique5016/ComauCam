@@ -21,6 +21,20 @@ public:
 	//LPoint *p_prev, *p_next;
 };
 
+struct FPoint : public CPoint3D
+{
+public:
+	FPoint();
+	~FPoint();
+	FPoint(const CPoint3D& pt, double a, double c);
+	FPoint(const CPoint3D& pt);
+	FPoint(const FPoint& pt);
+
+public:
+	double A;
+	double C;
+};
+
 struct Segment
 {
 public:
@@ -86,12 +100,14 @@ struct SweepLayer : public SliceLayer
 public:
 	SweepLayer();
 	SweepLayer(const SliceLayer& sliceLayer);
+	SweepLayer(const SweepLayer& sweepLayer);
 	~SweepLayer();
 
 public:
 	vector<SweepLine*> m_sweeplines;
 	vector<Boundary*> offsetBoundaries;
 	vector<CPoint3D*> m_Route;
+	vector<FPoint*> m_turnRoute;
 };
 
 /*

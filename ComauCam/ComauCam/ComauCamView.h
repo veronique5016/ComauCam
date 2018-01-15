@@ -112,6 +112,7 @@ public:
 	afx_msg void OnWritegcode();
 	afx_msg void OnDisplaymode();
 	afx_msg void OnShowselectedlayer();
+	afx_msg void OnFiveaxisgcode();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

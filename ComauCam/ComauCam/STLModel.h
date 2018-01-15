@@ -25,6 +25,7 @@ public:
 	void Topologize();
 	void FindExtreme(double ext[]);
 	virtual void Draw(COpenGLDC* pDC, bool ShowTri);           // »æÍ¼
+	void moveModel(CVector3D vec);
 
 public:
 	bool ReadBinarySTL(CFile& file);

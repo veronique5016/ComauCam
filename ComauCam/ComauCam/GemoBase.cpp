@@ -353,6 +353,32 @@ BOOL CVector3D::IsZeroLength() const
 	}
 }
 
+void CVector3D::ProjectionX0Y(CVector3D v)
+{
+	dx = v.dx;
+	dy = v.dy;
+	dz = 0;
+}
+
+double CVector3D::GetC_Angle(CVector3D v1, CVector3D v_y)
+{
+	v1.Normalize();
+	v_y.Normalize();
+	double dotProduct = v1 | v_y;
+	if (dotProduct>1)
+		dotProduct = 1;
+	if (dotProduct<-1)
+		dotProduct = -1;
+	if (v1.dx <= 0)
+	{
+		return acos(v1 | v_y);
+	}
+	if (v1.dx > 0)
+	{
+		return 2 * PI - acos(v1 | v_y);
+	}
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // ¾ØÕó
@@ -599,7 +625,6 @@ CMatrix3D CMatrix3D::CreateTransferMatrix(const CVector3D& v)
 	m.A[3][2] = v.dz;
 	return m;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Êä³öº¯Êý
@@ -858,8 +883,8 @@ CPoint3D CalPlaneLineIntersectPoint(const CVector3D& planeVector, const CPoint3D
 double CalPointtoPlane(const CPoint3D& point, const CVector3D& planeVector, const CPoint3D& planePoint)
 {
 	double distance;
-//	double ptp;
-//	ptp = ::GetDistance(point, planePoint);
+	//	double ptp;
+	//	ptp = ::GetDistance(point, planePoint);
 	CVector3D v = CVector3D(planePoint, point);
 	distance = (v | planeVector) / planeVector.GetLength();
 	return distance;
