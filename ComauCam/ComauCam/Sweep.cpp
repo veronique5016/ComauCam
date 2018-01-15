@@ -50,7 +50,6 @@ void CSweep::sweep()
 			m_sweep_layers[i]->m_Route.push_back(new CPoint3D(m_sweep_layers[i]->m_Boundaries[0]->m_segments[j]->pend));
 		}
 
-
 		//变法向的层切面因为太小所以不切，只走轮廓
 		if (m_sweep_layers[i]->layer_coordinate[2].dz == 1.0)
 		{
@@ -67,7 +66,6 @@ void CSweep::sweep()
 					x_min = m_sweep_layers[i]->offsetBoundaries[0]->m_segments[j]->pend.x;
 					z = m_sweep_layers[i]->offsetBoundaries[0]->m_segments[j]->pend.z;
 				}
-
 			}
 
 			//给第一条扫描线赋初值
@@ -83,7 +81,15 @@ void CSweep::sweep()
 				yaxisSweep(m_sweep_layers[i]);
 
 				if (x >= (x_max - distance))
+				{  
+					/*SweepLine* tmp_sweep = new SweepLine();
+					tmp_sweep->line_point = CPoint3D(x_max, 0, z);
+					tmp_sweep->line_vec = CVector3D(0, 1, 0);
+					tmp_sweep->line_normal = m_sweep_layers[i]->layer_coordinate[2];
+					m_sweep_layers[i]->m_sweeplines.push_back(tmp_sweep);
+					yaxisSweep(m_sweep_layers[i]);*/
 					break;
+				}
 				x = x + m_sweep_layers[i]->layer_coordinate[0].dx*distance;
 				z = z + m_sweep_layers[i]->layer_coordinate[0].dz*distance;
 			}
@@ -91,14 +97,15 @@ void CSweep::sweep()
 		else
 		{
 			unsigned szT = m_sweep_layers[i]->m_Route.size();
-			for (unsigned int j = 1; j < szT + 1; j++)
+			for (unsigned int j = 0; j < szT; j++)
 			{
-				m_sweep_layers[i]->m_turnRoute.push_back(new FPoint(*m_sweep_layers[i]->m_Route[j%szT]));
+				m_sweep_layers[i]->m_turnRoute.push_back(new FPoint(*m_sweep_layers[i]->m_Route[(j+1)%szT]));
 			}
 			cal_AC_angle(m_sweep_layers[i]);
 			calFiveAxisValue(m_sweep_layers[i]);
 		}
 	}
+	int test = 0;
 }
 
 void CSweep::yaxisSweep(SweepLayer * layer)
@@ -218,166 +225,6 @@ void CSweep::drawRoute(int begin, int end)
 	}
 }
 
-void CSweep::writeGCode(CString sFilePath)
-{
-	CStdioFile fileout;
-	if (fileout.Open(sFilePath, CFile::modeCreate | CFile::modeWrite))
-	{
-		fileout.WriteString(_T("G28 ;\n"));
-		fileout.WriteString(_T("G1 Z15 F1500 ;\n"));
-		fileout.WriteString(_T("M107 ;\n"));
-		fileout.WriteString(_T("G90 ;\n"));
-		fileout.WriteString(_T("M82 ;\n"));
-		fileout.WriteString(_T("M190 S50 ;\n"));
-		fileout.WriteString(_T("M104 T0 S210 ;\n"));
-		fileout.WriteString(_T("G92 E0 ;\n"));
-		fileout.WriteString(_T("M109 T0 S210 ;\n"));
-		fileout.WriteString(_T("M107 ;\n"));
-		CString str;
-		double length = 0.0000;
-		double volumn = 0.0000;
-		unsigned int szLayer = m_sweep_layers.size();
-		for (unsigned int i = 0; i < szLayer; i++)
-		{
-			str.Format(_T("G0 X%.3f Y%.3f z%.3f\n"),
-				m_sweep_layers[i]->m_Route[0]->x, 
-				m_sweep_layers[i]->m_Route[0]->y, 
-				m_sweep_layers[i]->m_Route[0]->z);
-			fileout.WriteString(str);
-			unsigned int sz = m_sweep_layers[i]->m_Route.size();
-			
-			for (unsigned int j = 1; j < sz; j++)
-			{
-				length = GetDistance(*m_sweep_layers[i]->m_Route[j - 1], *m_sweep_layers[i]->m_Route[j]);
-				volumn += length * 0.2;
-				str.Format(_T("G1 X%.3f Y%.3f Z%.3f i%.3f j%.3f k%.3f E%.5f\n"),
-					m_sweep_layers[i]->m_Route[j]->x, m_sweep_layers[i]->m_Route[j]->y, m_sweep_layers[i]->m_Route[j]->z, 
-					m_sweep_layers[i]->layer_coordinate[2].dx,
-					m_sweep_layers[i]->layer_coordinate[2].dy,
-					m_sweep_layers[i]->layer_coordinate[2].dz,
-					(volumn / 6.0));
-				fileout.WriteString(str);
-			}
-			if (i != szLayer - 1)
-			{
-				str.Format(_T("G0 X%.3f Y%.3f Z%.3f i%.3f j%.3f k%.3f\n"),
-					m_sweep_layers[i + 1]->m_Route[0]->x, m_sweep_layers[i]->m_Route[0]->y, m_sweep_layers[i]->m_Route[0]->z,
-					m_sweep_layers[i]->layer_coordinate[2].dx,
-					m_sweep_layers[i]->layer_coordinate[2].dy,
-					m_sweep_layers[i]->layer_coordinate[2].dz);
-					fileout.WriteString(str);
-			}
-		}
-		fileout.WriteString(_T("M107 ;\n"));
-		fileout.WriteString(_T("G91 ;\n"));
-		fileout.WriteString(_T("T0 ;\n"));
-		fileout.WriteString(_T("G1 E-1 ;\n"));
-		fileout.WriteString(_T("M104 T0 S0 ;\n"));
-		fileout.WriteString(_T("G90 ;\n"));
-		fileout.WriteString(_T("G92 E0 ;\n"));
-		fileout.WriteString(_T("M140 S0 ;\n"));
-		fileout.WriteString(_T("M84 ;\n"));
-		fileout.Close();
-	}
-}
-
-void CSweep::writeFiveAxisGCode(CString sFilePath)
-{
-	CStdioFile fileout;
-	if (fileout.Open(sFilePath, CFile::modeCreate | CFile::modeWrite))
-	{
-		fileout.WriteString(_T("G28 ;\n"));
-		fileout.WriteString(_T("G280 ;\n"));
-		fileout.WriteString(_T("G1 Z300 F2000 ;\n"));
-		fileout.WriteString(_T("M107 ;\n"));
-		fileout.WriteString(_T("G90 ;\n"));
-		fileout.WriteString(_T("M82 ;\n"));
-		fileout.WriteString(_T("M104 T0 S210 ;\n"));
-		fileout.WriteString(_T("G92 E0 ;\n"));
-		fileout.WriteString(_T("M109 T0 S210 ;\n"));
-		fileout.WriteString(_T("G1 X12.85 Y117.03 Z167.2 ;\n")); 
-		fileout.WriteString(_T("G92 X0 Y0 Z0 ;\n"));
-		fileout.WriteString(_T("M107 ;\n"));
-		CString str;
-		double length = 0.0000;
-		double volumn = 0.0000;
-		unsigned int szLayer = m_sweep_layers.size();
-		for (unsigned int i = 0; i < szLayer; i++)
-		{
-			if (m_sweep_layers[i]->layer_coordinate[2].dz == 1.0)
-			{
-				str.Format(_T("G0 X%.3f Y%.3f Z%.3f\n"),
-					m_sweep_layers[i]->m_Route[0]->x,
-					m_sweep_layers[i]->m_Route[0]->y,
-					m_sweep_layers[i]->m_Route[0]->z);
-				fileout.WriteString(str);
-				unsigned int sz = m_sweep_layers[i]->m_Route.size();
-
-				for (unsigned int j = 1; j < sz; j++)
-				{
-					length = GetDistance(*m_sweep_layers[i]->m_Route[j - 1], *m_sweep_layers[i]->m_Route[j]);
-					volumn += length * 0.2;
-					str.Format(_T("G1 X%.3f Y%.3f Z%.3f E%.5f\n"),
-						m_sweep_layers[i]->m_Route[j]->x, m_sweep_layers[i]->m_Route[j]->y, m_sweep_layers[i]->m_Route[j]->z,
-						(volumn / 6.0));
-					fileout.WriteString(str);
-				}
-/*				if (i != szLayer - 1)
-				{
-					str.Format(_T("G0 X%.3f Y%.3f Z%.3f\n"),
-						m_sweep_layers[i + 1]->m_Route[0]->x, m_sweep_layers[i]->m_Route[0]->y, m_sweep_layers[i]->m_Route[0]->z);
-					fileout.WriteString(str);
-				}*/
-			}
-			else
-			{
-				str.Format(_T("G0 X%.3f Y%.3f Z%.3f\n"),
-					m_sweep_layers[i]->m_Route[1]->x,
-					m_sweep_layers[i]->m_Route[1]->y,
-					m_sweep_layers[i]->m_Route[1]->z+50.0);
-				fileout.WriteString(str);
-
-				str.Format(_T("G0 X%.3f Y%.3f Z%.3f A%.3f C%.3f\n"),
-					m_sweep_layers[i]->m_turnRoute[0]->x,
-					m_sweep_layers[i]->m_turnRoute[0]->y,
-					m_sweep_layers[i]->m_turnRoute[0]->z,
-					m_sweep_layers[i]->m_turnRoute[0]->A,
-					m_sweep_layers[i]->m_turnRoute[0]->C);
-				fileout.WriteString(str);
-
-				for (unsigned int j = 1; j < m_sweep_layers[i]->m_turnRoute.size(); j++)
-				{
-					length = GetDistance(*m_sweep_layers[i]->m_Route[j - 1], *m_sweep_layers[i]->m_Route[j]);
-					volumn += length * 0.2*1.25;
-					str.Format(_T("G1 X%.3f Y%.3f Z%.3f A%.3f C%.3f E%.5f\n"),
-								m_sweep_layers[i]->m_turnRoute[j]->x,
-								m_sweep_layers[i]->m_turnRoute[j]->y,
-								m_sweep_layers[i]->m_turnRoute[j]->z,
-								m_sweep_layers[i]->m_turnRoute[j]->A,
-								m_sweep_layers[i]->m_turnRoute[j]->C,
-								(volumn / 6.0));
-					fileout.WriteString(str);
-				}
-				str.Format(_T("G0 X%.3f Y%.3f Z%.3f\n"),
-					m_sweep_layers[i]->m_Route[1]->x,
-					m_sweep_layers[i]->m_Route[1]->y,
-					m_sweep_layers[i]->m_Route[1]->z);
-				fileout.WriteString(str);
-			}
-		}
-		fileout.WriteString(_T("M107 ;\n"));
-		fileout.WriteString(_T("G91 ;\n"));
-		fileout.WriteString(_T("T0 ;\n"));
-		fileout.WriteString(_T("G1 E-1 ;\n"));
-		fileout.WriteString(_T("M104 T0 S0 ;\n"));
-		fileout.WriteString(_T("G90 ;\n"));
-		fileout.WriteString(_T("G92 E0 ;\n"));
-		fileout.WriteString(_T("M140 S0 ;\n"));
-		fileout.WriteString(_T("M84 ;\n"));
-		fileout.Close();
-	}
-}
-
 void CSweep::cal_AC_angle(SweepLayer* layer)
 {
 	int szpt = layer->m_turnRoute.size();
@@ -405,25 +252,28 @@ void CSweep::calFiveAxisValue(SweepLayer* layer)
 	CVector3D v_z(0.0, 0.0, 1.0);  //z轴向量
 
 	//CVector3D v_move(0, 0, m_z_move);   //57.7,二维转台中心和二维转台平台中心的距离补偿，因为打印件在二维转台平台中心，旋转中心是二维转台中心
-	CVector3D v_move(0, 0, 57.7);
+	CVector3D v_move(0, 0, 100);
+	CVector3D v_countermove(0, 0, -100);
 	//CVector3D v_offset(m_x_offset, m_y_offset, m_z_offset);  //(1.39,-1.14,105.0)二维转台中心在delta世界坐标系中的坐标（世界坐标系的原点是喷绘头共点处），进行坐标补偿，生成在delta平台下xyz的坐标值
-	CVector3D v_offset(1.39, -1.14, 105.0);
+	//CVector3D v_offset(-2.12, 109.40, 138.4);
 	//CVector3D v_offset1(m_x_offset, m_y_offset, m_z_offset + m_safeDistance); //保护调试距离
-	CVector3D v_offset1(1.39, -1.14, 155.0);
+	//CVector3D v_offset1(-2.12, 109.40, 180);
 	for (int i = 0; i < szpt; i++)
 	{
 		CMatrix3D matrix_rotate_z = CMatrix3D::CreateRotateMatrix(2 * PI - layer->m_turnRoute[i]->C, v_z);   //创建旋转平移矩阵
 		CMatrix3D matrix_rotate_x = CMatrix3D::CreateRotateMatrix(layer->m_turnRoute[i]->A, v_x);
 		CMatrix3D matrix_move = CMatrix3D::CreateTransferMatrix(v_move);
-		CMatrix3D matrix_offset = CMatrix3D::CreateTransferMatrix(v_offset);
-		CMatrix3D matrix_offset1 = CMatrix3D::CreateTransferMatrix(v_offset1);
+		CMatrix3D matrix_countermove = CMatrix3D::CreateTransferMatrix(v_countermove);
+		//CMatrix3D matrix_offset = CMatrix3D::CreateTransferMatrix(v_offset);
+		//CMatrix3D matrix_offset1 = CMatrix3D::CreateTransferMatrix(v_offset1);
 
 		//*(fiveAxisPoints[i]->n) *= matrix_rotate_z;   //法向量变换
 		//*(fiveAxisPoints[i]->n) *= matrix_rotate_x;
 		*layer->m_turnRoute[i] *= matrix_move;
 		*layer->m_turnRoute[i] *= matrix_rotate_z;
 		*layer->m_turnRoute[i] *= matrix_rotate_x;
-		*layer->m_turnRoute[i] *= matrix_offset1;   //安全距离进行测试
+		*layer->m_turnRoute[i] *= matrix_countermove;
+		//*layer->m_turnRoute[i] *= matrix_offset1;   //安全距离进行测试
 		//*fiveAxisPoints[i] *= matrix_offset;  //正常距离打印
 	}
 }

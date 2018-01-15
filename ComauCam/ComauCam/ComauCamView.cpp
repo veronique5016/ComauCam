@@ -659,13 +659,16 @@ void CComauCamView::OnWritegcode()
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
 	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
 	CString strFilePath;
-
+	gcodeOut = new GCode();
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
 		for (unsigned int i = 0; i < sz; i++)
 		{
-			m_sweeps[i]->writeGCode(strFilePath);
+			//m_sweeps[i]->writeGCode(strFilePath);
+			
+			gcodeOut->loadSweepModel(m_sweeps[i]);
+			gcodeOut->writeGCode(strFilePath);
 		}
 		SetDlgItemText(ID_WriteGCode, strFilePath);
 	}
@@ -677,14 +680,17 @@ void CComauCamView::OnFiveaxisgcode()
 	unsigned int sz = m_sweeps.size();
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
 	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
-	CString strFilePath;
-
+	CString strFilePath;	
+	gcodeOut = new GCode();
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
 		for (unsigned int i = 0; i < sz; i++)
 		{
-			m_sweeps[i]->writeFiveAxisGCode(strFilePath);
+			//m_sweeps[i]->writeFiveAxisGCode(strFilePath);
+			
+			gcodeOut->loadSweepModel(m_sweeps[i]);
+			gcodeOut->writeFiveAxisGCode(strFilePath);
 		}
 		SetDlgItemText(ID_WriteGCode, strFilePath);
 	}

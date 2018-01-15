@@ -1,5 +1,4 @@
-﻿  Sweep.cpp
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(40): warning C4101: “dx”: 未引用的局部变量
-c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(204): warning C4018: “<”: 有符号/无符号不匹配
+﻿  GCode.cpp
+    正在创建库 C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.lib 和对象 C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exp
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)

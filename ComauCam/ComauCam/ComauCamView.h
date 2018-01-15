@@ -12,6 +12,7 @@
 #include "SweepDlg.h"
 #include "DisplayDlg.h"
 #include "LayerDlg.h"
+#include "GCode.h"
 
 class CComauCamView : public CView
 {
@@ -25,6 +26,7 @@ public:
 	vector<CSTLModel*> m_models;
 	vector<CSlice*> m_slices;
 	vector<CSweep*> m_sweeps;
+	GCode* gcodeOut;
 	bool m_bCanSTLDraw;
 	bool m_bCanSliceDraw;
 	bool m_bCanSweepDraw;

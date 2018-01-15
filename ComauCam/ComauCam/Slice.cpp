@@ -69,7 +69,7 @@ double CSlice::getTurnHeight()
 	else
 	{
 		//zmin_turn = ReturnZmin(m_tris_slice[0]);
-		zmin_turn = compareThreeNumber(m_tris_slice[0]->v1->z, m_tris_slice[0]->v2->z, m_tris_slice[0]->v3->z, MIN);
+		zmin_turn = compareThreeNumber(z_tris[0]->v1->z, z_tris[0]->v2->z, z_tris[0]->v3->z, MIN);
 		return zmin_turn;
 	}
 }
@@ -143,6 +143,7 @@ void CSlice::slice(CSTLModel* model)
 		}
 		begin5DSlice(z_Min, z_Max, z, dz);
 	}
+	int test = 0;
 }
  
 void CSlice::begin3DSlice(double z_min, double z_max, double &z, double dz)
