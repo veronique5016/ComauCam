@@ -42,12 +42,12 @@ public:
 	void LoadSTLModel(CSTLModel* models);	//载入模型，建立拓扑关系
 	void slice(CSTLModel* model);  //切片函数
 	void getpolylinePoints(Layer* layer);
-	void drawpolyline();
-	void getTurn();     // 获取模型转折点
+	void drawpolyline(double color[]);
+	double getTurn();     // 获取模型转折点
 
 protected:
 	void InterSect(Layer* layer, LTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
-	void CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, CPoint3D* point);
+	void CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, CPoint3D* point);	// 求轮廓点
 	void JudgeFaceType(Layer* layer, LTriangle* pCurFace);    //判断面片的类型
 	void JudgeOtherLine(Layer* layer, LTriangle* pCurFace);   //判断另一条相交线
 	double ReturnZmin(const LTriangle* Ltri);   //返回一个面片的最小Z坐标值

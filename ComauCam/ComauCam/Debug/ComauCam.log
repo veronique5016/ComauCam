@@ -1,9 +1,3 @@
-﻿  Slice.cpp
-c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(257): warning C4101: “max_dist”: 未引用的局部变量
-c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(255): warning C4101: “min_plane”: 未引用的局部变量
-c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(255): warning C4101: “max_plane”: 未引用的局部变量
-c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(257): warning C4101: “mid_dist”: 未引用的局部变量
-c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(257): warning C4101: “min_dist”: 未引用的局部变量
-c:\users\veronique\desktop\comaucam\comaucam\slice.cpp(598): warning C4101: “lamda”: 未引用的局部变量
+﻿  Sweep.cpp
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)

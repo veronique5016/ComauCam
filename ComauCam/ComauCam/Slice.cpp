@@ -73,16 +73,35 @@ void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
 	}
 }
 
-void CSlice::getTurn()
+double CSlice::getTurn()
 {
+	unsigned int sz = m_tris_slice.size();
+	CVector3D* tmp_normal = NULL;	
 
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		tmp_normal = m_tris_slice[i]->n;
+		if ((tmp_normal->dz < 0) && (tmp_normal->dz>-1))
+			z_tris.push_back(m_tris_slice[i]);
+	}
+
+	unsigned int szTri = z_tris.size();
+	double zmin_turn = 0;
+	
+	if (z_tris.size() == 0)
+	{
+		return zmin_turn = 0.0; //如果 zmin_turn 为 0，则说明没有转折点，即三轴就能打完整个模型
+	}
+	else
+	{
+		zmin_turn = ReturnZmin(m_tris_slice[0]);
+		return zmin_turn;
+	}
 }
 
 void CSlice::slice(CSTLModel* model)
 {
-//	gravity = CVector3D(1, 0, 1);
-	 
-	//AfxMessageBox(_T("Slice Begin!!"), MB_OK, 0);
+	gravity = CVector3D(1, 0, 1);
 	double z_Min, z_Max;  //模型极限尺寸
 	double z;  //切片高度
 	double dz;   //切片层厚
@@ -94,22 +113,12 @@ void CSlice::slice(CSTLModel* model)
 	dz = height;   //层高
 
 /////////////////////////////////
+	//获取变姿态后切平面的法向量
 /////////////////////////////////
-	unsigned int sz = m_tris_slice.size();
-	CVector3D* tmp_normal = NULL;
+
 	LTriangle* tmp_tri = NULL;
 	LTriangle* tmp_triangle = new LTriangle();
 
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		tmp_normal = m_tris_slice[i]->n;
-		if ((tmp_normal->dz < 0)&&(tmp_normal->dz>-1))
-			z_tris.push_back(m_tris_slice[i]);
-	}
-
-	unsigned int szTri = z_tris.size();
-	double zmin_turn = 0;
-	zmin_turn = ReturnZmin(m_tris_slice[0]);
 	tmp_tri = m_tris_slice[0];
 	tmp_triangle->v1 = m_tris_slice[0]->v1;
 	tmp_triangle->v2 = m_tris_slice[0]->v3;
@@ -127,13 +136,13 @@ void CSlice::slice(CSTLModel* model)
 	CVector3D* tmp_norm = new CVector3D(norm_dx, norm_dy, norm_dz);
 	tmp_triangle->n = tmp_norm;
 	
-	z_Max = zmin_turn;
-	
-
 
 /////////////////////////////////
+// 切第一部分
 /////////////////////////////////
-
+	double zmin_turn;
+	zmin_turn = getTurn();
+//	z_Max = zmin_turn;
 	while (true)
 	{
 		Layer* tmp_layer = new Layer();
@@ -152,8 +161,9 @@ void CSlice::slice(CSTLModel* model)
 	}
 
 /////////////////////////////////
+// 切三角形，对轮廓进行处理
 /////////////////////////////////
-	CPoint3D tmp_cal;
+/*	CPoint3D tmp_cal;
 	CPoint3D planepoint = CPoint3D(30.0, 0.0, 50.0);
 	CVector3D lineVector = CVector3D(3.0, 0.0, 4.0);
 	CPoint3D linepoint = CPoint3D(0.0, 0.0, 50.0);
@@ -174,7 +184,8 @@ void CSlice::slice(CSTLModel* model)
 
 		getpolylinePoints(m_layers[m_layers.size() - 1]);
 
-		pt_x = 0.0;
+////////对轮廓进行处理
+/*		pt_x = 0.0;
 		pt_z = z;
 		pt_x = 30.0 - (50 - pt_z)* m_tris_slice[0]->n->dx / m_tris_slice[0]->n->dz;
 		tmp_point->x = pt_x;
@@ -214,18 +225,26 @@ void CSlice::slice(CSTLModel* model)
 				i = 0;
 			}
 		}
-
-		if (z >= (z_Max - dz))
+*/
+/*	if (z >= (z_Max - dz))
 		{
 			break;
 		}
 		z += dz;
-	}
+	}*/
 
 //////////////////////////////////
+// 切第二部分
 /////////////////////////////////
-	gravity = CVector3D(3, 0, 4);
-	z = 73.0;
+/*	gravity = CVector3D(3, 0, 4);
+
+	CPoint3D planepoint2 = CPoint3D(30.0, 0.0, 50.0);
+	CVector3D lineVector2 = CVector3D(0.0, 0.0, 1.0);
+	CPoint3D linepoint2 = CPoint3D(0.0, 0.0, 0.0);
+	tmp_cal = ::CalPlaneLineIntersectPoint(*tmp_norm, planepoint2, lineVector2, linepoint2);
+
+	z = tmp_cal.z;
+//	z = 72.5;
 	z_Max = 135.0;
 	dz = height;
 	while (true)
@@ -243,18 +262,13 @@ void CSlice::slice(CSTLModel* model)
 			break;
 		}
 		z += dz;
-	}
+	}*/
 }
 
 void CSlice::getpolylinePoints(Layer* layer)
 {
 	vector<LTriangle*> status; //储存符合层高的，筛选出来的面片
-	CPoint3D min_tmp;
-	CPoint3D mid_tmp;
-	CPoint3D max_tmp;
-	int min_plane, max_plane;
-
-	double min_dist, mid_dist, max_dist, v1_dist, v2_dist, v3_dist;
+	double v1_dist, v2_dist, v3_dist;
 
 
 	unsigned int szTri = m_tris_slice.size();
@@ -360,7 +374,7 @@ void CSlice::getpolylinePoints(Layer* layer)
 
 }
 
-void CSlice::drawpolyline()
+void CSlice::drawpolyline(double color[])
 {
 	unsigned int szlayer = m_layers.size();
 	for (unsigned int i = 0; i<szlayer; i++)
@@ -375,7 +389,7 @@ void CSlice::drawpolyline()
 				CPoint3D* point2 = new CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1]));
 				glLineWidth(1.5f);
 				glBegin(GL_LINES);
-				glColor3f(0.0f, 1.0f, 0.0f);
+				glColor3f(color[0], color[1], color[2]);
 				glVertex3f(point1->x, point1->y, point1->z);
 				glVertex3f(point2->x, point2->y, point2->z);
 				glEnd();
@@ -595,7 +609,6 @@ void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, C
 		}
 		else    //两端点都不在切片面上
 		{
-			double lamda;
 			CPoint3D p = CPoint3D();
 			CVector3D vec = CVector3D(e1_tmp, e2_tmp);
 

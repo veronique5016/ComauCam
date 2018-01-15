@@ -336,8 +336,19 @@ BOOL CComauCamView::RenderScene()
 
 	} 
 	if (m_bCanSliceDraw)
-	{
-		m_slices[0]->drawpolyline();
+	{ 
+		double green[3];
+		green[0] = 0.0;
+		green[1] = 1.0;
+		green[2] = 0.0;
+
+		double red[3];
+		red[0] = 1.0;
+		red[1] = 0.0;
+		red[2] = 0.0;
+
+		m_slices[0]->drawpolyline(green);
+
 	}
 	if (m_bCanSweepDraw)
 	{
