@@ -24,7 +24,6 @@ CTriangle::CTriangle(CPoint3D pt_A, CPoint3D pt_B, CPoint3D pt_C)
 	C = pt_C;
 }
 
-
 const CTriangle& CTriangle::operator = (const CTriangle& triangleFace)
 {
 	A = triangleFace.A;
@@ -49,16 +48,6 @@ void CTriangle::GenerateNormal()
 	Normal.Normalize();
 }
 
-//void CTriangle::DrawTriangleFace(COpenGLDC* pDC)
-//{
-//	pDC->DrawTriChip(Normal,A,B,C);
-//}
-//
-//void CTriangle::DrawTriangleFrame(COpenGLDC* pDC)
-//{
-//	pDC->DrawTriFrame(A,B,C);
-//}
-
 void CTriangle::Rotate(double angle, CVector3D axis)
 {
 	CMatrix3D matrix_roate = CMatrix3D::CreateRotateMatrix(angle, axis);
@@ -77,16 +66,4 @@ void CTriangle::Move(CVector3D vec)
 	A *= matric;
 	B *= matric;
 	C *= matric;
-}
-
-
-
-void CTriangle::DrawTriangleFace(COpenGLDC* pDC)
-{
-	pDC->DrawTriChip(Normal, A, B, C);
-}
-
-void CTriangle::DrawTriangleFrame(COpenGLDC* pDC)
-{
-	pDC->DrawTriFrame(A, B, C);
 }

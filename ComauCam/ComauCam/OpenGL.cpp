@@ -132,3 +132,220 @@ void COpenGLDC::DrawLine(const CPoint3D& sp, const CPoint3D& ep, int lineStyle/*
 
 	//SetColor(oldClr);
 }
+
+void COpenGLDC::DrawSTLModel(CSTLModel * model, bool showTri)
+{
+	int sz = model->m_vecpTris.size();
+	if (showTri)
+	{
+		for (int i = 0; i<sz; i++)
+		{
+			//model->m_vecpTris[i]->DrawTriangleFace(pDC);  //面片模式     
+			DrawTriChip(model->m_vecpTris[i]->Normal, model->m_vecpTris[i]->A, model->m_vecpTris[i]->B, model->m_vecpTris[i]->C);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < sz; i++)
+		{
+			DrawTriFrame(model->m_vecpTris[i]->A, model->m_vecpTris[i]->B, model->m_vecpTris[i]->C);  //线框模式
+		}
+	}
+}
+
+
+void COpenGLDC::DrawSliceModel(CSlice* model, bool showPolygon, int start, int end)
+{
+	double color[3];
+	unsigned int szlayer = model->m_vecpLayers.size();
+	CLPoint point, point2;
+	for (int i = (start - 1); i<end; i++)
+	{
+		unsigned int szpolyline = model->m_vecpLayers[i]->m_vecpBoundaries.size();
+		if (model->m_vecpLayers[i]->m_vLayerCoordinate[2].dz == 1.0)
+		{
+			color[0] = 0.0;
+			color[1] = 1.0;
+			color[2] = 0.0;
+		}
+		else
+		{
+			color[0] = 1.0;
+			color[1] = 0.0;
+			color[2] = 0.0;
+		}
+		for (unsigned int j = 0; j < szpolyline; j++)
+		{
+			unsigned int szLine = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments.size();
+			glLineWidth(1.5f);
+
+			//绘制平面轮廓
+			if (showPolygon)
+			{
+				glBegin(GL_POLYGON);
+				glColor3f(color[0], color[1], color[2]);
+				for (unsigned int k = 0; k < szLine; k++)
+				{
+					point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
+					glVertex3f(point.x, point.y, point.z);
+					point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
+					glVertex3f(point.x, point.y, point.z);
+				}
+				glEnd();
+			}
+
+			//绘制线框轮廓
+			glColor3f(color[0], color[1], color[2]);
+			for (unsigned int k = 0; k<szLine; k++)
+			{
+				glBegin(GL_LINE_LOOP);
+				point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
+				glVertex3f(point.x, point.y, point.z);
+				point = model->m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
+				glVertex3f(point.x, point.y, point.z);
+				glEnd();
+			}
+		}
+	}
+}
+
+void COpenGLDC::DrawSweepModel(CSweep * model, int start, int end)
+{
+	unsigned int szL = model->m_vecpSweepLayers.size();
+	for (unsigned int i = (start - 1); i < end; i++)
+	{
+		//画轮廓
+		unsigned int szB = model->m_vecpSweepLayers[i]->m_vecpBoundaries[0]->m_vecpSegments.size();
+		glColor3f(1.0, 0.0, 0.0);
+		for (unsigned int j = 0; j < szB; j++)
+		{
+			CPoint3D p1 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j]);
+			CPoint3D p2 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j + 1]);
+			DrawCuboid(p1, p2, model->m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
+		}
+		//画路径
+		unsigned int sz = model->m_vecpSweepLayers[i]->m_vecpRoute.size();
+		for (unsigned int j = szB + 1; j < sz - 1; j++)
+		{
+			CPoint3D p1 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j]);
+			CPoint3D p2 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j + 1]);
+			DrawCuboid(p1, p2, model->m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
+		}
+	}
+}
+
+void COpenGLDC::DrawCylinder(CPoint3D p1, CPoint3D p2)
+{
+	GLdouble  dir_x = p2.x - p1.x;
+	GLdouble  dir_y = p2.y - p1.y;
+	GLdouble  dir_z = p2.z - p1.z;
+	GLdouble  bone_length = sqrt(dir_x*dir_x + dir_y*dir_y + dir_z*dir_z);
+	static GLUquadricObj *  quad_obj = NULL;
+	if (quad_obj == NULL)
+		quad_obj = gluNewQuadric();
+	gluQuadricDrawStyle(quad_obj, GLU_FILL);
+	gluQuadricNormals(quad_obj, GLU_SMOOTH);
+	glPushMatrix();
+	// 平移到起始点  
+	glTranslated(p1.x, p1.y, p1.z);
+	// 计算长度  
+	double  length;
+	length = sqrt(dir_x*dir_x + dir_y*dir_y + dir_z*dir_z);
+	if (length < 0.0001) {
+		dir_x = 0.0; dir_y = 0.0; dir_z = 1.0;  length = 1.0;
+	}
+	dir_x /= length;  dir_y /= length;  dir_z /= length;
+	GLdouble  up_x, up_y, up_z;
+	up_x = 0.0;
+	up_y = 1.0;
+	up_z = 0.0;
+	double  side_x, side_y, side_z;
+	side_x = up_y * dir_z - up_z * dir_y;
+	side_y = up_z * dir_x - up_x * dir_z;
+	side_z = up_x * dir_y - up_y * dir_x;
+	length = sqrt(side_x*side_x + side_y*side_y + side_z*side_z);
+	if (length < 0.0001) {
+		side_x = 1.0; side_y = 0.0; side_z = 0.0;  length = 1.0;
+	}
+	side_x /= length;  side_y /= length;  side_z /= length;
+	up_x = dir_y * side_z - dir_z * side_y;
+	up_y = dir_z * side_x - dir_x * side_z;
+	up_z = dir_x * side_y - dir_y * side_x;
+	// 计算变换矩阵  
+	GLdouble  m[16] = { side_x, side_y, side_z, 0.0,
+		up_x,   up_y,   up_z,   0.0,
+		dir_x,  dir_y,  dir_z,  0.0,
+		0.0,    0.0,    0.0,    1.0 };
+	glMultMatrixd(m);
+	// 圆柱体参数  
+	GLdouble radius = 0.2;        // 半径  
+	GLdouble slices = 30.0;      //  段数  
+	GLdouble stack = 3.0;       // 递归次数  
+	gluCylinder(quad_obj, radius, radius, bone_length, slices, stack);
+	glPopMatrix();
+}
+
+void COpenGLDC::DrawCuboid(CPoint3D pStart, CPoint3D pEnd, CVector3D normal)
+{
+	CVector3D xAxis = CVector3D(pStart, pEnd);
+	xAxis.Normalize();
+	CVector3D zAxis = normal;
+	zAxis.Normalize();
+	CVector3D yAxis = zAxis * xAxis;
+	yAxis.Normalize();
+	CVector3D coordinate[3];
+	coordinate[0] = xAxis;
+	coordinate[1] = yAxis;
+	coordinate[2] = zAxis;
+	CPoint3D startQuad[4];
+	PointToQuad(startQuad, pStart, 0.2, coordinate);
+	CPoint3D endQuad[4];
+	PointToQuad(endQuad, pEnd, 0.2, coordinate);
+
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glPolygonMode(GL_BACK, GL_FILL);
+	glBegin(GL_QUADS);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(startQuad[0].x, startQuad[0].y, startQuad[0].z);
+	glVertex3f(startQuad[1].x, startQuad[1].y, startQuad[1].z);
+	glVertex3f(startQuad[2].x, startQuad[2].y, startQuad[2].z);
+	glVertex3f(startQuad[3].x, startQuad[3].y, startQuad[3].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(endQuad[0].x, endQuad[0].y, endQuad[0].z);
+	glVertex3f(endQuad[1].x, endQuad[1].y, endQuad[1].z);
+	glVertex3f(endQuad[2].x, endQuad[2].y, endQuad[2].z);
+	glVertex3f(endQuad[3].x, endQuad[3].y, endQuad[3].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(startQuad[0].x, startQuad[0].y, startQuad[0].z);
+	glVertex3f(startQuad[1].x, startQuad[1].y, startQuad[1].z);
+	glVertex3f(endQuad[1].x, endQuad[1].y, endQuad[1].z);
+	glVertex3f(endQuad[0].x, endQuad[0].y, endQuad[0].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(startQuad[1].x, startQuad[1].y, startQuad[1].z);
+	glVertex3f(startQuad[2].x, startQuad[2].y, startQuad[2].z);
+	glVertex3f(endQuad[2].x, endQuad[2].y, endQuad[2].z);
+	glVertex3f(endQuad[1].x, endQuad[1].y, endQuad[1].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(startQuad[2].x, startQuad[2].y, startQuad[2].z);
+	glVertex3f(startQuad[3].x, startQuad[3].y, startQuad[3].z);
+	glVertex3f(endQuad[3].x, endQuad[3].y, endQuad[3].z);
+	glVertex3f(endQuad[2].x, endQuad[2].y, endQuad[2].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(startQuad[3].x, startQuad[3].y, startQuad[3].z);
+	glVertex3f(startQuad[0].x, startQuad[0].y, startQuad[0].z);
+	glVertex3f(endQuad[0].x, endQuad[0].y, endQuad[0].z);
+	glVertex3f(endQuad[3].x, endQuad[3].y, endQuad[3].z);
+	glEnd();
+}

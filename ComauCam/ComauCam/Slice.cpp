@@ -5,7 +5,7 @@
 
 CSlice::CSlice(void)
 {
-	height = 10;
+	m_dHeight = 5;
 }
 
 CSlice::~CSlice(void)
@@ -51,7 +51,7 @@ void CSlice::Slice(CSTLModel* model)
 	model->FindExtreme(model_ex);
 	double z_min = model_ex[4];
 	double z_max = model_ex[5];
-	double dz = height;
+	double dz = m_dHeight;
 	double z = z_min + dz; 
 
 	while (z<z_max)
@@ -105,15 +105,40 @@ void CSlice::Slice(CSTLModel* model)
 				layer_point = layer_point + pTurnLayer->m_vLayerCoordinate[2] * dz;
 				pTurnLayer->m_ptLayerPoint = layer_point;
 				
+				//m_vecpLayers.push_back(pTurnLayer);
+
+				//int szLayer = m_vecpLayers.size();
+				GetBoundaryPoints(pTurnLayer);
+				OptimizeBoundary(pTurnLayer);
+
+				ModifyTurnLayer(pTurnLayer);
+				
 				m_vecpLayers.push_back(pTurnLayer);
 
-				int szLayer = m_vecpLayers.size();
-				GetBoundaryPoints(m_vecpLayers[szLayer - 1]);
-				OptimizeBoundary(m_vecpLayers[szLayer - 1]);
+				CSliceLayer* pAddedLayer = new CSliceLayer();
+				pAddedLayer->m_vLayerCoordinate[1] = pTurnLayer->m_vLayerCoordinate[1];
+				CVector3D vec1 = pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_vSegmentVec;
+				CVector3D vec2 = CVector3D(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart);
+				pAddedLayer->m_vLayerCoordinate[2] = vec2*vec1;
+				pAddedLayer->m_vLayerCoordinate[2].Normalize();
+				pAddedLayer->m_vLayerCoordinate[0] = pTurnLayer->m_vLayerCoordinate[1]* pTurnLayer->m_vLayerCoordinate[2];
+				pAddedLayer->m_vLayerCoordinate[0].Normalize();
+				pAddedLayer->m_ptLayerPoint = pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart;
+				pAddedLayer->m_vecpBoundaries.push_back(new CBoundary());
 
-				ModifyTurnLayer(m_vecpLayers[szLayer - 1]);
+				/*CSegment tmp_seg = CSegment(pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptEnd, pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart,NULL);
+				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+				tmp_seg = CSegment(pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart, m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, NULL);
+				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+				tmp_seg = CSegment(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptEnd, m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptStart, NULL);
+				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+				tmp_seg = CSegment(m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]->m_ptStart, pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptEnd, NULL);
+				pAddedLayer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));*/
+				GetAddedLayerBoundary(pAddedLayer, *pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2], *m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[1]);
+				m_vecpLayers.push_back(pAddedLayer);
 				
-				double layer_dist = m_vecpLayers[index]->m_ptLayerPoint.z - m_vecpLayers[szLayer - 1]->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart.z;
+
+				double layer_dist = m_vecpLayers[index]->m_ptLayerPoint.z - pTurnLayer->m_vecpBoundaries[0]->m_vecpSegments[2]->m_ptStart.z;
 				if (layer_dist >= dz / 2)
 				{
 					CSliceLayer* pAddedTurnLayer = new CSliceLayer();
@@ -128,7 +153,6 @@ void CSlice::Slice(CSTLModel* model)
 					OptimizeBoundary(pAddedTurnLayer);
 					ModifyTurnLayer(pAddedTurnLayer);
 				}
-
 			}
 		}
 		z += dz;
@@ -218,7 +242,8 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 			//判断轮廓是否闭合
 			if ((m_boundary->m_vecpSegments[0]->m_ptStart) ^= (m_boundary->m_vecpSegments[szlinkline - 1]->m_ptEnd))
 			{
-				m_vecpLayers[m_vecpLayers.size() - 1]->m_vecpBoundaries.push_back(m_boundary);
+				//m_vecpLayers[m_vecpLayers.size() - 1]->m_vecpBoundaries.push_back(m_boundary);
+				layer->m_vecpBoundaries.push_back(m_boundary);
 				break;
 			}
 		}
@@ -488,6 +513,18 @@ int CSlice::FindLowestSegment(CSliceLayer* layer)
 	}
 }
 
+void CSlice::GetAddedLayerBoundary(CSliceLayer * layer, CSegment turnlayer_seg, CSegment layer_seg)
+{
+	CSegment tmp_seg = CSegment(turnlayer_seg.m_ptEnd, turnlayer_seg.m_ptStart, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+	tmp_seg = CSegment(turnlayer_seg.m_ptStart, layer_seg.m_ptEnd, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+	tmp_seg = CSegment(layer_seg.m_ptEnd, layer_seg.m_ptStart, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+	tmp_seg = CSegment(layer_seg.m_ptStart, turnlayer_seg.m_ptEnd, NULL);
+	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(tmp_seg));
+}
+
 void CSlice::ModifyTurnLayer(CSliceLayer* layer)
 {
 	vector<CSegment*> tmp_boundary;
@@ -502,7 +539,8 @@ void CSlice::ModifyTurnLayer(CSliceLayer* layer)
 
 	layer->m_vecpBoundaries[0]->m_vecpSegments.push_back(start_seg);
 	CPoint3D intersect;
-	MoveSegment(tmp_boundary[seg_index], layer->m_vLayerCoordinate[0] * (-3));
+	//确定变法向切平面的宽度
+	MoveSegment(tmp_boundary[seg_index], layer->m_vLayerCoordinate[0] * (-2));
 	CLPoint tmp_swap = tmp_boundary[seg_index]->m_ptStart;
 	tmp_boundary[seg_index]->m_ptStart = tmp_boundary[seg_index]->m_ptEnd;
 	tmp_boundary[seg_index]->m_ptEnd = tmp_swap;
@@ -685,57 +723,3 @@ double CSlice::CompareThreeNumber(double v1, double v2, double v3, int type)
 		return z3;
 }
 
-void CSlice::DrawLayer(bool showPolygon, int start, int end)
-{
-	double color[3];
-	unsigned int szlayer = m_vecpLayers.size();
-	CLPoint point, point2;
-	for (int i = (start - 1); i<end; i++)
-	{
-		unsigned int szpolyline = m_vecpLayers[i]->m_vecpBoundaries.size();
-		if (m_vecpLayers[i]->m_vLayerCoordinate[2].dz == 1.0)
-		{
-			color[0] = 0.0;
-			color[1] = 1.0;
-			color[2] = 0.0;
-		}
-		else
-		{
-			color[0] = 1.0;
-			color[1] = 0.0;
-			color[2] = 0.0;
-		}
-		for (unsigned int j = 0; j < szpolyline; j++)
-		{
-			unsigned int szLine = m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments.size();
-			glLineWidth(1.5f);
-
-			//绘制平面轮廓
-			if (showPolygon)
-			{
-				glBegin(GL_POLYGON);
-				glColor3f(color[0], color[1], color[2]);
-				for (unsigned int k = 0; k < szLine; k++)
-				{
-					point = m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
-					glVertex3f(point.x, point.y, point.z);
-					point = m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
-					glVertex3f(point.x, point.y, point.z);
-				}
-				glEnd();
-			}
-
-			//绘制线框轮廓
-			glColor3f(color[0], color[1], color[2]);
-			for(unsigned int k = 0; k<szLine; k++)
-			{
-				glBegin(GL_LINE_LOOP);
-				point = m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
-				glVertex3f(point.x, point.y, point.z);
-				point = m_vecpLayers[i]->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
-				glVertex3f(point.x, point.y, point.z);
-				glEnd();
-			}
-		}
-	}
-}

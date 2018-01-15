@@ -1,6 +1,5 @@
 #pragma once
 #include "GeomBase.h"
-#include "OpenGL.h"
 #include <vector>
 using namespace std;
 // 定义指针结构的点、边、三角形
@@ -40,7 +39,6 @@ struct CLTriangle : public CObject
 	CLTriangle* GetNbTri2() const;
 	CLTriangle* GetNbTri3() const;
 	CVector3D* GntNormal();
-	void DrawLTriangle(COpenGLDC* pDC);   //这里没有用重写的函数直接新定义的，注意
 
 	CLVertex *v1, *v2, *v3;  // 逆时针排列
 	CLEdge   *e1, *e2, *e3;  // 半边

@@ -334,25 +334,6 @@ BOOL CSTLModel::IsSpace(TCHAR ch)
 	}
 }
 
-void CSTLModel::Draw(COpenGLDC* pDC, bool ShowTri)
-{
-	int sz = m_vecpTris.size();
-	if (ShowTri)
-	{
-		for (int i = 0; i<sz; i++)
-		{
-			m_vecpTris[i]->DrawTriangleFace(pDC);  //面片模式     
-		}
-	}
-	else
-	{
-		for (int i = 0; i < sz; i++)
-		{
-			m_vecpTris[i]->DrawTriangleFrame(pDC);  //线框模式
-		}
-	}
-}
-
 void CSTLModel::MoveModel(CVector3D vec)
 {
 	unsigned int sz = m_vecpTris.size();

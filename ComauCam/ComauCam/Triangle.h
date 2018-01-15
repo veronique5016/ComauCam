@@ -1,7 +1,6 @@
 #pragma once
 #include "afx.h"
 #include "GeomBase.h"
-#include "OpenGL.h"
 
 class CTriangle :
 	public CObject
@@ -18,8 +17,6 @@ public:
 
 public:
 	void GenerateNormal();  // 生成法向量
-	void DrawTriangleFace(COpenGLDC* pDC);
-	void DrawTriangleFrame(COpenGLDC* pDC);
 	void Rotate(double angle, CVector3D axis);
 	void Move(CVector3D vec);
 

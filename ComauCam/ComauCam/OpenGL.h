@@ -13,6 +13,10 @@
 #pragma comment(lib,"GlAux.Lib")    // 官方发行的辅助库
 
 #include "GeomBase.h"
+#include "STLModel.h"
+#include "Slice.h"
+#include "Sweep.h"
+#include "Layer.h"
 
 #define LS_SOLID        0   // line style
 #define LS_DASH         1
@@ -30,4 +34,9 @@ public:
 	void DrawTriChip(CVector3D vec, CPoint3D pt1, CPoint3D pt2, CPoint3D pt3);
 	void DrawTriFrame(CPoint3D A, CPoint3D B, CPoint3D C);
 	void DrawLine(const CPoint3D& sp, const CPoint3D& ep, int lineStyle = LS_SOLID, int lineWidth = 1);
+	void DrawSTLModel(CSTLModel* model, bool showTri);
+	void DrawSliceModel(CSlice* model, bool showPolygon, int start, int end);
+	void DrawSweepModel(CSweep* model, int start, int end);
+	void DrawCylinder(CPoint3D p1, CPoint3D p2);  //路径用圆柱表示
+	void DrawCuboid(CPoint3D pStart, CPoint3D pEnd, CVector3D normal);  //路径用四棱柱表示
 };

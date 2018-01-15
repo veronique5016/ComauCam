@@ -80,6 +80,7 @@ CSliceLayer::CSliceLayer()
 	m_vLayerCoordinate[0] = CVector3D(1, 0, 0);
 	m_vLayerCoordinate[1] = CVector3D(0, 1, 0);
 	m_vLayerCoordinate[2] = CVector3D(0, 0, 1);
+	m_pAddictedLayer = NULL;
 }
 CSliceLayer::~CSliceLayer()
 {
@@ -90,19 +91,6 @@ CSliceLayer::~CSliceLayer()
 		m_vecpBoundaries[i] = NULL;
 	}
 	m_vecpBoundaries.clear();
-}
-
-CSweepPoint::CSweepPoint()
-{
-}
-CSweepPoint::CSweepPoint(double ix, double iy, double iz, bool left)
-{
-	x = ix;
-	y = iy;
-	z = iz;
-}
-CSweepPoint::~CSweepPoint()
-{
 }
 
 CSweepLine::CSweepLine()
@@ -154,7 +142,7 @@ CSweepLayer::CSweepLayer(const CSweepLayer & sweepLayer)
 	unsigned int szT = sweepLayer.m_vecpTurnRoute.size();
 	for (unsigned int i = 0; i < szT; i++)
 	{
-		m_vecpTurnRoute.push_back(new CFPoint(*sweepLayer.m_vecpTurnRoute[i]));
+		m_vecpTurnRoute.push_back(new CSweepPoint(*sweepLayer.m_vecpTurnRoute[i]));
 	}
 }
 CSweepLayer::~CSweepLayer()
@@ -192,15 +180,15 @@ CSweepLayer::~CSweepLayer()
 	m_vecpTurnRoute.clear();
 }
 
-CFPoint::CFPoint()
+CSweepPoint::CSweepPoint()
 {
 }
 
-CFPoint::~CFPoint()
+CSweepPoint::~CSweepPoint()
 {
 }
 
-CFPoint::CFPoint(const CPoint3D & pt, double a, double c)
+CSweepPoint::CSweepPoint(const CPoint3D & pt, double a, double c)
 {
 	x = pt.x;
 	y = pt.y;
@@ -209,16 +197,7 @@ CFPoint::CFPoint(const CPoint3D & pt, double a, double c)
 	C = c;
 }
 
-CFPoint::CFPoint(const CPoint3D & pt)
-{
-	x = pt.x;
-	y = pt.y;
-	z = pt.z;
-	A = 0;
-	C = 0;
-}
-
-CFPoint::CFPoint(const CFPoint & pt)
+CSweepPoint::CSweepPoint(const CSweepPoint & pt)
 {
 	x = pt.x;
 	y = pt.y;
@@ -236,4 +215,35 @@ void MoveSegment(CSegment* lsegment, CVector3D vec)
 void GetCrossPoint(CPoint3D& pt_out, CSegment seg1, CSegment seg2)
 {
 	GetCrossPoint(pt_out, seg1.m_ptStart, seg1.m_ptEnd, seg2.m_ptStart, seg2.m_ptEnd);
+}
+
+void GetCrossPoint(CPoint3D & pt_out, CSweepLine line1, CSegment line2)
+{
+	CPoint3D pStart = line1.m_ptLinePoint;
+	CPoint3D pEnd = pStart + line1.m_vLineVec * 10;
+	GetCrossPoint(pt_out, pStart, pEnd, line2.m_ptStart, line2.m_ptEnd);
+}
+
+void PointToQuad(CPoint3D quad[4], CPoint3D point, double offset, CVector3D coordinate[3])
+{
+	CPoint3D tmp = point;
+	CVector3D offset_vec = coordinate[1] + coordinate[2];
+	offset_vec.Normalize();
+	tmp = point + offset_vec*offset;
+	quad[0] = tmp;
+
+	offset_vec = coordinate[2] - coordinate[1];
+	offset_vec.Normalize();
+	tmp = point + offset_vec*offset;
+	quad[1] = tmp;
+
+	offset_vec = CVector3D(0, 0, 0) - coordinate[2] - coordinate[1];
+	offset_vec.Normalize();
+	tmp = point + offset_vec*offset;
+	quad[2] = tmp;
+
+	offset_vec = coordinate[1] - coordinate[2];
+	offset_vec.Normalize();
+	tmp = point + offset_vec*offset;
+	quad[3] = tmp;
 }

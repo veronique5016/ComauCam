@@ -28,6 +28,7 @@ public:
 	vector<CSlice*> m_vecpSlices;
 	vector<CSweep*> m_vecpSweeps;
 	CGCode* m_pGCode;
+
 	bool m_bSTLDraw;
 	bool m_bSliceDraw;
 	bool m_bSweepDraw;

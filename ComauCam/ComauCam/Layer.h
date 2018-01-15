@@ -21,14 +21,14 @@ public:
 	//LPoint *p_prev, *p_next;
 };
 
-struct CFPoint : public CPoint3D
+//扫描路径与轮廓相交得到的交点
+struct CSweepPoint : public CPoint3D
 {
 public:
-	CFPoint();
-	~CFPoint();
-	CFPoint(const CPoint3D& pt, double a, double c);
-	CFPoint(const CPoint3D& pt);
-	CFPoint(const CFPoint& pt);
+	CSweepPoint();
+	~CSweepPoint();
+	CSweepPoint(const CPoint3D& pt, double a, double c);
+	CSweepPoint(const CSweepPoint& pt);
 
 public:
 	double A;
@@ -69,15 +69,9 @@ public:
 	CPoint3D m_ptLayerPoint;
 	CVector3D m_vLayerCoordinate[3];
 	vector<CBoundary*> m_vecpBoundaries;   //截交得到的轮廓，不经修改 size = 1, 如果轮廓内部有空洞或其他情况，则 size 会增加
-};
 
-//扫描路径与轮廓相交得到的交点
-struct CSweepPoint : public CPoint3D
-{
 public:
-	CSweepPoint();
-	CSweepPoint(double ix, double iy, double iz, bool left);
-	~CSweepPoint();
+	CSliceLayer* m_pAddictedLayer;
 };
 
 struct CSweepLine
@@ -90,6 +84,9 @@ public:
 	CPoint3D m_ptLinePoint;
 	CVector3D m_vLineVec;
 	CVector3D m_vLineNormal;
+
+public:
+	vector<CSweepPoint> m_ptCrossPoint;
 };
 
 struct CSweepLayer : public CSliceLayer
@@ -104,7 +101,7 @@ public:
 	vector<CSweepLine*> m_vecpSweepLines;
 	vector<CBoundary*> m_vecpOffsetBoundaries;
 	vector<CPoint3D*> m_vecpRoute;
-	vector<CFPoint*> m_vecpTurnRoute;
+	vector<CSweepPoint*> m_vecpTurnRoute;
 };
 
 
@@ -115,3 +112,7 @@ void AFX_API_EXPORT MoveSegment(CSegment* lsegment, CVector3D vec);
 
 //求两线段交点
 void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CSegment seg1, CSegment seg2);
+void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CSweepLine line1, CSegment line2);
+
+//以一点为中心，扩充成一个正方形
+void PointToQuad(CPoint3D quad[4], CPoint3D point, double offset, CVector3D coordinate[3]);

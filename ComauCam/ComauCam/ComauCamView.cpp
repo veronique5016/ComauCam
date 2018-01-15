@@ -319,14 +319,13 @@ BOOL CComauCamView::RenderScene()
 	::glRotatef(m_fSceneRot[1], 0.0F, 1.0F, 0.0F);
 	::glRotatef(m_fSceneRot[2], 0.0F, 0.0F, 1.0F);
 
-
 	//////
 	m_pDC->DrawAxis();
 	if (m_bSTLDraw)
 	{
 		for (int i = 0; i<m_vecpSTLModels.size(); i++)
 		{
-			m_vecpSTLModels[i]->Draw(m_pDC, m_bTriFaceDraw);
+			m_pDC->DrawSTLModel(m_vecpSTLModels[i], m_bTriFaceDraw);
 		}
 	} 
 	if (m_bSliceDraw)
@@ -337,14 +336,14 @@ BOOL CComauCamView::RenderScene()
 			{
 				m_nEndLayer = m_vecpSlices[0]->m_vecpLayers.size();
 			}
-			m_vecpSlices[0]->DrawLayer(m_bPolygonDraw, m_nStartLayer, m_nEndLayer);
+			m_pDC->DrawSliceModel(m_vecpSlices[0], m_bPolygonDraw, m_nStartLayer, m_nEndLayer);
 		}
 	}
 	if (m_bSweepDraw)
 	{
 		for (unsigned int i = 0; i < m_vecpSweeps.size(); i++)
 		{
-			m_vecpSweeps[0]->DrawRoute(m_nStartLayer, m_nEndLayer);
+			m_pDC->DrawSweepModel(m_vecpSweeps[0], m_nStartLayer, m_nEndLayer);
 		}
 	}
 
@@ -608,7 +607,7 @@ void CComauCamView::OnStartSlice()
 		for (unsigned int i = 0; i < szModel; i++)
 		{
 			CSlice* pSlice = new CSlice();
-			pSlice->height = dialog.m_dSliceDistance;
+			pSlice->m_dHeight = dialog.m_dSliceDistance;
 			pSlice->LoadSTLModel(m_vecpSTLModels[i]);
 			pSlice->Slice(m_vecpSTLModels[i]);
 			m_vecpSlices.push_back(pSlice);

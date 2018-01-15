@@ -1,11 +1,10 @@
 #pragma once
+
 #include "GeomBase.h"
 #include "Triangle.h"
-#include "OpenGL.h"
 #include "LVertex.h"
 #include <algorithm>
 #include <vector>
-
 
 
 class CSTLModel :public CObject, public CTopologySTL
@@ -23,7 +22,6 @@ public:
 	void ReleaseMem();
 	void Topologize();
 	void FindExtreme(double ext[]);
-	virtual void Draw(COpenGLDC* pDC, bool ShowTri);           // »æÍ¼
 	void MoveModel(CVector3D vec);
 	void RotateModel(double angle, CVector3D vec);
 	CVector3D OnCenter();

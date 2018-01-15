@@ -124,12 +124,6 @@ CLTriangle* CLTriangle::GetNbTri3() const
 	return e3->e_adja ? e3->e_adja->t : NULL;
 }
 
-void CLTriangle::DrawLTriangle(COpenGLDC* pDC)
-{
-	pDC->DrawTriChip(*n, *v1, *v2, *v3);
-
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 bool CLEdgeHull::IsOpposite(const CLEdgeHull& edgeHull)//判断两条线是否方向相反
