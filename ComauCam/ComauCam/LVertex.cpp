@@ -197,7 +197,7 @@ TopologySTL::TopologySTL()
 
 TopologySTL::~TopologySTL()
 {
-	int sz = m_vertices.size();
+	unsigned int sz = m_vertices.size();
 	for (int i = sz - 1; i >= 0; i--)
 	{
 		if (NULL != m_vertices[i])

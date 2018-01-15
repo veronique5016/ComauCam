@@ -1,4 +1,4 @@
-﻿  STLModel.cpp
-c:\users\veronique\desktop\comaucam\comaucam\stlmodel.cpp(446): warning C4018: “<”: 有符号/无符号不匹配
-  ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
-  ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)
+﻿  Slice.cpp
+    正在创建库 E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.lib 和对象 E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.exp
+  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.exe
+  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-11-18\Debug\ComauCam.pdb (Partial PDB)

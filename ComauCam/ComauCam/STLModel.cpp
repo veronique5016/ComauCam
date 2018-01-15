@@ -8,8 +8,8 @@ CSTLModel::CSTLModel(void)
 
 CSTLModel::~CSTLModel(void)
 {
-	int sz = m_tris.GetSize();
-	for (int i = 0; i < sz; i++)
+	unsigned int sz = m_tris.GetSize();
+	for (unsigned int i = 0; i < sz; i++)
 	{
 		delete m_tris[i];
 	}
@@ -174,8 +174,8 @@ void CSTLModel::FindExtreme(double ext[]) // 找到 m_vertices 中 x、y、z 坐标的极
 	double z_min = m_vertices[0]->z;
 	double z_max = z_min;
 
-	int sz = m_vertices.size();
-	for (int i = 1; i<sz; i++)
+	unsigned int sz = m_vertices.size();
+	for (unsigned int i = 1; i<sz; i++)
 	{
 		if (m_vertices[i]->x > x_max)
 		{
@@ -367,12 +367,12 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 
 	sort(tmp_vertices.begin(), tmp_vertices.end());	//sort函数对给定区间所有元素进行排序
 
-	int szV = tmp_vertices.size();    // szV == 3* szTri
+	unsigned int szV = tmp_vertices.size();    // szV == 3* szTri
 
 	LVertex* pVertex = new LVertex(tmp_vertices[0]);
 	m_vertices.push_back(pVertex); //将tmp_vertices里的顶点信息存到半边结构定义的m_vertices里去
 
-	for (int i = 1; i < szV; i++)
+	for (unsigned int i = 1; i < szV; i++)
 	{
 		if (tmp_vertices[i] == tmp_vertices[i - 1])
 		{
@@ -422,10 +422,10 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 		m_ltris[i]->e3 = e3;
 	}
 
-	int szE = m_edges.size();
+	unsigned int szE = m_edges.size();
 	vector<LEdgeHull> edgeHulls;
 	LEdgeHull edgeHull;            //定义一个结构变量
-	for (int i = 0; i<szE; i++)
+	for (unsigned int i = 0; i<szE; i++)
 	{
 		edgeHull.edge = m_edges[i];//先将半边结构中的边存到结构变量中
 		edgeHulls.push_back(edgeHull);//再将结构变量中的数据存到动态数组中
@@ -433,7 +433,7 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 
 	sort(edgeHulls.begin(), edgeHulls.end());//排序？？？
 
-	for (int i = 0; i<szE - 1; i++)
+	for (unsigned int i = 0; i<szE - 1; i++)
 	{
 		if (edgeHulls[i].IsOpposite(edgeHulls[i + 1]))//如果两条边的方向是相反的
 		{
@@ -443,7 +443,7 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 		}
 	}
 
-	for (int i = 0; i < m_edges.size(); i++)
+	for (unsigned int i = 0; i < m_edges.size(); i++)
 	{
 		if(m_edges[i]->e_adja == NULL)
 			AfxMessageBox(_T("Topologize failed!!"), MB_OK, 0);
@@ -453,7 +453,7 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 LVertex* CSTLModel::SearchPtInVertices(const CPoint3D& pt) //在半边结构的顶点数组中寻找这个点								  
 {
 	LVertex vertex(pt);
-	int sz = m_vertices.size();
+	unsigned int sz = m_vertices.size();
 	int min_i = 0;              //最小编号
 	int max_i = sz - 1;           //最大编号
 

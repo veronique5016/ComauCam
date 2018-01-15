@@ -26,6 +26,7 @@ public:
 	Layer();
 	~Layer();
 	double z;
+	CVector3D gravity;
 	vector<PolyLine*> m_Polylines;
 };
 
@@ -38,6 +39,7 @@ public:
 	void slice(CSTLModel* model);  //切片函数
 	void getpolylinePoints(double z);
 	void drawpolyline();
+	void getTurn();
 
 protected:
 	void InterSect(double z, LTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
@@ -52,6 +54,8 @@ public:
 	vector<LEdge*> m_Slice_edge;     //存储相交边
 	vector<Layer*> m_layers;         //存储片层
 	vector<LTriangle*> m_tris_slice;   //保存一份三角面片，作为初始数据
+
+	vector<LTriangle*> z_tris;
 
 	double height;
 };

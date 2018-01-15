@@ -818,3 +818,40 @@ double GetDist2PtToSeg(const CPoint3D& pt,
 
 	return 0.0;
 }
+
+CPoint3D AFX_API_EXPORT CalPlaneLineIntersectPoint(const CVector3D& planeVector, const CPoint3D& planePoint, const CVector3D& lineVector, const CPoint3D& linePoint)
+{
+	CPoint3D ret;
+	double vp1, vp2, vp3, n1, n2, n3, v1, v2, v3, m1, m2, m3, t, vpt;
+
+	vp1 = planeVector.dx;
+	vp2 = planeVector.dy;
+	vp3 = planeVector.dz;
+	n1 = planePoint.x;
+	n2 = planePoint.y;
+	n3 = planePoint.z;
+	v1 = lineVector.dx;
+	v2 = lineVector.dy;
+	v3 = lineVector.dz;
+	m1 = linePoint.x;
+	m2 = linePoint.y;
+	m3 = linePoint.z;
+	vpt = vp1*v1 + vp2*v2 + vp3*v3;
+	if (vpt == 0)
+	{
+		ret.x = 0.0;
+		ret.y = 0.0;
+		ret.z = 0.0;
+	}
+	else
+	{
+		t = ((n1 - m1)*vp1 + (n2 - m2)*vp2 + (n3 - m3)*vp3) / vpt;
+	}
+	ret.x = m1 + v1*t;
+	ret.y = m2 + v2*t;
+	ret.z = m3 + v3*t;
+
+	return ret;
+}
+
+

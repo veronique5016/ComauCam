@@ -242,7 +242,6 @@ BOOL   AFX_API_EXPORT Is2SegsCross(CPoint3D& ptCross, const CPoint3D& ptS_seg1, 
 																																							   // 参数1有交点时返回的交点坐标，参数2，3是第一条直线上两个点    //
 																																							   // 参数4，5是第二条直线上两个点                                 //
 int    AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, const CPoint3D& ptS_seg1, const CPoint3D& ptE_seg1, const CPoint3D& ptS_seg2, const CPoint3D& ptE_seg2); // 对于两条相交直线求交点
-
 																																							   // ------在XY平面内获取一条XY平面内直线的垂直方向----- //
 																																							   // 返回值为垂直方向的单位向量,指向在原来方向直线的左边 //
 																																							   // 参数1，2是要求的直线上的两个点                      //
@@ -255,3 +254,7 @@ double    AFX_API_EXPORT CalDis2PtToSeg(const CPoint3D& pt, const CPoint3D& ptS_
 double AFX_API_EXPORT GetDist2PtToSeg(const CPoint3D& pt,
 	const CPoint3D& ptS_seg,
 	const CPoint3D& ptE_seg);
+
+
+// 参数依次为平面法向量、平面上任一点、直线方向向量、直线上任一点
+CPoint3D AFX_API_EXPORT CalPlaneLineIntersectPoint(const CVector3D& planeVector, const CPoint3D& planePoint, const CVector3D& lineVector, const CPoint3D& linePoint);

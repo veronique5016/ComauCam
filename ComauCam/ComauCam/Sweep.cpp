@@ -20,8 +20,8 @@ Boundary::Boundary()
 }
 Boundary::~Boundary()
 {
-	int sz = m_Boundary.size();
-	for (int i = 0; i < sz; i++)
+	unsigned int sz = m_Boundary.size();
+	for (unsigned int i = 0; i < sz; i++)
 	{
 		delete m_Boundary[i];
 		m_Boundary[i] = NULL;
@@ -36,24 +36,24 @@ CSweep::CSweep():distance(10)
 }
 CSweep::~CSweep()
 {
-	int szB = m_Boundaries.size();
-	for (int i = 0; i < szB; i++)
+	unsigned int szB = m_Boundaries.size();
+	for (unsigned int i = 0; i < szB; i++)
 	{
 		delete m_Boundaries[i];
 		m_Boundaries[i] = NULL;
 	}
 	m_Boundaries.clear();
 
-	int szL = m_Sweep_Layers.size();
-	for (int i = 0; i < szB; i++)
+	unsigned int szL = m_Sweep_Layers.size();
+	for (unsigned int i = 0; i < szB; i++)
 	{
 		delete m_Sweep_Layers[i];
 		m_Sweep_Layers[i] = NULL;
 	}
 	m_Sweep_Layers.clear();
 
-	int szR = m_Routine.size();
-	for (int i = 0; i < szB; i++)
+	unsigned int szR = m_Routine.size();
+	for (unsigned int i = 0; i < szB; i++)
 	{
 		delete m_Routine[i];
 		m_Routine[i] = NULL;
@@ -64,7 +64,7 @@ CSweep::~CSweep()
 void CSweep::sweep()
 {
 	int ext[4];
-	for (int z = 0; z < m_Sweep_Layers.size(); z++)
+	for (unsigned int z = 0; z < m_Sweep_Layers.size(); z++)
 	{
 		//int height = m_Sweep_Layers[z]->z;
 
@@ -90,8 +90,8 @@ void CSweep::sweep()
 		dx = distance;
 		dy = distance;		//扫描线间距
 
-		int sz = m_Boundaries[z]->m_Boundary.size();
-		for (int k = 0; k < sz; k++)
+		unsigned int sz = m_Boundaries[z]->m_Boundary.size();
+		for (unsigned int k = 0; k < sz; k++)
 		{
 			m_Boundaries[z]->m_Boundary[k]->p_next = m_Boundaries[z]->m_Boundary[(k + 1) % sz];
 			m_Boundaries[z]->m_Boundary[k]->p_prev = m_Boundaries[z]->m_Boundary[(sz + k - 1) % sz];
@@ -118,8 +118,8 @@ void CSweep::sweep()
 			}
 		}
 
-		int szb = m_Boundaries[z]->m_Boundary.size();
-		for (int i = 0; i < (szb+1); i++)
+		unsigned int szb = m_Boundaries[z]->m_Boundary.size();
+		for (unsigned int i = 0; i < (szb+1); i++)
 		{
 			SweepPoint* tmp = NULL;
 			tmp = pointToSweeppoint(m_Boundaries[z]->m_Boundary[(ext[1]+i)%szb], true);
@@ -130,7 +130,7 @@ void CSweep::sweep()
 
 void CSweep::generateYPoint(int ext[], double y, int z)
 {
-	int sz = m_Boundaries[z]->m_Boundary.size();
+	unsigned int sz = m_Boundaries[z]->m_Boundary.size();
 
 	SweepPoint* pCurL = NULL;
 	SweepPoint* pCurR = NULL;
@@ -160,7 +160,7 @@ void CSweep::generateYPoint(int ext[], double y, int z)
 		pCurL = getIntersectY(pBeginL, pEndL, y, m_Boundaries[z]->m_Boundary[0]->z, true);
 		pCurR = getIntersectY(pBeginR, pEndR, y, m_Boundaries[z]->m_Boundary[0]->z, false);
 
-		int szR = m_Routine.size();
+		unsigned int szR = m_Routine.size();
 		if ((szR == 0) || (m_Routine[szR - 1]->z == pCurL->z) || (m_Routine[szR - 1]->z == pCurR->z))
 		{
 			if ((szR == 0) || (m_Routine[szR - 1]->isLeft == true))
@@ -183,7 +183,7 @@ void CSweep::generateYPoint(int ext[], double y, int z)
 }
 void CSweep::generateXPoint(int ext[], double x, int z)
 {
-	int sz = m_Boundaries[z]->m_Boundary.size();
+	unsigned int sz = m_Boundaries[z]->m_Boundary.size();
 
 	SweepPoint* pCurL = NULL;
 	SweepPoint* pCurR = NULL;
@@ -214,7 +214,7 @@ void CSweep::generateXPoint(int ext[], double x, int z)
 		pCurL = getIntersectX(pBeginL, pEndL, x, m_Boundaries[z]->m_Boundary[0]->z, true);
 		pCurR = getIntersectX(pBeginR, pEndR, x, m_Boundaries[z]->m_Boundary[0]->z, false);
 
-		int szR = m_Routine.size();
+		unsigned int szR = m_Routine.size();
 		if ((szR == 0) || (m_Routine[szR - 1]->z == pCurL->z) || (m_Routine[szR - 1]->z == pCurR->z))
 		{
 			if ((szR == 0) || (m_Routine[szR - 1]->isLeft == true))
@@ -239,30 +239,30 @@ void CSweep::generateXPoint(int ext[], double x, int z)
 void CSweep::loadSliceModel(CSlice* slicemodel)
 {
 	
-	int szLay = slicemodel->m_layers.size();
-	for (int i = 0; i < szLay; i++)
+	unsigned int szLay = slicemodel->m_layers.size();
+	for (unsigned int i = 0; i < szLay; i++)
 	{
 		m_Sweep_Layers.push_back(slicemodel->m_layers[i]);		//为CSweep对象拷贝一份层切面数据
 	}
 //	int szLayer = m_Sweep_Layers.size();
 	
-	for (int i = 0; i < szLay; i++)
+	for (unsigned int i = 0; i < szLay; i++)
 	{
 		vector<CPoint3D*> tmp_points;
-		int szPolyline = m_Sweep_Layers[i]->m_Polylines.size();
+		unsigned int szPolyline = m_Sweep_Layers[i]->m_Polylines.size();
 		
-		for (int j = 0; j < szPolyline; j++)
+		for (unsigned int j = 0; j < szPolyline; j++)
 		{
-			int szLinkpoint = m_Sweep_Layers[i]->m_Polylines[j]->m_Linkpoints.size();
-			for (int k = 0; k < szLinkpoint - 1; k++)
+			unsigned int szLinkpoint = m_Sweep_Layers[i]->m_Polylines[j]->m_Linkpoints.size();
+			for (unsigned int k = 0; k < szLinkpoint - 1; k++)
 			{
 				tmp_points.push_back(m_Sweep_Layers[i]->m_Polylines[j]->m_Linkpoints[k]);
 			}
 		}
 		Boundary* tmp_boundary = new Boundary();
 		tmp_boundary->z = tmp_points[0]->z;
-		int szTemp = tmp_points.size();
-		for (int j = 0; j < szTemp; j++)
+		unsigned int szTemp = tmp_points.size();
+		for (unsigned int j = 0; j < szTemp; j++)
 		{
 			tmp_boundary->m_Boundary.push_back(tmp_points[j]);
 		}
@@ -275,17 +275,17 @@ void CSweep::loadSliceModel(CSlice* slicemodel)
 void CSweep::deletePoints(int z)
 {
 	vector<CPoint3D*> tmp_points;
-	int szB = m_Boundaries[z]->m_Boundary.size();
+	unsigned int szB = m_Boundaries[z]->m_Boundary.size();
 
 	// 取出单个层切面轮廓中的所有交点
-	for (int j = 0; j < szB; j++)
+	for (unsigned int j = 0; j < szB; j++)
 	{
 		tmp_points.push_back(m_Boundaries[z]->m_Boundary[j]);
 	}
 	m_Boundaries[z]->m_Boundary.clear();
 
-	int szTemp = tmp_points.size();
-	for (int i = 0; i < szTemp; i++)
+	unsigned int szTemp = tmp_points.size();
+	for (unsigned int i = 0; i < szTemp; i++)
 	{
 		if (tmp_points[i]->x <= 0.0000001)
 			tmp_points[i]->x = 0;
@@ -300,7 +300,7 @@ void CSweep::deletePoints(int z)
 	CVector3D vec1, vec2; 
 	while (szTemp >= 3)
 	{
-		for (int j = 0; j < szTemp; j++)
+		for (unsigned int j = 0; j < szTemp; j++)
 		{
 			pCur = tmp_points[j%szTemp];
 			pNext = tmp_points[(j+1)%szTemp];
@@ -328,7 +328,7 @@ void CSweep::deletePoints(int z)
 
 	Boundary* tmp_boundary = new Boundary();
 	tmp_boundary->z = tmp_points[0]->z;
-	for (int i = 0; i < szTemp; i++)
+	for (unsigned int i = 0; i < szTemp; i++)
 	{
 		tmp_boundary->m_Boundary.push_back(tmp_points[i]);
 	}
@@ -338,18 +338,18 @@ void CSweep::deletePoints(int z)
 void CSweep::rearrange(int ext[], int z)
 {
 	vector<CPoint3D*> tmp_points;
-	for (int j = 0; j < m_Boundaries[z]->m_Boundary.size(); j++)
+	for (unsigned int j = 0; j < m_Boundaries[z]->m_Boundary.size(); j++)
 	{
 		tmp_points.push_back(m_Boundaries[z]->m_Boundary[j]);
 	}
 	m_Boundaries[z]->m_Boundary.clear();
 
-	int szTmp = tmp_points.size();
+	unsigned int szTmp = tmp_points.size();
 	CPoint3D* minpoint = tmp_points[0];
 //	CPoint3D* maxpoint = tmp_points[0];
 	ext[0] = 0;
 //	ext[1] = 0;
-	for (int j = 1; j < szTmp; j++)
+	for (unsigned int j = 1; j < szTmp; j++)
 	{
 		if (minpoint->y > tmp_points[j]->y)
 		{
@@ -385,7 +385,7 @@ void CSweep::rearrange(int ext[], int z)
 		else {}
 	}
 	*/
-	int num = 0;
+	unsigned int num = 0;
 	
 	Boundary* tmp_boundary = new Boundary();
 	tmp_boundary->z = tmp_points[0]->z;
@@ -405,7 +405,7 @@ void CSweep::findExtreme(int ext[], int z)
 	ext[1] = 0;
 	ext[2] = 0;
 	ext[3] = 0;
-	for (int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
+	for (unsigned int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
 	{
 		if (minpoint->y > m_Boundaries[z]->m_Boundary[j]->y)
 		{
@@ -423,7 +423,7 @@ void CSweep::findExtreme(int ext[], int z)
 		else {}
 	}
 
-	for (int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
+	for (unsigned int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
 	{
 		if (maxpoint->y < m_Boundaries[z]->m_Boundary[j]->y)
 		{
@@ -443,7 +443,7 @@ void CSweep::findExtreme(int ext[], int z)
 
 	minpoint = m_Boundaries[z]->m_Boundary[0];
 	maxpoint = m_Boundaries[z]->m_Boundary[0];
-	for (int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
+	for (unsigned int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
 	{
 		if (minpoint->x > m_Boundaries[z]->m_Boundary[j]->x)
 		{
@@ -461,7 +461,7 @@ void CSweep::findExtreme(int ext[], int z)
 		else {}
 	}
 
-	for (int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
+	for (unsigned int j = 1; j < m_Boundaries[z]->m_Boundary.size(); j++)
 	{
 		if (maxpoint->x < m_Boundaries[z]->m_Boundary[j]->x)
 		{
@@ -495,8 +495,8 @@ SweepPoint* CSweep::getIntersectX(const CPoint3D* p1, const CPoint3D* p2, double
 
 void CSweep::drawRoute()
 {
-	int sz = m_Routine.size();
-	for (int i = 0; i < sz-1; i++)
+	unsigned int sz = m_Routine.size();
+	for (unsigned int i = 0; i < sz-1; i++)
 	{
 		CPoint3D* p1 = new CPoint3D(*m_Routine[i]);
 		CPoint3D* p2 = new CPoint3D(*m_Routine[i+1]);
@@ -539,9 +539,9 @@ void CSweep::writeGCode(CString sFilePath)
 		str.Format(_T("G0 X%.3f Y%.3f z%.3f\n"),
 			m_Routine[0]->x, m_Routine[0]->y, m_Routine[0]->z);
 		fileout.WriteString(str);
-		int sz = m_Routine.size();
+		unsigned int sz = m_Routine.size();
 		double length = 0.0000;
-		for (int i = 1; i < sz; i++)
+		for (unsigned int i = 1; i < sz; i++)
 		{
 			if (m_Routine[i]->z == m_Routine[i - 1]->z)
 			{

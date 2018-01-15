@@ -620,8 +620,8 @@ void CComauCamView::OnStartSlice()
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		int szModel = models.size();
-		for (int i = 0; i < szModel; i++)
+		unsigned int szModel = models.size();
+		for (unsigned int i = 0; i < szModel; i++)
 		{
 			CSlice* pSlice = new CSlice();
 			pSlice->height = dialog.m_sliceDistance;
@@ -629,7 +629,7 @@ void CComauCamView::OnStartSlice()
 			pSlice->slice(models[i]);
 			m_slices.push_back(pSlice);
 			m_bCanSliceDraw = true;
-			m_bCanSTLDraw = false;
+			//m_bCanSTLDraw = false;
 			Invalidate(TRUE);
 		}
 	}
@@ -643,8 +643,8 @@ void CComauCamView::OnSweep()
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		int szSlice = m_slices.size();
-		for (int i = 0; i < szSlice; i++)
+		unsigned int szSlice = m_slices.size();
+		for (unsigned int i = 0; i < szSlice; i++)
 		{
 			CSweep* pSweep = new CSweep();
 			pSweep->distance = dialog.m_sweepDistance;
@@ -663,7 +663,7 @@ void CComauCamView::OnSweep()
 void CComauCamView::OnWritegcode()
 {
 	// TODO: 在此添加命令处理程序代码
-	int sz = m_sweeps.size();
+	unsigned int sz = m_sweeps.size();
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
 	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
 	CString strFilePath;
@@ -671,7 +671,7 @@ void CComauCamView::OnWritegcode()
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
-		for (int i = 0; i < sz; i++)
+		for (unsigned int i = 0; i < sz; i++)
 		{
 			m_sweeps[i]->writeGCode(strFilePath);
 		}
