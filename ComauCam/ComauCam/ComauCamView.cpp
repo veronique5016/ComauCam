@@ -46,6 +46,7 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_DISPLAYMODE, &CComauCamView::OnDisplaymode)
 	ON_COMMAND(ID_SHOWSELECTEDLAYER, &CComauCamView::OnShowselectedlayer)
 	ON_COMMAND(ID_FIVEAXISGCODE, &CComauCamView::OnFiveaxisgcode)
+	ON_COMMAND(ID_moveandRotate, &CComauCamView::Onmoveandrotate)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -424,13 +425,11 @@ void CComauCamView::OnStlopen()
 		stlModel->ReadSTL(str);
 		m_bCanSTLDraw = true;
 		m_ShowTriFace = true;
-		stlModel->moveModel(CVector3D(-15,-15,0));
 		m_models.push_back(stlModel);
 
 		Invalidate(TRUE);
 	}
 }
-
 
 int CComauCamView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
@@ -460,7 +459,6 @@ void CComauCamView::OnSize(UINT nType, int cx, int cy)
 	::glLoadIdentity();
 }
 
-
 void CComauCamView::OnDestroy()
 {
 	CView::OnDestroy();
@@ -478,7 +476,6 @@ void CComauCamView::OnDestroy()
 }
 
 
-
 //////////////////////////////////////////////////////////
 //					鼠标响应函数
 //////////////////////////////////////////////////////////
@@ -493,7 +490,6 @@ void CComauCamView::OnLButtonUp(UINT nFlags, CPoint point)
 	CView::OnLButtonUp(nFlags, point);
 }
 
-
 void CComauCamView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
@@ -504,7 +500,6 @@ void CComauCamView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CView::OnLButtonDown(nFlags, point);
 }
-
 
 void CComauCamView::OnMouseMove(UINT nFlags, CPoint point)
 {
@@ -528,7 +523,6 @@ void CComauCamView::OnMouseMove(UINT nFlags, CPoint point)
 
 }
 
-
 BOOL CComauCamView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
 
@@ -545,8 +539,6 @@ BOOL CComauCamView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
-
-
 
 void CComauCamView::OnRButtonDown(UINT nFlags, CPoint point)
 {
@@ -665,8 +657,6 @@ void CComauCamView::OnWritegcode()
 		strFilePath = fileDlg.GetPathName();
 		for (unsigned int i = 0; i < sz; i++)
 		{
-			//m_sweeps[i]->writeGCode(strFilePath);
-			
 			gcodeOut->loadSweepModel(m_sweeps[i]);
 			gcodeOut->writeGCode(strFilePath);
 		}
@@ -737,3 +727,25 @@ void CComauCamView::OnShowselectedlayer()
 }
 
 
+void CComauCamView::Onmoveandrotate()
+{
+	// TODO: 在此添加命令处理程序代码
+	TransferDlg dialog;
+	if (dialog.DoModal() == IDOK)
+	{
+		UpdateData(TRUE);
+		double xmove = dialog.x_move;
+		double ymove = dialog.y_move;
+		double zmove = dialog.z_move;
+		double angle = dialog.angle*PI / 180.0;
+		double xaxis = dialog.x_axis;
+		double yaxis = dialog.y_axis;
+		double zaxis = dialog.z_axis;
+		for (unsigned int i = 0; i < m_models.size(); i++)
+		{
+			m_models[i]->moveModel(CVector3D(xmove, ymove, zmove));
+			m_models[i]->rotateModel(angle, CVector3D(xaxis, yaxis, zaxis));
+		}
+		Invalidate(TRUE);
+	}
+}

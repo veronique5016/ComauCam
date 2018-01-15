@@ -92,10 +92,12 @@
 #define IDD_SHOWLAYERDIALOG             319
 #define IDD_LAYERDIALOG                 319
 #define IDD_SHOWSELECTEDLAYER           319
+#define IDD_TRANSFERDIALOG              321
 #define IDC_EDIT1                       1000
 #define IDC_STLMODEL                    1001
 #define IDC_EDIT2                       1001
 #define IDC_SHOWTRIANGLE                1002
+#define IDC_EDIT5                       1002
 #define IDC_SHOWFRAME                   1003
 #define IDC_SLICEMODEL                  1004
 #define IDC_SWEEPMODEL                  1005
@@ -106,6 +108,15 @@
 #define IDC_CANSLICESHOW                1012
 #define IDC_EDIT4                       1012
 #define IDC_EDIT3                       1013
+#define IDC_MOVE                        1014
+#define IDC_ROTATE                      1015
+#define IDC_XMOVE                       1016
+#define IDC_YMOVE                       1017
+#define IDC_ANGLE                       1018
+#define IDC_XAXIS                       1019
+#define IDC_YAXIS                       1020
+#define IDC_ANGLE4                      1021
+#define IDC_ZAXIS                       1021
 #define ID_STLOpen                      32772
 #define ID_DeleteModel                  32775
 #define ID_Triangle_Frame               32779
@@ -122,14 +133,17 @@
 #define ID_SHOWSELECTEDLAYER            32791
 #define ID_32792                        32792
 #define ID_FIVEAXISGCODE                32793
+#define ID_32794                        32794
+#define ID_32795                        32795
+#define ID_moveandRotate                32796
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        321
-#define _APS_NEXT_COMMAND_VALUE         32794
-#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_RESOURCE_VALUE        323
+#define _APS_NEXT_COMMAND_VALUE         32797
+#define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

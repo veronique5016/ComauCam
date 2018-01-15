@@ -13,6 +13,7 @@
 #include "DisplayDlg.h"
 #include "LayerDlg.h"
 #include "GCode.h"
+#include "TransferDlg.h"
 
 class CComauCamView : public CView
 {
@@ -115,6 +116,7 @@ public:
 	afx_msg void OnDisplaymode();
 	afx_msg void OnShowselectedlayer();
 	afx_msg void OnFiveaxisgcode();
+	afx_msg void Onmoveandrotate();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

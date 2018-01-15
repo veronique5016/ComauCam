@@ -362,6 +362,15 @@ void CSTLModel::moveModel(CVector3D vec)
 	}
 }
 
+void CSTLModel::rotateModel(double angle, CVector3D vec)
+{
+	unsigned int sz = m_tris.GetSize();
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		m_tris[i]->Rotate(angle, vec);
+	}
+}
+
 void CSTLModel::Topologize()	// 建立拓扑关系
 {
 	vector<LVertex> tmp_vertices;

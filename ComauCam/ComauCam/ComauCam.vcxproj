@@ -207,6 +207,7 @@
     <ClInclude Include="Sweep.h" />
     <ClInclude Include="SweepDlg.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TransferDlg.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="ViewTree.h" />
   </ItemGroup>
@@ -237,6 +238,7 @@
     <ClCompile Include="STLModel.cpp" />
     <ClCompile Include="Sweep.cpp" />
     <ClCompile Include="SweepDlg.cpp" />
+    <ClCompile Include="TransferDlg.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="ViewTree.cpp" />
   </ItemGroup>
