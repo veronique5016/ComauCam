@@ -50,7 +50,6 @@ Boundary::~Boundary()
 		m_Boundary[i] = NULL;
 	}
 	m_Boundary.clear();
-
 }
 
 CSweep::CSweep():distance(10)
@@ -94,12 +93,12 @@ void CSweep::sweep()
 		//删除共线的点，此算法需要优化
 		deletePoints(z);
 	
-		bool isCCW = isBoundaryCCW(m_Sweep_Layers[z], z);
+/*		bool isCCW = isBoundaryCCW(m_Sweep_Layers[z], z);
 		if (!isCCW)
 		{
 			makeBoundaryCCW(m_Sweep_Layers[z], z);
 		}
-		isCCW = isBoundaryCCW(m_Sweep_Layers[z], z);
+		isCCW = isBoundaryCCW(m_Sweep_Layers[z], z);*/
 		//对轮廓点进行重排，先找到 y 最小的点集，再找到 x 最小的点，设为起始点，逆时针连成轮廓
 		rearrange(ext, z);
 
@@ -506,6 +505,7 @@ void CSweep::offSet(Layer* layer, double offset, int z)
 
 }
 
+/*
 bool CSweep::isBoundaryCCW(Layer* layer, int z)
 {
 	unsigned int sz = m_Boundaries[z]->m_Boundary.size();
@@ -553,7 +553,7 @@ void CSweep::makeBoundaryCCW(Layer * layer, int z)
 	}
 
 }
-
+*/
 
 void CSweep::findExtreme(int ext[], int z)
 {
@@ -665,19 +665,6 @@ void CSweep::drawRoute()
 		glVertex3f(p2->x, p2->y, p2->z);
 		glEnd();
 	}
-
-/*	unsigned int szoff = m_offsetBoundaries[2]->m_Boundary.size();
-	for (unsigned int i = 0; i < sz - 1; i++)
-	{
- 		CPoint3D* p1 = new CPoint3D(*m_offsetBoundaries[2]->m_Boundary[i%szoff]);
-		CPoint3D* p2 = new CPoint3D(*m_offsetBoundaries[2]->m_Boundary[(i + 1)%szoff]);
-		glLineWidth(1.5f);
-		glBegin(GL_LINES);
-		glColor3f(1.0f, 1.0f, 0.0f);
-		glVertex3f(p1->x, p1->y, p1->z);
-		glVertex3f(p2->x, p2->y, p2->z);
-		glEnd();
-	}*/
 }
 
 

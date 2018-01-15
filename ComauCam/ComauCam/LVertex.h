@@ -48,8 +48,8 @@ struct LTriangle : public CObject
 
 	bool b_use;     //面片是否被使用
 	int FaceType;  //面片类型
-	LEdge* SelectIntersectLine;     //上一面片已经求交的相交线，用于寻找下一相交线
-	LEdge* OtherIntersectLine;      //另一条相交线
+	LEdge* IntersectLine1;     //上一面片已经求交的相交线，用于寻找下一相交线
+	LEdge* IntersectLine2;     //另一条相交线
 };
 
 struct LEdgeHull//外壳

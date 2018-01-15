@@ -85,8 +85,8 @@ LTriangle::LTriangle()
 	n = NULL;
 	b_use = false;     //面片是否被使用
 	FaceType = 0;  //面片类型
-	SelectIntersectLine = NULL;     //上一面片已经求交的相交线，用于寻找下一相交线
-	OtherIntersectLine = NULL;      //另一条相交线
+	IntersectLine1 = NULL;     //上一面片已经求交的相交线，用于寻找下一相交线
+	IntersectLine2= NULL;      //另一条相交线
 }
 
 LTriangle::LTriangle(LVertex* v1, LVertex* v2, LVertex* v3)

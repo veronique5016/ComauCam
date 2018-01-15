@@ -2,6 +2,29 @@
 #include "Slice.h"
 #include <algorithm>
 
+LPoint::LPoint()
+{
+	p_prev = NULL;
+	p_next = NULL;
+	edge = NULL;
+	layer = NULL;
+}
+LPoint::~LPoint()
+{
+}
+LPoint::LPoint(const LPoint& lpoint)
+{
+	x = lpoint.x;
+	y = lpoint.y;
+	z = lpoint.z;
+}
+LPoint::LPoint(const CPoint3D & pt)
+{
+	x = pt.x;
+	y = pt.y;
+	z = pt.z;
+}
+
 PolyLine::PolyLine()
 {
 }
@@ -75,7 +98,7 @@ void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
 	}
 }
 
-double CSlice::getTurnPoint()
+double CSlice::getTurnHeight()
 {
 
 	unsigned int sz = m_tris_slice.size();
@@ -97,11 +120,13 @@ double CSlice::getTurnPoint()
 	}
 	else
 	{
-		zmin_turn = ReturnZmin(m_tris_slice[0]);
+		//zmin_turn = ReturnZmin(m_tris_slice[0]);
+		zmin_turn = ReturnZtype(m_tris_slice[0]->v1->z, m_tris_slice[0]->v2->z, m_tris_slice[0]->v3->z, Z_MIN);
 		return zmin_turn;
 	}
 }
 
+// 获取变姿态后的法向量
 CVector3D CSlice::getTurnVec()
 {
 	CVector3D vec = CVector3D(0, 0, 1);
@@ -139,55 +164,23 @@ CVector3D CSlice::getTurnVec()
 
 void CSlice::slice(CSTLModel* model)
 {
-	gravity = CVector3D(0, 0, 1);
-	double z_Min, z_Max;  //模型极限尺寸
-	double z;  //切片高度
-	double dz;   //切片层厚
+	double z_Min, z_Max, z, dz, zmin_turn; //模型 z 向最大最小值，当前切片平面 z 值，层切高度，模型转折处的 z 值，如果有多出转折，可能需要一个 zmin_turn[]
 	double ex[6];
-	model->FindExtreme(ex);   //查找模型的极限尺寸
+	model->FindExtreme(ex); //查找模型的极限尺寸
 	z_Min = ex[4];
-	z_Max = ex[5];
-	z = z_Min + 0.1;  //第一个切片层，无法设为 z_Min
-	dz = height;   //层高
+	dz = height;
+	z = z_Min + dz;  //第一个切片层，无法设为 z_Min
 
 
-/////////////////////////////////
-	//获取变姿态后切平面的法向量
-/////////////////////////////////
 
-	LTriangle* tmp_tri = NULL;
-	LTriangle* tmp_triangle = new LTriangle();
-
-	tmp_tri = m_tris_slice[0];
-	tmp_triangle->v1 = m_tris_slice[0]->v1;
-	tmp_triangle->v2 = m_tris_slice[0]->v3;
-
-	double pt_x = 10.0;
-	double pt_z = 0.0;
-	pt_z = 50.0 - 30 * m_tris_slice[0]->n->dz / m_tris_slice[0]->n->dx;
-	CPoint3D* tmp_point = new CPoint3D(pt_x, 0.0, pt_z);
-	LVertex* tmp = new LVertex(*tmp_point);
-	tmp_triangle->v3 = tmp;
-
-	double norm_dx = 1.0; 
-	double norm_dz = -(m_tris_slice[0]->n->dx*norm_dx) / (m_tris_slice[0]->n->dz);
-	double norm_dy = 0.0;
-	CVector3D* tmp_norm = new CVector3D(norm_dx, norm_dy, norm_dz);
-	tmp_triangle->n = tmp_norm;
-	
-
-/////////////////////////////////
-// 切第一部分
-/////////////////////////////////
-	double zmin_turn;
-	zmin_turn = getTurnPoint();
-	CVector3D turn_vec = getTurnVec();
+	zmin_turn = getTurnHeight();
 	if (zmin_turn != 0.0)
 	{
 		need_support = true;
 	}
 	if (!need_support)
 	{
+		z_Max = ex[5];
 		begin3DSlice(z_Min, z_Max, z, dz);
 	}
 	else
@@ -195,30 +188,19 @@ void CSlice::slice(CSTLModel* model)
 		z_Max = zmin_turn;
 		begin3DSlice(z_Min, z_Max, z, dz);
 
+		z_Min = zmin_turn + dz;
+		z_Max = ex[5];
 
-		z_Min = zmin_turn + 0.1;
-		z_Max = 90.0;
-		//z = z_Min;
 		while (z < z_Min)
 		{
 			z += dz;
 		}
 		begin5DSlice(z_Min, z_Max, z, dz);
 	}
-
-/////////////////////////////////
-// 切三角形，对轮廓进行处理
-/////////////////////////////////
-/*	CPoint3D tmp_cal;
-	CPoint3D planepoint = CPoint3D(30.0, 0.0, 50.0);
-	CVector3D lineVector = CVector3D(3.0, 0.0, 4.0);
-	CPoint3D linepoint = CPoint3D(0.0, 0.0, 50.0);
-	tmp_cal = ::CalPlaneLineIntersectPoint(*tmp_norm, planepoint, lineVector, linepoint);
-
-	z_Max = tmp_cal.z;
-
-	z = z + dz;
-	CPoint3D* tmp_point1 = new CPoint3D();
+}
+ 
+void CSlice::begin3DSlice(double z_min, double z_max, double &z, double dz)
+{
 	while (true)
 	{
 		Layer* tmp_layer = new Layer();
@@ -230,72 +212,122 @@ void CSlice::slice(CSTLModel* model)
 
 		getpolylinePoints(m_layers[m_layers.size() - 1]);
 
-////////对轮廓进行处理
-/*		pt_x = 0.0;
-		pt_z = z;
-		pt_x = 30.0 - (50 - pt_z)* m_tris_slice[0]->n->dx / m_tris_slice[0]->n->dz;
-		tmp_point->x = pt_x;
-		tmp_point->z = pt_z;
-		tmp_point->y = 0.0;
-		tmp_point1->x = pt_x;
-		tmp_point1->y = 30.0;
-		tmp_point1->z = pt_z;
-		int j = 0;
-		unsigned int szl = m_layers.size();
-		for (unsigned int i = 0; i < m_layers[szl - 1]->m_Polylines[0]->m_Linkpoints.size()-1; i++)
+		bool isCCW = isBoundaryCCW(m_layers[m_layers.size() - 1]);
+		if (!isCCW)
 		{
-			if (m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i]->x == m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i+1]->x
-				&&m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i]->y == m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i + 1]->y
-				&&m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i]->z == m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i + 1]->z)
-			{
-				m_layers[szl-1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[szl-1]->m_Polylines[0]->m_Linkpoints.begin()+i+1);
-				i = 0;
-			}
+			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
 		}
 
-    	for (unsigned int i = 0; i < m_layers[szl-1]->m_Polylines[0]->m_Linkpoints.size(); i++)
-		{
-			if (m_layers[szl - 1]->m_Polylines[0]->m_Linkpoints[i]->x > tmp_point->x)
-			{
-				m_layers[szl - 1]->m_Polylines[0]->m_Linkpoints[i]->x = tmp_point->x;
-			}
-		}
-
-		for (unsigned int i = 0; i < m_layers[szl-1]->m_Polylines[0]->m_Linkpoints.size() - 1; i++)
-		{
-			if (m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i]->x == m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i + 1]->x
-				&&m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i]->y == m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i + 1]->y
-				&&m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i]->z == m_layers[szl-1]->m_Polylines[0]->m_Linkpoints[i + 1]->z)
-			{
-				m_layers[szl-1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[szl-1]->m_Polylines[0]->m_Linkpoints.begin() + i + 1);
-				i = 0;
-			}
-		}
-*/
-/*	if (z >= (z_Max - dz))
+		if (z >= (z_max - dz))
 		{
 			break;
 		}
 		z += dz;
-	}*/
+	}
+}
 
+void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
+{
+
+	CPoint3D tmp_layer_point = CPoint3D(0, 0, 0);
+	vector<LPoint*> cross_point;	// 用于存放 z 向切平面上进行过偏移的轮廓点
+	double x_max;
+	while (true)
+	{
+		Layer* tmp_layer = new Layer();
+		tmp_layer_point = CPoint3D(0, 0, z);
+		tmp_layer->layer_gravity = gravity;
+		tmp_layer->layerPoint = tmp_layer_point;
+
+		m_layers.push_back(tmp_layer);
+
+		getpolylinePoints(m_layers[m_layers.size() - 1]);
+
+		// 获取轮廓点后对部分轮廓点进行偏置
+		unsigned int sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
+		x_max = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
+		for (unsigned int i = 0; i < sz; i++)
+		{
+			if (x_max <= m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x)
+				x_max = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x;
+		}
+
+		// 将轮廓上的点逆时针排布
+		bool isCCW = isBoundaryCCW(m_layers[m_layers.size() - 1]);
+		if (!isCCW)
+		{
+			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
+		}
+
+		for (unsigned int i = 0; i < sz; i++)
+		{
+			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x == x_max)// 判断需要修改
+			{
+				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x -= 2.0;
+				cross_point.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]);
+				tmp_layer_point = *m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i];
+			}
+		}
+		cross_point.erase(cross_point.begin(), cross_point.begin() + 1);
+
+		// 斜切面进行切片
+		Layer* turn_layer = new Layer();
+		turn_layer->layer_gravity = getTurnVec();
+		turn_layer->layerPoint = tmp_layer_point;
+
+		m_layers.push_back(turn_layer);
+
+		getpolylinePoints(m_layers[m_layers.size() - 1]);
+
+		if (!isBoundaryCCW(m_layers[m_layers.size() - 1]))
+		{
+			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
+		}
+
+		// 将两个切片平面生成的轮廓合并
+		unsigned int tmp_sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
+		for (unsigned int i = 0; i < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size(); i++)
+		{
+			if(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->z > tmp_layer_point.z)
+			{
+				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + i);
+				i = 0;
+			}
+		}
+
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin(), m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + 1);
+		for (unsigned int i = 0; i < cross_point.size(); i++)
+		{
+			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(cross_point[cross_point.size() - i - 1]);
+		}
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]);
+
+
+		cross_point.clear();
+
+		if (z >= (z_max - dz))
+		{
+			break;
+		}
+		z += dz;
+	}
 }
 
 void CSlice::getpolylinePoints(Layer* layer)
 {
+/////////////////////////
+////// 筛选相交面片
+/////////////////////////
 	vector<LTriangle*> status; //储存符合层高的，筛选出来的面片
 	double v1_dist, v2_dist, v3_dist;
-
 
 	unsigned int szTri = m_tris_slice.size();
 	for (unsigned int i = 0; i < szTri; i++)         //遍历所有面片,筛选出相交面片
 	{
 		//////ReturnZtype 无法对斜切平面生效，该函数可考虑舍去，因为函数的作用就是为了判断三角面片和切平面是否相交
-
 		v1_dist = ::CalPointtoPlane(*m_tris_slice[i]->v1, layer->layer_gravity, layer->layerPoint);
 		v2_dist = ::CalPointtoPlane(*m_tris_slice[i]->v2, layer->layer_gravity, layer->layerPoint);
 		v3_dist = ::CalPointtoPlane(*m_tris_slice[i]->v3, layer->layer_gravity, layer->layerPoint);
-
 
 		if(!((v1_dist<0&&v2_dist<0&&v3_dist<0)||(v1_dist>0&&v2_dist>0&&v3_dist>0)))
 		{
@@ -312,29 +344,38 @@ void CSlice::getpolylinePoints(Layer* layer)
 		}
 	}
 
+/////////////////////////
+////// 对相交面片进行面片分类
+/////////////////////////
 	unsigned int szStatus = status.size();
-	for (unsigned int i = 0; i<szStatus; i++)       //对相交面片进行面片分类
+	for (unsigned int i = 0; i<szStatus; i++)    
 	{
 		JudgeFaceType(layer, status[i]);
 	}
+
+/////////////////////////
+////// 求切片平面与三角面片交点
+/////////////////////////
 	LTriangle* pCurFace = new LTriangle();
 	//选第一个面片作为起始面片
 	pCurFace = status[0];
 	pCurFace->b_use = true;//把面片置为当前使用面片，标志位置为真
+	
 	while (true)
 	{
 		PolyLine* m_polyline = new PolyLine();
-		InterSect(layer, pCurFace);  //设定起始相交边，并存入m_Slice_edge容器
-		CPoint3D* tmpLinkPoint = new CPoint3D();
+		LPoint* tmpLinkPoint = new LPoint();
+		getInterSectEdge(layer, pCurFace);  //设定起始相交边，并存入m_Slice_edge容器	
 		unsigned int sz0 = m_Slice_edge.size();
-		pCurFace->SelectIntersectLine = m_Slice_edge[sz0 - 1];
+		pCurFace->IntersectLine1 = m_Slice_edge[sz0 - 1];
 		//由起始相交边求交点，并存入m_LinkPoint容器
-		CalIntersectPoint(layer, pCurFace->SelectIntersectLine, pCurFace, tmpLinkPoint);
-		m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
+		CalIntersectPoint(layer, pCurFace->IntersectLine1, pCurFace, tmpLinkPoint);
+		m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
+
 		//第一个面片的另一相交边求交点，并存入m_LinkPoint容器
 		JudgeOtherLine(layer, pCurFace);
-		CalIntersectPoint(layer, pCurFace->OtherIntersectLine, pCurFace, tmpLinkPoint);
-		m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
+		CalIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
+		m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
 		//上面是轮廓第一个面片的特殊处理
 
 		while (true)
@@ -344,14 +385,14 @@ void CSlice::getpolylinePoints(Layer* layer)
 			pCurFace = m_Slice_edge[sz - 1]->e_adja->t;
 			pCurFace->b_use = true;//把面片置为当前使用面片，标志位置为真
 								   //最后存入m_Slice_edge的相交边是上一面片的第二条相交边，它的伙伴半边就是当前面片已选的相交边
-			pCurFace->SelectIntersectLine = m_Slice_edge[sz - 1]->e_adja;
+			pCurFace->IntersectLine1 = m_Slice_edge[sz - 1]->e_adja;
 			//判断当前面片中的另一相交边，保存边
 			JudgeOtherLine(layer, pCurFace);
 			//求交点，并保持点
 
 
-			CalIntersectPoint(layer, pCurFace->OtherIntersectLine, pCurFace, tmpLinkPoint);
-			m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
+			CalIntersectPoint(layer, pCurFace->IntersectLine2, pCurFace, tmpLinkPoint);
+			m_polyline->m_Linkpoints.push_back(new LPoint(*tmpLinkPoint));
 
 			unsigned int szlinkPoint = m_polyline->m_Linkpoints.size();
 			//判断交点是否为起始点，若是，跳出内层循环，此时生成一个轮廓点集，若否，直接返回内层循环
@@ -359,6 +400,7 @@ void CSlice::getpolylinePoints(Layer* layer)
 			{
 				Layer* pLayer = new Layer();
 				//pLayer->z = z;
+				pLayer->layer_gravity = m_layers[m_layers.size() - 1]->layer_gravity;
 				pLayer->m_Polylines.push_back(m_polyline);
 				m_layers[m_layers.size()-1] = pLayer;
 //				int szpoint = m_polyline->m_Linkpoints.size();
@@ -373,19 +415,49 @@ void CSlice::getpolylinePoints(Layer* layer)
 
 }
 
-void CSlice::drawpolyline(double color[])
+void CSlice::drawpolyline(bool showPolygon)
 {
+	double color[3];
 	unsigned int szlayer = m_layers.size();
+	LPoint point1, point2;
 	for (unsigned int i = 0; i<szlayer; i++)
 	{
 		unsigned int szpolyline = m_layers[i]->m_Polylines.size();
-		for (unsigned int j = 0; j<szpolyline; j++)
+		if (m_layers[i]->layer_gravity.dz == 1.0)
+		{
+			color[0] = 0.0;
+			color[1] = 1.0;
+			color[2] = 0.0;
+		}
+		else
+		{
+			color[0] = 1.0;
+			color[1] = 0.0;
+			color[2] = 0.0;
+		}
+		for (unsigned int j = 0; j < szpolyline; j++)
 		{
 			unsigned int szPoint = m_layers[i]->m_Polylines[j]->m_Linkpoints.size();
+
+			glLineWidth(1.5f);
+			if (showPolygon)
+			{
+				glBegin(GL_POLYGON);
+				glPolygonMode(GL_FRONT, GL_FILL);
+				glPolygonMode(GL_BACK, GL_LINE);
+
+				glColor3f(color[0], color[1], color[2]);
+				for (unsigned int k = 0; k < szPoint; k++)
+				{
+					glVertex3f(m_layers[i]->m_Polylines[j]->m_Linkpoints[k]->x, m_layers[i]->m_Polylines[j]->m_Linkpoints[k]->y, m_layers[i]->m_Polylines[j]->m_Linkpoints[k]->z);
+				}
+				glEnd();
+			}
+
 			for (unsigned int k = 0; k<(szPoint-1); k++)
 			{
-				CPoint3D point1 = CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k]));
-				CPoint3D point2 = CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1]));
+				point1 = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k];
+				point2 = *m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1];
 				glLineWidth(1.5f);
 				glBegin(GL_LINES);
 				glColor3f(color[0], color[1], color[2]);
@@ -398,7 +470,7 @@ void CSlice::drawpolyline(double color[])
 
 }
 
-void CSlice::InterSect(Layer* layer, LTriangle* pCurFace)   //只要找到一条相交的边就可以跳出
+void CSlice::getInterSectEdge(Layer* layer, LTriangle* pCurFace)   //只要找到一条相交的边就可以跳出
 {
 	int v1_plane, v2_plane, v3_plane;
 	CPoint3D v1_tmp, v2_tmp, v3_tmp;
@@ -514,13 +586,13 @@ void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
 	int v1_plane, v2_plane;
 	CPoint3D v1_tmp, v2_tmp;
 
-	v1_tmp.x = pCurFace->SelectIntersectLine->e_prev->v1->x;
-	v1_tmp.y = pCurFace->SelectIntersectLine->e_prev->v1->y;
-	v1_tmp.z = pCurFace->SelectIntersectLine->e_prev->v1->z;
+	v1_tmp.x = pCurFace->IntersectLine1->e_prev->v1->x;
+	v1_tmp.y = pCurFace->IntersectLine1->e_prev->v1->y;
+	v1_tmp.z = pCurFace->IntersectLine1->e_prev->v1->z;
 
-	v2_tmp.x = pCurFace->SelectIntersectLine->e_prev->v2->x;
-	v2_tmp.y = pCurFace->SelectIntersectLine->e_prev->v2->y;
-	v2_tmp.z = pCurFace->SelectIntersectLine->e_prev->v2->z;
+	v2_tmp.x = pCurFace->IntersectLine1->e_prev->v2->x;
+	v2_tmp.y = pCurFace->IntersectLine1->e_prev->v2->y;
+	v2_tmp.z = pCurFace->IntersectLine1->e_prev->v2->z;
 
 	v1_plane = PointtoPlane(v1_tmp, layer->layer_gravity, layer->layerPoint);
 	v2_plane = PointtoPlane(v2_tmp, layer->layer_gravity, layer->layerPoint);
@@ -531,9 +603,9 @@ void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
 	{
 		//已选的相交边的相邻前一边判断是否相交
 		if ((v1_plane * v2_plane)<0)
-			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+			pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_prev;
 		else//否则另一条就是相交边
-			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+			pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_next;
 		break;
 	}
 	case ONE_POINT_ON_SURFACE:  //这种情况比较特殊，要先判断已选的相交边是哪种类型
@@ -543,13 +615,13 @@ void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
 		{
 			//已选的相交边的相邻前一边判断是否相交
 			if ((v1_plane*v2_plane)<0)
-				pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+				pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_prev;
 			else//否则另一条就是相交边
-				pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+				pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_next;
 		}
 		else//已选边的一端点不在切平面上，/任意一条相邻的边都可以作为另一相交边
 		{
-			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+			pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_prev;
 		}
 		break;
 	}
@@ -557,9 +629,9 @@ void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
 	{
 		//已选的相交边的相邻前一边判断是否有一个点不在z切平面上
 		if ((v1_plane != 0) || (v2_plane != 0))
-			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+			pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_prev;
 		else//否则另一条就是相交边
-			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+			pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_next;
 		break;
 	}
 	case ONLY_ONE_POINT_ON_SURFACE:  //哪一条边其中的一个端点在切平面上，就是相交边
@@ -567,17 +639,17 @@ void CSlice::JudgeOtherLine(Layer* layer, LTriangle* pCurFace)
 
 		//已选的相交边的相邻前一边判断是否有一个点不在z切平面上
 		if (v1_plane == 0)
-			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_prev;
+			pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_prev;
 		else//否则另一条就是相交边
-			pCurFace->OtherIntersectLine = pCurFace->SelectIntersectLine->e_next;
+			pCurFace->IntersectLine2= pCurFace->IntersectLine1->e_next;
 		break;
 	}
 	}
-	m_Slice_edge.push_back(pCurFace->OtherIntersectLine);
+	m_Slice_edge.push_back(pCurFace->IntersectLine2);
 }
 
 
-void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, CPoint3D* point)
+void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, LPoint* point)
 {
 	int e1_plane, e2_plane;
 	CPoint3D e1_tmp, e2_tmp;
@@ -621,204 +693,8 @@ void CSlice::CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, C
 	}
 }
 
-double CSlice::ReturnZmin(const LTriangle* Ltri)
-{
-	double z1, z2, z3;
-	z1 = Ltri->v1->z;
-	z2 = Ltri->v2->z;
-	z3 = Ltri->v3->z;
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	if (z2>z3)
-	{
-		swap(z2, z3);
-	}
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	return z1;
-
-}
-double CSlice::ReturnZmax(const LTriangle* Ltri)
-{
-	double z1, z2, z3;
-	z1 = Ltri->v1->z;
-	z2 = Ltri->v2->z;
-	z3 = Ltri->v3->z;
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	if (z2>z3)
-	{
-		swap(z2, z3);
-	}
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	return z3;
-}
-
-double CSlice::ReturnZmid(const LTriangle* Ltri)
-{
-	double z1, z2, z3;
-	z1 = Ltri->v1->z;
-	z2 = Ltri->v2->z;
-	z3 = Ltri->v3->z;
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	if (z2>z3)
-	{
-		swap(z2, z3);
-	}
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	return z2;
-}
-
-double CSlice::ReturnZtype(double v1, double v2, double v3, int ztype)
-{
-	double z1, z2, z3;
-	z1 = v1;
-	z2 = v2;
-	z3 = v3;
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	if (z2>z3)
-	{
-		swap(z2, z3);
-	}
-	if (z1>z2)
-	{
-		swap(z1, z2);
-	}
-	if (ztype == 1)
-	{
-		return z1;
-	}
-	else if (ztype == 2)
-	{
-		return z2;
-	}
-	else
-	{
-		return z3;
-	}
-}
-
-void CSlice::begin3DSlice(double z_min, double z_max, double &z, double dz)
-{
-	while (true)
-	{
-		Layer* tmp_layer = new Layer();
-		CPoint3D tmp_layer_point = CPoint3D(0, 0, z);
-		tmp_layer->layer_gravity = gravity;
-		tmp_layer->layerPoint = tmp_layer_point;
-
-		m_layers.push_back(tmp_layer);
-
-		getpolylinePoints(m_layers[m_layers.size() - 1]);
-
-		if (z >= (z_max - dz))
-		{
-			break;
-		}
-		z += dz;
-	}
-}
-
-void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
-{
-	Layer* tmp_layer = new Layer();
-	CPoint3D tmp_layer_point = CPoint3D(0, 0, 0);
-	vector<CPoint3D*> cross_point;
-	double x_max;
-	while (true)
-	{
-		tmp_layer_point = CPoint3D(0, 0, z);
-		tmp_layer->layer_gravity = gravity;
-		tmp_layer->layerPoint = tmp_layer_point;
-
-		m_layers.push_back(tmp_layer);
-
-		getpolylinePoints(m_layers[m_layers.size() - 1]);
-
-		// 获取轮廓点后对部分轮廓点进行偏置
-		unsigned int sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
-		x_max = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
-		for (unsigned int i = 0; i < sz; i++)
-		{
-			if (x_max <= m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x)
-				x_max = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x;
-		}
-
-		bool isCCW = isBoundaryCCW(m_layers[m_layers.size() - 1]);
-		if (!isCCW)
-		{
-			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
-		}
-
-		for (unsigned int i = 0; i < sz; i++)
-		{
-			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x == x_max)// 判断需要修改
-			{
-				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x -= 2.0;
-				cross_point.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]);
-				tmp_layer_point = *m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i];
-			}
-		}
-		cross_point.erase(cross_point.begin(),cross_point.begin()+1);
-
-		// 斜切面进行切片
-		tmp_layer->layer_gravity = CVector3D(3,0,4);
-		tmp_layer->layerPoint = tmp_layer_point;
-
-		m_layers.push_back(tmp_layer);
-
-		getpolylinePoints(m_layers[m_layers.size() - 1]);
-
-		if (!isBoundaryCCW(m_layers[m_layers.size() - 1]))
-		{
-			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
-		}
-
-		unsigned int tmp_sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
-		for (unsigned int i = 0; i < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size(); i++)
-		{
-			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->z > tmp_layer_point.z)
-			{
-				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + i);
-				i = 0;
-			}
-		}
-
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin(), m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + 1);
-		for (unsigned int i = 0; i < cross_point.size(); i++)
-		{
-			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(cross_point[cross_point.size()-i-1]);
-		}
-		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]);
 
 
-		cross_point.clear();
-
-		if (z >= (z_max - dz))
-		{
-			break;
-		}
-		z += dz;
-	}
-}
 
 bool CSlice::isBoundaryCCW(Layer* layer)
 {
@@ -863,7 +739,7 @@ bool CSlice::isBoundaryCCW(Layer* layer)
 void CSlice::makeBoundaryCCW(Layer* layer)
 {
 	unsigned int sz = layer->m_Polylines[0]->m_Linkpoints.size();
-	vector<CPoint3D*> tmp;
+	vector<LPoint*> tmp;
 	for (unsigned int i = 0; i < sz; i++)
 	{
 		tmp.push_back(layer->m_Polylines[0]->m_Linkpoints[sz - 1 - i]);
@@ -880,6 +756,21 @@ bool CSlice::lineNeedSupport()
 	return false;
 }
 
-
+double CSlice::ReturnZtype(double v1, double v2, double v3, int ztype)
+{
+	double z1, z2, z3;
+	z1 = v1;
+	z2 = v2;
+	z3 = v3;
+	if (z1>z2) swap(z1, z2);
+	if (z2>z3) swap(z2, z3);
+	if (z1>z2) swap(z1, z2);
+	if (ztype == 1) 
+		return z1;	
+	else if (ztype == 2) 
+		return z2;
+	else 
+		return z3;
+}
 
 

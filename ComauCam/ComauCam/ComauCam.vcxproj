@@ -188,6 +188,7 @@
     <ClInclude Include="ComauCam.h" />
     <ClInclude Include="ComauCamDoc.h" />
     <ClInclude Include="ComauCamView.h" />
+    <ClInclude Include="DisplayDlg.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="GeomBase.h" />
     <ClInclude Include="LVertex.h" />
@@ -211,6 +212,7 @@
     <ClCompile Include="ComauCam.cpp" />
     <ClCompile Include="ComauCamDoc.cpp" />
     <ClCompile Include="ComauCamView.cpp" />
+    <ClCompile Include="DisplayDlg.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="GemoBase.cpp" />
     <ClCompile Include="LVertex.cpp" />

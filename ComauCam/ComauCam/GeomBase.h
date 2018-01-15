@@ -55,6 +55,7 @@ public:     ////// operator
 public:
 	CPoint3D *p_prev, *p_next;
 
+
 public:
 	double x;
 	double y;

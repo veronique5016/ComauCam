@@ -17,9 +17,6 @@
 #define new DEBUG_NEW
 #endif
 
-vector<CSTLModel*> models;
-vector<CSlice*> m_slices;
-vector<CSweep*> m_sweeps;
 // CComauCamView
 
 IMPLEMENT_DYNCREATE(CComauCamView, CView)
@@ -43,11 +40,10 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_STLOpen, &CComauCamView::OnStlopen)
 	ON_COMMAND(ID_DeleteModel, &CComauCamView::OnDeletemodel)
 	ON_COMMAND(ID_FILE_SAVE, &CComauCamView::OnFileSave)
-	ON_COMMAND(ID_Triangle_Frame, &CComauCamView::OnTriangleFrame)
-	ON_COMMAND(ID_Triangle_Face, &CComauCamView::OnTriangleFace)
 	ON_COMMAND(ID_Start_Slice, &CComauCamView::OnStartSlice)
 	ON_COMMAND(ID_Sweep, &CComauCamView::OnSweep)
 	ON_COMMAND(ID_WriteGCode, &CComauCamView::OnWritegcode)
+	ON_COMMAND(ID_DISPLAYMODE, &CComauCamView::OnDisplaymode)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -55,24 +51,16 @@ END_MESSAGE_MAP()
 CComauCamView::CComauCamView()
 {
 	// TODO: 在此处添加构造代码
-	m_bCanSTLDraw = false;
-	m_STLModel = NULL;
-	m_ShowTriFace = false;
+	m_bCanSTLDraw = false;   
 	m_bCanSliceDraw = false;
 	m_bCanSweepDraw = false;
-	m_STLModel = NULL;
-	m_slice = NULL;
-	m_sweep = NULL;
+
+	m_ShowTriFace = false;
+	m_ShowPolygon = false;
 }
 
 CComauCamView::~CComauCamView()
 {
-	if (NULL != m_STLModel)
-		delete[]m_STLModel;
-	if (NULL != m_slice)
-		delete[]m_slice;
-	if (NULL != m_sweep)
-		delete[]m_sweep;
 }
 
 BOOL CComauCamView::PreCreateWindow(CREATESTRUCT& cs)
@@ -329,32 +317,26 @@ BOOL CComauCamView::RenderScene()
 	m_pDC->DrawAxis();
 	if (m_bCanSTLDraw)
 	{
-		for (int i = 0; i<m_entities.GetSize(); i++)
+		for (int i = 0; i<m_models.size(); i++)
 		{
-			m_entities.GetAt(i)->Draw(m_pDC, m_ShowTriFace);
+			m_models[i]->Draw(m_pDC, m_ShowTriFace);
 		}
-
 	} 
 	if (m_bCanSliceDraw)
-	{ 
-		double green[3];
-		green[0] = 0.0;
-		green[1] = 1.0;
-		green[2] = 0.0;
-
-		double red[3];
-		red[0] = 1.0;
-		red[1] = 0.0;
-		red[2] = 0.0;
-
-		m_slices[0]->drawpolyline(green);
-
+	{
+		for (unsigned int i = 0; i < m_slices.size(); i++)
+		{
+			m_slices[0]->drawpolyline(m_ShowPolygon);
+		}
 	}
 	if (m_bCanSweepDraw)
 	{
-		m_sweeps[0]->drawRoute();
+		for (unsigned int i = 0; i < m_sweeps.size(); i++)
+		{
+			m_sweeps[0]->drawRoute();
+		}
 	}
-	// ondeletemodel 释放 DC 
+
 	::glPopMatrix();
 	::SwapBuffers(m_pDC1->GetSafeHdc());		//交互缓冲区
 	return TRUE;
@@ -425,20 +407,17 @@ void CComauCamView::OnStlopen()
 	CFileDialog filedlg(TRUE);
 	filedlg.m_ofn.lpstrTitle = _T("打开STL模型");
 	filedlg.m_ofn.lpstrFilter = _T("STL files(*.stl)\0*.stl\0ALL Files(*.*)\0*.*\0\0");
-	/*filedlg.m_ofn.lpstrDefExt=_T("txt");*/
 	if (IDOK == filedlg.DoModal())
 	{
-
-		//vector<CSTLModel*> models;
-		//CString str=filedlg.GetFileName();
+		CSTLModel* stlModel = new CSTLModel();
 		CString str = _T(" ");
 		str = filedlg.GetPathName();
-		m_STLModel->ReadSTL(str);
+		stlModel->ReadSTL(str);
 		m_bCanSTLDraw = true;
 		m_ShowTriFace = true;
-		models.push_back(m_STLModel);
-		m_entities.Add(m_STLModel);   //把m_STLmodel指针存入m_entities
-									  //models.push_back(m_STLmodel);
+		
+		m_models.push_back(stlModel);
+
 		Invalidate(TRUE);
 	}
 }
@@ -450,9 +429,6 @@ int CComauCamView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	// TODO:  Add your specialized creation code here
-	m_STLModel = new CSTLModel();
-
-
 	m_pDC1 = new CClientDC(this);
 	InitializeOpenGL(m_pDC1);   //设置为当前RC...产生绘制环境（RC），并使之成为当前的绘制环境
 	Init();
@@ -588,10 +564,11 @@ void CComauCamView::OnRButtonUp(UINT nFlags, CPoint point)
 void CComauCamView::OnDeletemodel()
 {
 	// TODO: Add your command handler code here
-	m_STLModel->ReleaseMem();
+	m_models.clear();
+	m_slices.clear();
+	m_sweeps.clear();
 	RenderScene();
 }
-
 
 void CComauCamView::OnFileSave()
 {
@@ -603,26 +580,10 @@ void CComauCamView::OnFileSave()
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
-		m_STLModel->WriteSTL(strFilePath);
+		m_models[0]->WriteSTL(strFilePath);
 		SetDlgItemText(ID_FILE_SAVE, strFilePath);
 	}
 }
-
-void CComauCamView::OnTriangleFrame()
-{
-	// TODO: Add your command handler code here
-	m_ShowTriFace = false;
-	RenderScene();
-}
-
-
-void CComauCamView::OnTriangleFace()
-{
-	// TODO: Add your command handler code here
-	m_ShowTriFace = true;
-	RenderScene();
-}
-
 
 void CComauCamView::OnStartSlice()
 {
@@ -631,16 +592,16 @@ void CComauCamView::OnStartSlice()
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		unsigned int szModel = models.size();
+		unsigned int szModel = m_models.size();
 		for (unsigned int i = 0; i < szModel; i++)
 		{
 			CSlice* pSlice = new CSlice();
 			pSlice->height = dialog.m_sliceDistance;
-			pSlice->LoadSTLModel(models[i]);
-			pSlice->slice(models[i]);
+			pSlice->LoadSTLModel(m_models[i]);
+			pSlice->slice(m_models[i]);
 			m_slices.push_back(pSlice);
 			m_bCanSliceDraw = true;
-			//m_bCanSTLDraw = false;
+			m_bCanSTLDraw = false;
 			Invalidate(TRUE);
 		}
 	}
@@ -689,4 +650,21 @@ void CComauCamView::OnWritegcode()
 		SetDlgItemText(ID_WriteGCode, strFilePath);
 	}
 
+}
+
+
+void CComauCamView::OnDisplaymode()
+{
+	// TODO: 在此添加命令处理程序代码
+	DisplayDlg dialog;
+	if (dialog.DoModal() == IDOK)
+	{
+		UpdateData(TRUE);
+		m_ShowTriFace = dialog.m_ShowTriangle;
+		m_ShowPolygon = dialog.m_ShowPolygon;
+		m_bCanSTLDraw = dialog.m_showStlModel;
+		m_bCanSliceDraw = dialog.m_showSliceModel;
+		m_bCanSweepDraw = dialog.m_showSweepModel;
+		Invalidate(TRUE);
+	}
 }

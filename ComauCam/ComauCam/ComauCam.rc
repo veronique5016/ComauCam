@@ -224,13 +224,7 @@ BEGIN
     END
     POPUP "视图(&V)"
     BEGIN
-        POPUP "工具栏和停靠窗口(&T)"
-        BEGIN
-            MENUITEM "<占位符>",                       ID_VIEW_TOOLBAR
-        END
-        MENUITEM "状态栏(&S)",                     ID_VIEW_STATUS_BAR
-        MENUITEM "线框模式",                        ID_Triangle_Frame
-        MENUITEM "面片模式",                        ID_Triangle_Face
+        MENUITEM "显示设置",                        ID_DISPLAYMODE
     END
     POPUP "帮助(&H)"
     BEGIN
@@ -366,6 +360,25 @@ BEGIN
     LTEXT           "mm",IDC_STATIC,165,62,12,8
 END
 
+IDD_DIALOG3 DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,198,155,50,14
+    PUSHBUTTON      "取消",IDCANCEL,252,155,50,14
+    GROUPBOX        "STL模型",IDC_STLMODEL,24,45,83,76
+    CONTROL         "面片模式",IDC_SHOWTRIANGLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,36,67,48,10
+    CONTROL         "线框模式",IDC_SHOWFRAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,36,91,48,10
+    GROUPBOX        "SLICE模型",IDC_SLICEMODEL,117,46,83,76
+    GROUPBOX        "SWEEP模型",IDC_SWEEPMODEL,209,46,83,76
+    CONTROL         "显示平面",IDC_SHOWPOLYGON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,66,48,10
+    CONTROL         "显示轮廓线",IDC_SHOWLINES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,91,56,10
+    CONTROL         "STL模型",IDC_CANSTLSHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,22,43,10
+    CONTROL         "SWEEP模型",IDC_CANSWEEPSHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,210,23,55,10
+    CONTROL         "SLICE模型",IDC_CANSLICESHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,22,51,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -437,6 +450,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 171
     END
+
+    IDD_DIALOG3, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -457,6 +478,11 @@ BEGIN
 END
 
 IDD_DIALOG2 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG3 AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

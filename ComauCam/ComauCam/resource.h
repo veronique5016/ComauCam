@@ -86,7 +86,19 @@
 #define IDS_EDIT_MENU                   306
 #define IDD_DIALOG1                     313
 #define IDD_DIALOG2                     315
+#define IDD_DIALOG3                     317
 #define IDC_EDIT1                       1000
+#define IDC_STLMODEL                    1001
+#define IDC_SHOWTRIANGLE                1002
+#define IDC_SHOWFRAME                   1003
+#define IDC_SLICEMODEL                  1004
+#define IDC_SWEEPMODEL                  1005
+#define IDC_SHOWPOLYGON                 1006
+#define IDC_SHOWLINES                   1007
+#define IDC_CANSTLSHOW                  1009
+#define IDC_CHECK2                      1011
+#define IDC_CANSWEEPSHOW                1011
+#define IDC_CANSLICESHOW                1012
 #define ID_STLOpen                      32772
 #define ID_DeleteModel                  32775
 #define ID_Triangle_Frame               32779
@@ -97,14 +109,16 @@
 #define ID_Sweep                        32785
 #define ID_32786                        32786
 #define ID_WriteGCode                   32787
+#define ID_32788                        32788
+#define ID_DISPLAYMODE                  32789
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        317
-#define _APS_NEXT_COMMAND_VALUE         32788
-#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_RESOURCE_VALUE        319
+#define _APS_NEXT_COMMAND_VALUE         32790
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

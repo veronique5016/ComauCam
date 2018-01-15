@@ -10,6 +10,7 @@
 #include "Sweep.h"
 #include "SliceDlg.h"
 #include "SweepDlg.h"
+#include "DisplayDlg.h"
 
 class CComauCamView : public CView
 {
@@ -20,13 +21,15 @@ protected: // 仅从序列化创建
 // 特性
 public:
 	CComauCamDoc* GetDocument() const;
-	CSTLModel* m_STLModel;
-	CSlice* m_slice;
-	CSweep* m_sweep;
+	vector<CSTLModel*> m_models;
+	vector<CSlice*> m_slices;
+	vector<CSweep*> m_sweeps;
 	bool m_bCanSTLDraw;
-	bool m_ShowTriFace;
 	bool m_bCanSliceDraw;
 	bool m_bCanSweepDraw;
+
+	bool m_ShowTriFace;
+	bool m_ShowPolygon;
 
 // 操作
 public:
@@ -100,11 +103,11 @@ public:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnDeletemodel();
 	afx_msg void OnFileSave();
-	afx_msg void OnTriangleFrame();
-	afx_msg void OnTriangleFace();
+
 	afx_msg void OnStartSlice();
 	afx_msg void OnSweep();
 	afx_msg void OnWritegcode();
+	afx_msg void OnDisplaymode();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本
