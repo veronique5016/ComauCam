@@ -60,6 +60,7 @@ CSegment::~CSegment()
 {
 }
 
+
 CBoundary::CBoundary()
 {
 }
@@ -224,4 +225,15 @@ CFPoint::CFPoint(const CFPoint & pt)
 	z = pt.z;
 	A = pt.A;
 	C = pt.C;
+}
+
+void MoveSegment(CSegment* lsegment, CVector3D vec)
+{
+	lsegment->m_ptStart = lsegment->m_ptStart + vec;
+	lsegment->m_ptEnd = lsegment->m_ptEnd + vec;
+}
+
+void GetCrossPoint(CPoint3D& pt_out, CSegment seg1, CSegment seg2)
+{
+	GetCrossPoint(pt_out, seg1.m_ptStart, seg1.m_ptEnd, seg2.m_ptStart, seg2.m_ptEnd);
 }

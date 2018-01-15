@@ -220,31 +220,189 @@ void CSweep::DrawRoute(int begin, int end)
 	unsigned int szL = m_vecpSweepLayers.size();
 	for (unsigned int i = (begin-1); i < end; i++)
 	{
+		//画轮廓
 		unsigned int szB = m_vecpSweepLayers[i]->m_vecpBoundaries[0]->m_vecpSegments.size();
 		for (unsigned int j = 0; j < szB; j++)
 		{
 			CPoint3D p1 = CPoint3D(*m_vecpSweepLayers[i]->m_vecpRoute[j]);
 			CPoint3D p2 = CPoint3D(*m_vecpSweepLayers[i]->m_vecpRoute[j+1]);
-			glLineWidth(1.5f);
+			/*glLineWidth(1.5f);
 			glBegin(GL_LINES);
 			glColor3f(1.0f, 0.0f, 0.0f);
 			glVertex3f(p1.x, p1.y, p1.z);
 			glVertex3f(p2.x, p2.y, p2.z);
-			glEnd();
+			glEnd();*/
+			glColor3f(1.0f, 0.0f, 0.0f);
+			//DrawCylinder(p1, p2);
+			DrawCuboid(p1, p2, m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
 		}
+		//画路径
 		unsigned int sz = m_vecpSweepLayers[i]->m_vecpRoute.size();
 		for (unsigned int j = szB+1; j < sz-1; j++)
 		{
 			CPoint3D p1 = CPoint3D(*m_vecpSweepLayers[i]->m_vecpRoute[j]);
 			CPoint3D p2 = CPoint3D(*m_vecpSweepLayers[i]->m_vecpRoute[j + 1]);
-			glLineWidth(1.5f);
+			/*glLineWidth(1.5f);
 			glBegin(GL_LINES);
 			glColor3f(1.0f, 0.0f, 0.0f);
 			glVertex3f(p1.x, p1.y, p1.z);
 			glVertex3f(p2.x, p2.y, p2.z);
-			glEnd();
+			glEnd();*/
+			//DrawCylinder(p1, p2);
+			DrawCuboid(p1, p2, m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
 		}
 	}
+}
+
+void CSweep::DrawCylinder(CPoint3D p1, CPoint3D p2)
+{
+	GLdouble  dir_x = p2.x - p1.x;
+	GLdouble  dir_y = p2.y - p1.y;
+	GLdouble  dir_z = p2.z - p1.z;
+	GLdouble  bone_length = sqrt(dir_x*dir_x + dir_y*dir_y + dir_z*dir_z);
+	static GLUquadricObj *  quad_obj = NULL;
+	if (quad_obj == NULL)
+		quad_obj = gluNewQuadric();
+	gluQuadricDrawStyle(quad_obj, GLU_FILL);
+	gluQuadricNormals(quad_obj, GLU_SMOOTH);
+	glPushMatrix();
+	// 平移到起始点  
+	glTranslated(p1.x, p1.y, p1.z);
+	// 计算长度  
+	double  length;
+	length = sqrt(dir_x*dir_x + dir_y*dir_y + dir_z*dir_z);
+	if (length < 0.0001) {
+		dir_x = 0.0; dir_y = 0.0; dir_z = 1.0;  length = 1.0;
+	}
+	dir_x /= length;  dir_y /= length;  dir_z /= length;
+	GLdouble  up_x, up_y, up_z;
+	up_x = 0.0;
+	up_y = 1.0;
+	up_z = 0.0;
+	double  side_x, side_y, side_z;
+	side_x = up_y * dir_z - up_z * dir_y;
+	side_y = up_z * dir_x - up_x * dir_z;
+	side_z = up_x * dir_y - up_y * dir_x;
+	length = sqrt(side_x*side_x + side_y*side_y + side_z*side_z);
+	if (length < 0.0001) {
+		side_x = 1.0; side_y = 0.0; side_z = 0.0;  length = 1.0;
+	}
+	side_x /= length;  side_y /= length;  side_z /= length;
+	up_x = dir_y * side_z - dir_z * side_y;
+	up_y = dir_z * side_x - dir_x * side_z;
+	up_z = dir_x * side_y - dir_y * side_x;
+	// 计算变换矩阵  
+	GLdouble  m[16] = { side_x, side_y, side_z, 0.0,
+		up_x,   up_y,   up_z,   0.0,
+		dir_x,  dir_y,  dir_z,  0.0,
+		0.0,    0.0,    0.0,    1.0 };
+	glMultMatrixd(m);
+	// 圆柱体参数  
+	GLdouble radius = 2;        // 半径  
+	GLdouble slices = 30.0;      //  段数  
+	GLdouble stack = 3.0;       // 递归次数  
+	gluCylinder(quad_obj, radius, radius, bone_length, slices, stack);
+	glPopMatrix();
+}
+
+void CSweep::DrawCuboid(CPoint3D pStart, CPoint3D pEnd, CVector3D normal)
+{
+	CVector3D xAxis = CVector3D(pStart, pEnd);
+	xAxis.Normalize();
+	CVector3D zAxis = normal;
+	zAxis.Normalize();
+	CVector3D yAxis = zAxis * xAxis;
+	yAxis.Normalize();
+	CPoint3D square1[4];
+	CPoint3D tmp = pStart;
+	CVector3D offset = yAxis + zAxis;
+	offset.Normalize();
+	tmp = pStart + offset*2;
+	square1[0] = tmp;
+
+	offset = zAxis - yAxis;
+	offset.Normalize();
+	tmp = pStart + offset*2;
+	square1[1] = tmp;
+
+	offset =CVector3D(0,0,0) - zAxis - yAxis;
+	offset.Normalize();
+	tmp = pStart + offset*2;
+	square1[2] = tmp;
+
+	offset = yAxis - zAxis;
+	offset.Normalize();
+	tmp = pStart + offset*2;
+	square1[3] = tmp;
+
+	CPoint3D square2[4];
+	tmp = pEnd;
+	offset = yAxis + zAxis;
+	offset.Normalize();
+	tmp = pEnd + offset*2;
+	square2[0] = tmp;
+
+	offset = zAxis - yAxis;
+	offset.Normalize();
+	tmp = pEnd + offset*2;
+	square2[1] = tmp;
+
+	offset = CVector3D(0, 0, 0) - zAxis - yAxis;
+	offset.Normalize();
+	tmp = pEnd + offset*2;
+	square2[2] = tmp;
+
+	offset = yAxis - zAxis;
+	offset.Normalize();
+	tmp = pEnd + offset*2;
+	square2[3] = tmp;
+
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glPolygonMode(GL_FRONT, GL_FILL);
+	glPolygonMode(GL_BACK, GL_FILL);
+	glBegin(GL_QUADS);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(square1[0].x, square1[0].y, square1[0].z);
+	glVertex3f(square1[1].x, square1[1].y, square1[1].z);
+	glVertex3f(square1[2].x, square1[2].y, square1[2].z);
+	glVertex3f(square1[3].x, square1[3].y, square1[3].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(square2[0].x, square2[0].y, square2[0].z);
+	glVertex3f(square2[1].x, square2[1].y, square2[1].z);
+	glVertex3f(square2[2].x, square2[2].y, square2[2].z);
+	glVertex3f(square2[3].x, square2[3].y, square2[3].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(square1[0].x, square1[0].y, square1[0].z);
+	glVertex3f(square1[1].x, square1[1].y, square1[1].z);
+	glVertex3f(square2[1].x, square2[1].y, square2[1].z);
+	glVertex3f(square2[0].x, square2[0].y, square2[0].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(square1[1].x, square1[1].y, square1[1].z);
+	glVertex3f(square1[2].x, square1[2].y, square1[2].z);
+	glVertex3f(square2[2].x, square2[2].y, square2[2].z);
+	glVertex3f(square2[1].x, square2[1].y, square2[1].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(square1[2].x, square1[2].y, square1[2].z);
+	glVertex3f(square1[3].x, square1[3].y, square1[3].z);
+	glVertex3f(square2[3].x, square2[3].y, square2[3].z);
+	glVertex3f(square2[2].x, square2[2].y, square2[2].z);
+	glEnd();
+	glBegin(GL_QUADS);
+	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
+	glVertex3f(square1[3].x, square1[3].y, square1[3].z);
+	glVertex3f(square1[0].x, square1[0].y, square1[0].z);
+	glVertex3f(square2[0].x, square2[0].y, square2[0].z);
+	glVertex3f(square2[3].x, square2[3].y, square2[3].z);
+	glEnd();
 }
 
 void CSweep::CalACAngle(CSweepLayer* layer)

@@ -6,13 +6,13 @@
 #include "Layer.h"
 using namespace std;
 
-#define EXTRUDER_DIAMETER 0.4
+#define EXTRUDER_DIAMETER 1
 
 //面片类型 
 #define NO_POINT_ON_SURFACE 1
 #define ONE_POINT_ON_SURFACE 2 
 #define EDGE_ON_SURFACE 3
-#define ONLY_ONE_POINT_ON_SURFACE 4
+#define ONLY_ONE_POINT_ON_SURFACE 4 
 
 #define MIN 1
 #define MID 2
@@ -36,9 +36,12 @@ public:
 	void JudgeOtherLine(CSliceLayer* layer, CLTriangle* pCurFace);   //判断另一条相交线
 	double CompareThreeNumber(double v1, double v2, double v3, int type);
 	double ZminofLayer(CSliceLayer* layer);
+	int FindLowestSegment(CSliceLayer* layer);
+	void ModifyTurnLayer(CSliceLayer* layer);
 	void OptimizeBoundary(CSliceLayer* layer);
-	bool IsBoundaryCCW(CSliceLayer* layer);	//函数存在很大问题，当向量的某个分量的值非常小时，可能会出现一些莫名其妙的问题 
+	bool IsBoundaryCCW(CSliceLayer* layer);
 	void MakeBoundaryCCW(CSliceLayer* layer);
+	void RearrangeBoundary(CSliceLayer* layer);
 	void DeletePoints(CSliceLayer* layer);
 	void DrawLayer(bool showPolygon, int start, int end);
 
@@ -46,7 +49,7 @@ public:
 	vector<CLEdge*> m_vecpSliceEdge;     //存储相交边
 	vector<CSliceLayer*> m_vecpLayers;     //存储片层
 	vector<CLTriangle*> m_vecpSliceTris;   //保存一份三角面片，作为初始数据
-	vector<int> m_vecnIndex;	//保存所有法向量为 z 轴正方向的面片序号
+	//vector<int> m_vecnIndex;	//保存所有法向量为 z 轴正方向的面片序号
 	double height; // 层切面间距
 };
 

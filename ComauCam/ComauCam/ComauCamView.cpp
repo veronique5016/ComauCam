@@ -400,6 +400,7 @@ void CComauCamView::Init()
 	GLfloat diffuseLight[] = { 0.7f, 0.7f, 0.7f, 1.0f };
 	GLfloat lightPos[] = { 6000.0f,6000.0f,6000.0f, 1.0f };
 
+	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);

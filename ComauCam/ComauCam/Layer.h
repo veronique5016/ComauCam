@@ -42,7 +42,6 @@ public:
 	CSegment(const CSegment& lsegment);
 	CSegment(CLPoint startpoint, CLPoint endpoint, CLTriangle* tri);
 	~CSegment();
-
 public:
 	CLPoint m_ptStart, m_ptEnd;
 	CLTriangle* m_pTriangle;
@@ -108,3 +107,11 @@ public:
 	vector<CFPoint*> m_vecpTurnRoute;
 };
 
+
+//输出函数
+
+//移动线段
+void AFX_API_EXPORT MoveSegment(CSegment* lsegment, CVector3D vec);
+
+//求两线段交点
+void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CSegment seg1, CSegment seg2);
