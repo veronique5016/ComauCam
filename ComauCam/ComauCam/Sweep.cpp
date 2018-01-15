@@ -37,11 +37,21 @@ CSweep::~CSweep()
 
 void CSweep::sweep()
 {
-	double x_min, x_max, x, dx, z;
-	//dx = distance;
+	double x_min, x_max, x, z;
 	CPoint3D tmp_point;
 	for (unsigned int i = 0; i < m_sweep_layers.size(); i++)
 	{
+		if (i == 0)
+		{
+			SweepLayer* layer =new SweepLayer(*m_sweep_layers[i]);
+			offSet(layer, -5);
+			unsigned int szB = layer->offsetBoundaries[0]->m_segments.size();
+			m_sweep_layers[i]->m_Route.push_back(new CPoint3D(layer->offsetBoundaries[0]->m_segments[0]->pstart));
+			for (unsigned int j = 0; j < szB; j++)
+			{
+				m_sweep_layers[i]->m_Route.push_back(new CPoint3D(layer->offsetBoundaries[0]->m_segments[j]->pend));
+			}
+		}
 		//将最外层轮廓存入路径中
 		unsigned int szB = m_sweep_layers[i]->m_Boundaries[0]->m_segments.size();
 		m_sweep_layers[i]->m_Route.push_back(new CPoint3D(m_sweep_layers[i]->m_Boundaries[0]->m_segments[0]->pstart));
@@ -53,7 +63,8 @@ void CSweep::sweep()
 		//变法向的层切面因为太小所以不切，只走轮廓
 		if (m_sweep_layers[i]->layer_coordinate[2].dz == 1.0)
 		{
-			offSet(m_sweep_layers[i], 1.0);
+			//设置偏置大小
+			offSet(m_sweep_layers[i], 0.9);
 			//寻找轮廓 x 方向的极值
 			unsigned int sz = m_sweep_layers[i]->offsetBoundaries[0]->m_segments.size();
 			x_min = x_max = m_sweep_layers[i]->offsetBoundaries[0]->m_segments[0]->pstart.x;
@@ -209,11 +220,23 @@ void CSweep::drawRoute(int begin, int end)
 	unsigned int szL = m_sweep_layers.size();
 	for (unsigned int i = (begin-1); i < end; i++)
 	{
-		unsigned int sz = m_sweep_layers[i]->m_Route.size();
-		for (unsigned int j = 0; j < sz - 1; j++)
+		unsigned int szB = m_sweep_layers[i]->m_Boundaries[0]->m_segments.size();
+		for (unsigned int j = 0; j < szB; j++)
 		{
 			CPoint3D p1 = CPoint3D(*m_sweep_layers[i]->m_Route[j]);
 			CPoint3D p2 = CPoint3D(*m_sweep_layers[i]->m_Route[j+1]);
+			glLineWidth(1.5f);
+			glBegin(GL_LINES);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glVertex3f(p1.x, p1.y, p1.z);
+			glVertex3f(p2.x, p2.y, p2.z);
+			glEnd();
+		}
+		unsigned int sz = m_sweep_layers[i]->m_Route.size();
+		for (unsigned int j = szB+1; j < sz-1; j++)
+		{
+			CPoint3D p1 = CPoint3D(*m_sweep_layers[i]->m_Route[j]);
+			CPoint3D p2 = CPoint3D(*m_sweep_layers[i]->m_Route[j + 1]);
 			glLineWidth(1.5f);
 			glBegin(GL_LINES);
 			glColor3f(1.0f, 0.0f, 0.0f);

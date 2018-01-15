@@ -1,17 +1,4 @@
-﻿  ComauCam.cpp
-  正在生成代码...
-  正在编译...
-  Slice.cpp
-  ComauCamView.cpp
-c:\users\veronique\desktop\comaucam\comaucam\comaucamview.cpp(326): warning C4018: “<”: 有符号/无符号不匹配
-c:\users\veronique\desktop\comaucam\comaucam\comaucamview.cpp(696): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-c:\users\veronique\desktop\comaucam\comaucam\comaucamview.cpp(697): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-c:\users\veronique\desktop\comaucam\comaucam\comaucamview.cpp(698): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-c:\users\veronique\desktop\comaucam\comaucam\comaucamview.cpp(699): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-c:\users\veronique\desktop\comaucam\comaucam\comaucamview.cpp(700): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-  正在生成代码...
-  正在跳过...(未检测到相关更改)
-  Sweep.cpp
-  GCode.cpp
+﻿  Sweep.cpp
+c:\users\veronique\desktop\comaucam\comaucam\sweep.cpp(221): warning C4018: “<”: 有符号/无符号不匹配
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> C:\Users\veronique\Desktop\ComauCam\Debug\ComauCam.pdb (Partial PDB)

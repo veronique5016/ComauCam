@@ -109,9 +109,21 @@ void GCode::writeFiveAxisGCode(CString sFilePath)
 					m_gcode_layers[i]->m_Route[0]->y,
 					m_gcode_layers[i]->m_Route[0]->z);
 				fileout.WriteString(str);
+				unsigned int szB = m_gcode_layers[i]->m_Boundaries[0]->m_segments.size();
+				for (unsigned int j = 1; j < szB+1; j++)
+				{
+					length = GetDistance(*m_gcode_layers[i]->m_Route[j - 1], *m_gcode_layers[i]->m_Route[j]);
+					volumn += length * 0.2;
+					str.Format(_T("G1 X%.3f Y%.3f E-%.5f\n"),
+						m_gcode_layers[i]->m_Route[j]->x, m_gcode_layers[i]->m_Route[j]->y, (volumn / 6.0));
+					fileout.WriteString(str);
+				}
+				str.Format(_T("G0 X%.3f Y%.3f\n"),
+					m_gcode_layers[i]->m_Route[szB + 1]->x,
+					m_gcode_layers[i]->m_Route[szB + 1]->y);
+				fileout.WriteString(str);
 				unsigned int sz = m_gcode_layers[i]->m_Route.size();
-
-				for (unsigned int j = 1; j < sz; j++)
+				for (unsigned int j = szB+2; j < sz; j++)
 				{
 					length = GetDistance(*m_gcode_layers[i]->m_Route[j - 1], *m_gcode_layers[i]->m_Route[j]);
 					volumn += length * 0.2;

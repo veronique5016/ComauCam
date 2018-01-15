@@ -60,7 +60,7 @@ void CSlice::slice(CSTLModel* model)
 		tmp_layer->layerPoint = CPoint3D(0, 0, z);
 		m_layers.push_back(tmp_layer);
 
-		int index = m_layers.size() - 1;//index 指向当前的切平面
+		int index = m_layers.size() - 1;//index 指向当前的切平面,这里确定的平面法向量永远为 z 轴正向
 		getBoundaryPoints(m_layers[index]);
 
 		//将轮廓逆时针排列并删除共线点
@@ -76,6 +76,7 @@ void CSlice::slice(CSTLModel* model)
 				//偏移该线段
 				CVector3D offset_vec = m_layers[index]->layer_coordinate[2] * m_layers[index]->m_Boundaries[0]->m_segments[i]->segment_vec;
 				offset_vec.Normalize();
+				//此段有 bug 存在，当一个层切面有多条线段需要变法向切且法向量不同时，zaxis_distance 应该不同，但此处相同了
 				double zmin_tmp = zminofLayer(m_layers[index]);
 				double zmin_prev = zminofLayer(m_layers[index - 1]);
 				double zaxis_distance = zmin_tmp - zmin_prev;
@@ -83,6 +84,18 @@ void CSlice::slice(CSTLModel* model)
 				m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart = m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart + CVector3D(offset_vec*offset);
 				m_layers[index]->m_Boundaries[0]->m_segments[i]->pend = m_layers[index]->m_Boundaries[0]->m_segments[i]->pend + CVector3D(offset_vec*offset);
 				
+				//求偏移后的线段与前后线段的交点,形成新的轮廓
+				CPoint3D point_out;
+				GetCrossPoint(point_out, m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i]->pend,
+					m_layers[index]->m_Boundaries[0]->m_segments[i - 1]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i-1]->pend);
+				m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart = LPoint(point_out);
+				m_layers[index]->m_Boundaries[0]->m_segments[i - 1]->pend = LPoint(point_out);
+				GetCrossPoint(point_out, m_layers[index]->m_Boundaries[0]->m_segments[i]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i]->pend,
+					m_layers[index]->m_Boundaries[0]->m_segments[i + 1]->pstart, m_layers[index]->m_Boundaries[0]->m_segments[i+1]->pend);
+				m_layers[index]->m_Boundaries[0]->m_segments[i]->pend = LPoint(point_out);
+				m_layers[index]->m_Boundaries[0]->m_segments[i + 1]->pstart = LPoint(point_out);
+
+				double tmpz = m_layers[index]->layerPoint.z;
 				//定义变法向切平面的坐标系和平面上一点
 				SliceLayer* turn_layer = new SliceLayer();
 				turn_layer->layer_coordinate[0] = CVector3D(*m_layers[index]->m_Boundaries[0]->m_segments[i]->triangle->n);
@@ -94,10 +107,57 @@ void CSlice::slice(CSTLModel* model)
 
 				getBoundaryPoints(m_layers[m_layers.size() - 1]);
 				optimizeBoundary(m_layers[m_layers.size() - 1]);
+
+				//对斜切面的轮廓进行调整
+				unsigned int szTurn = m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments.size();
+				vector<Segment*> tmp_boundary;
+				int turnIndex = 0;
+				for (unsigned int j = 0; j < szTurn; j++)
+				{
+					CPoint3D p1 = m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments[i]->pstart;
+					CPoint3D p2 = m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments[i]->pend;
+					if (CalPointtoLine(m_layers[m_layers.size() - 1]->layerPoint, p1, p2) != 0.0)
+						continue;
+					turnIndex = j;
+					break;
+				}
+				int sum = 0;
+				while (sum < szTurn)
+				{
+					tmp_boundary.push_back(new Segment(*m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments[(turnIndex + sum) % szTurn]));
+					sum += 1;
+				}
+				m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments.clear();
+				for (unsigned int j = 0; j < tmp_boundary.size(); j++)
+				{
+					CPoint3D cross_point;
+					if (tmp_boundary[j]->pstart.z<=tmpz &&tmp_boundary[j]->pend.z>=tmpz)
+					{
+						cross_point = CalPlaneLineIntersectPoint(m_layers[index]->layer_coordinate[2], m_layers[index]->layerPoint, tmp_boundary[j]->segment_vec, tmp_boundary[j]->pend);
+						tmp_boundary[j]->pend = LPoint(cross_point);
+						m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments.push_back(new Segment(*tmp_boundary[j]));
+					}
+					else if (tmp_boundary[j]->pstart.z >= tmpz &&tmp_boundary[j]->pend.z >= tmpz)
+					{ 
+						//舍弃整条线段均在 z 向切平面之上的线段
+					}
+					else if (tmp_boundary[j]->pstart.z >= tmpz &&tmp_boundary[j]->pend.z <= tmpz)
+					{
+						cross_point = CalPlaneLineIntersectPoint(m_layers[index]->layer_coordinate[2], m_layers[index]->layerPoint, tmp_boundary[j]->segment_vec, tmp_boundary[j]->pend);
+						tmp_boundary[j]->pstart = LPoint(cross_point);
+						m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments.push_back(new Segment(*tmp_boundary[j]));
+					}
+					else
+					{
+						m_layers[m_layers.size() - 1]->m_Boundaries[0]->m_segments.push_back(new Segment(*tmp_boundary[j]));
+					}
+				}
+				tmp_boundary.clear();
 			}
 		}
 		z += dz;
 	}
+	int test = 0;
 }
 
 void CSlice::getBoundaryPoints(SliceLayer* layer)
