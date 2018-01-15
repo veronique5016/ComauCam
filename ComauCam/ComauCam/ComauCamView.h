@@ -8,6 +8,8 @@
 #include "STLModel.h"
 #include "Slice.h"
 #include "Sweep.h"
+#include "SliceDlg.h"
+#include "SweepDlg.h"
 
 class CComauCamView : public CView
 {

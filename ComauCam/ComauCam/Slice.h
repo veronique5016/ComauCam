@@ -52,5 +52,7 @@ public:
 	vector<LEdge*> m_Slice_edge;     //存储相交边
 	vector<Layer*> m_layers;         //存储片层
 	vector<LTriangle*> m_tris_slice;   //保存一份三角面片，作为初始数据
+
+	double height;
 };
 

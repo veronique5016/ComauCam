@@ -75,6 +75,12 @@
     <ClInclude Include="Sweep.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SliceDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SweepDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComauCam.cpp">
@@ -126,6 +132,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sweep.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SliceDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SweepDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

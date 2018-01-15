@@ -7,6 +7,13 @@ PolyLine::PolyLine()
 }
 PolyLine::~PolyLine()
 {
+	int szP = m_Linkpoints.size();
+	for (int i = 0; i < szP; i++)
+	{
+		delete m_Linkpoints[i];
+		m_Linkpoints[i] = NULL;
+	}
+	m_Linkpoints.clear();
 }
 
 Layer::Layer()
@@ -14,16 +21,45 @@ Layer::Layer()
 }
 Layer::~Layer()
 {
+	int szP = m_Polylines.size();
+	for (int i = 0; i < szP; i++)
+	{
+		delete m_Polylines[i];
+		m_Polylines[i] = NULL;
+	}
+	m_Polylines.clear();
 }
 
-CSlice::CSlice(void)
+CSlice::CSlice(void):height(0.2)
 {
 
 }
 
 CSlice::~CSlice(void)
 {
+	int szS = m_Slice_edge.size();
+	for (int i = 0; i < szS; i++)
+	{
+		delete m_Slice_edge[i];
+		m_Slice_edge[i] = NULL;
+	}
+	m_Slice_edge.clear();
 
+	int szL = m_layers.size();
+	for (int i = 0; i < szL; i++)
+	{
+		delete m_layers[i];
+		m_layers[i] = NULL;
+	}
+	m_layers.clear();
+
+	int sz = m_tris_slice.size();
+	for (int i = 0; i < sz; i++)
+	{
+		delete m_tris_slice[i];
+		m_tris_slice[i] = NULL;
+	}
+	m_tris_slice.clear();
 }
 
 void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
@@ -37,7 +73,7 @@ void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
 }
 void CSlice::slice(CSTLModel* model)
 {
-	AfxMessageBox(_T("Slice Begin!!"), MB_OK, 0);
+	//AfxMessageBox(_T("Slice Begin!!"), MB_OK, 0);
 	double z_Min, z_Max;  //模型极限尺寸
 	double z;  //切片高度
 	double dz;   //切片层厚
@@ -46,7 +82,7 @@ void CSlice::slice(CSTLModel* model)
 	z_Min = ex[4];
 	z_Max = ex[5];
 	z = z_Min + 0.1;  //第一个切片层
-	dz = 0.2;   //层高
+	dz = height;   //层高
 	while (true)
 	{
 		getpolylinePoints(z);

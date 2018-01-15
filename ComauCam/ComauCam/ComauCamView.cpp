@@ -71,6 +71,8 @@ CComauCamView::~CComauCamView()
 		delete[]m_STLModel;
 	if (NULL != m_slice)
 		delete[]m_slice;
+	if (NULL != m_sweep)
+		delete[]m_sweep;
 }
 
 BOOL CComauCamView::PreCreateWindow(CREATESTRUCT& cs)
@@ -615,15 +617,22 @@ void CComauCamView::OnTriangleFace()
 void CComauCamView::OnStartSlice()
 {
 	// TODO: 在此添加命令处理程序代码
-	int szModel = models.size();
-	for (int i = 0; i<szModel; i++)
+	CSliceDlg dialog;
+	if (dialog.DoModal() == IDOK)
 	{
-		CSlice* pSlice = new CSlice();
-		pSlice->LoadSTLModel(models[i]);
-		pSlice->slice(models[i]);
-		m_slices.push_back(pSlice);
-		m_bCanSliceDraw = true;
-		Invalidate(TRUE);
+		UpdateData(TRUE);
+		int szModel = models.size();
+		for (int i = 0; i < szModel; i++)
+		{
+			CSlice* pSlice = new CSlice();
+			pSlice->height = dialog.m_sliceDistance;
+			pSlice->LoadSTLModel(models[i]);
+			pSlice->slice(models[i]);
+			m_slices.push_back(pSlice);
+			m_bCanSliceDraw = true;
+			m_bCanSTLDraw = false;
+			Invalidate(TRUE);
+		}
 	}
 }
 
@@ -631,17 +640,23 @@ void CComauCamView::OnStartSlice()
 void CComauCamView::OnSweep()
 {
 	// TODO: 在此添加命令处理程序代码
-	int szSlice = m_slices.size();
-	for (int i = 0; i < szSlice; i++)
+	CSweepDlg dialog;
+	if (dialog.DoModal() == IDOK)
 	{
-		CSweep* pSweep = new CSweep();
-		pSweep->loadSliceModel(m_slices[i]);
-		pSweep->sweep();
-		m_sweeps.push_back(pSweep);
-		m_bCanSweepDraw = true;
-		m_bCanSTLDraw = false;
-		m_bCanSliceDraw = false;
-		Invalidate(TRUE);
+		UpdateData(TRUE);
+		int szSlice = m_slices.size();
+		for (int i = 0; i < szSlice; i++)
+		{
+			CSweep* pSweep = new CSweep();
+			pSweep->distance = dialog.m_sweepDistance;
+			pSweep->loadSliceModel(m_slices[i]);
+			pSweep->sweep();
+			m_sweeps.push_back(pSweep);
+			m_bCanSweepDraw = true;
+			//		m_bCanSTLDraw = false;
+			m_bCanSliceDraw = false;
+			Invalidate(TRUE);
+		}
 	}
 }
 
@@ -651,7 +666,7 @@ void CComauCamView::OnWritegcode()
 	// TODO: 在此添加命令处理程序代码
 	int sz = m_sweeps.size();
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
-	CFileDialog fileDlg(FALSE, _T("doc"), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
+	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
 	CString strFilePath;
 
 	if (IDOK == fileDlg.DoModal())
