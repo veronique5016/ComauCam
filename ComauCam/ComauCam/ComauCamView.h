@@ -58,6 +58,8 @@ public:
 	BOOL RenderScene();
 	void Init();
 	BOOL InitializeOpenGL(CDC* pDC1);
+
+	void SetSceneTrans(int axis, int value, BOOL increment, BOOL apply);
 	void SetSceneRot(int axis, int value, BOOL increment, BOOL apply);
 	void SetCamPos(int axis, int value, BOOL increment, BOOL apply);
 	void SetScenePos(int axis, int value, BOOL increment, BOOL apply);
@@ -77,13 +79,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
-
-
-	//afx_msg void OnFileOpen();
-
-	//afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	//afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
-	
 	afx_msg void OnStlopen();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -94,6 +89,8 @@ public:
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnDeletemodel();
+	afx_msg void OnFileSave();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

@@ -204,7 +204,6 @@ BEGIN
     BEGIN
         MENUITEM "新建(&N)\tCtrl+N",              ID_FILE_NEW
         MENUITEM "打开 STL",                      ID_STLOpen
-        MENUITEM "打开(&O)...\tCtrl+O",           ID_FILE_OPEN
         MENUITEM "保存(&S)\tCtrl+S",              ID_FILE_SAVE
         MENUITEM "另存为(&A)...",                  ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
@@ -218,11 +217,7 @@ BEGIN
     END
     POPUP "编辑(&E)"
     BEGIN
-        MENUITEM "撤消(&U)\tCtrl+Z",              ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "剪切(&T)\tCtrl+X",              ID_EDIT_CUT
-        MENUITEM "复制(&C)\tCtrl+C",              ID_EDIT_COPY
-        MENUITEM "粘贴(&P)\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "删除模型",                        ID_DeleteModel
     END
     POPUP "视图(&V)"
     BEGIN

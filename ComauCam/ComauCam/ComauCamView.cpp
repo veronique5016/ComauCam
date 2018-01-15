@@ -38,6 +38,8 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
 	ON_COMMAND(ID_STLOpen, &CComauCamView::OnStlopen)
+	ON_COMMAND(ID_DeleteModel, &CComauCamView::OnDeletemodel)
+	ON_COMMAND(ID_FILE_SAVE, &CComauCamView::OnFileSave)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -111,7 +113,7 @@ void CComauCamView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 void CComauCamView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
 #ifndef SHARED_HANDLERS
-	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
+	//theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
 #endif
 }
 
@@ -170,6 +172,16 @@ void CComauCamView::SetScenePos(int axis, int value, BOOL increment, BOOL apply)
 
 	::glMatrixMode(GL_MODELVIEW);
 	::glLoadIdentity();
+	RenderScene();
+}
+
+void CComauCamView::SetSceneTrans(int axis, int value, BOOL increment, BOOL apply)
+{
+	if (increment)
+		scenePos[axis] += value;
+	else
+		scenePos[axis] -= value;
+
 	RenderScene();
 }
 
@@ -276,8 +288,7 @@ BOOL CComauCamView::RenderScene()
 
 	::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//改变背景颜色
-	glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
-
+	glClearColor(0.5f, 0.8f, 1.0f, 1.0f);
 
 
 	::glMatrixMode(GL_MODELVIEW);
@@ -322,7 +333,7 @@ void CComauCamView::Init()
 
 	camPos[0] = 0.0f;
 	camPos[1] = 0.0f;//-30.0f
-	camPos[2] = -1200.0f;
+	camPos[2] = -2000.0f;
 	camRot[0] = -75.0f;
 	camRot[1] = 0.0f;
 	camRot[2] = 0.0f;
@@ -453,8 +464,8 @@ void CComauCamView::OnLButtonUp(UINT nFlags, CPoint point)
 	// TODO: Add your message handler code here and/or call default
 	ReleaseCapture();
 	mouseleftdown = FALSE;
-	SetSceneRot(0, (point.y - mouseprevpoint.y), TRUE, TRUE);
-	SetSceneRot(2, (point.x - mouseprevpoint.x), TRUE, TRUE);
+//	SetSceneRot(0, (point.y - mouseprevpoint.y), TRUE, TRUE);
+//	SetSceneRot(2, (point.x - mouseprevpoint.x), TRUE, TRUE);
 
 	CView::OnLButtonUp(nFlags, point);
 }
@@ -465,8 +476,8 @@ void CComauCamView::OnLButtonDown(UINT nFlags, CPoint point)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	SetCapture();
 	mouseleftdown = TRUE;
-	mouseprevpoint.x = point.x;
-	mouseprevpoint.y = point.y;
+//	mouseprevpoint.x = point.x;
+//	mouseprevpoint.y = point.y;
 
 	CView::OnLButtonDown(nFlags, point);
 }
@@ -477,7 +488,10 @@ void CComauCamView::OnMouseMove(UINT nFlags, CPoint point)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	if (mouserightdown)
 	{
-		SetCamPos(1, -(point.y - mouseprevpoint.y), TRUE, TRUE);
+		//SetCamPos(1, -(point.y - mouseprevpoint.y), TRUE, TRUE);
+		SetSceneTrans(2, (point.y - mouseprevpoint.y), FALSE, TRUE);
+		SetSceneTrans(0, (point.x - mouseprevpoint.x), TRUE, TRUE);
+
 	}
 	else if (mouseleftdown)
 	{
@@ -530,4 +544,28 @@ void CComauCamView::OnRButtonUp(UINT nFlags, CPoint point)
 	mouserightdown = FALSE;
 	SetCamPos(1, (point.y - mouseprevpoint.y), TRUE, TRUE);
 	CView::OnRButtonUp(nFlags, point);
+}
+
+
+void CComauCamView::OnDeletemodel()
+{
+	// TODO: Add your command handler code here
+	m_STLModel->ReleaseMem();
+	RenderScene();
+}
+
+
+void CComauCamView::OnFileSave()
+{
+	// TODO: Add your command handler code here
+	TCHAR szFilter[] = _T("文本文件(*.txt) | *.txt | 所有文件(*.*) | *.* || ");
+	CFileDialog fileDlg(FALSE, _T("doc"), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
+	CString strFilePath;
+
+	if (IDOK == fileDlg.DoModal())
+	{
+		strFilePath = fileDlg.GetPathName();
+		m_STLModel->WriteSTL(strFilePath);
+		SetDlgItemText(ID_FILE_SAVE, strFilePath);
+	}
 }

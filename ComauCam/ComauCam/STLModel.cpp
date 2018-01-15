@@ -114,6 +114,49 @@ bool CSTLModel::ReadAsciiSTL(CStdioFile& file)
 	return true;
 }
 
+void CSTLModel::WriteSTL(CString sFilePath)
+{
+
+	CStdioFile fileout;
+	//CStdioFile file (sFilePath,CFile::modeCreate | CFile::modeWrite);
+	if (fileout.Open(sFilePath, CFile::modeCreate | CFile::modeWrite))
+	{
+		fileout.WriteString(_T("solid OBJECT\n"));
+		int sz = m_tris.GetSize();
+		//int sz=m_tris.size();
+		CString str;
+		for (int i = 0; i<sz; i++)
+		{
+			str.Format(_T("  facet normal %.7f %.7f %.7f\n"),
+				m_tris[i]->Normal.dx, m_tris[i]->Normal.dy, m_tris[i]->Normal.dz);
+			fileout.WriteString(str);
+			fileout.WriteString(_T("    outer loop\n"));
+			str.Format(_T("      vertex  %.7f %.7f %.7f\n"),
+				m_tris[i]->A.x, m_tris[i]->A.y, m_tris[i]->A.z);
+			fileout.WriteString(str);
+			str.Format(_T("      vertex  %.7f %.7f %.7f\n"),
+				m_tris[i]->B.x, m_tris[i]->B.y, m_tris[i]->B.z);
+			fileout.WriteString(str);
+			str.Format(_T("      vertex  %.7f %.7f %.7f\n"),
+				m_tris[i]->C.x, m_tris[i]->C.y, m_tris[i]->C.z);
+			fileout.WriteString(str);
+			fileout.WriteString(_T("    endloop\n"));
+			fileout.WriteString(_T("  endfacet\n"));
+		}
+		fileout.WriteString(_T("endsolid OBJECT\n"));
+		fileout.Close();
+	}
+	AfxMessageBox(_T("finish"));
+}
+
+void CSTLModel::ReleaseMem()
+{
+	int sz = m_tris.GetSize();
+	for (int i = 0; i<sz; i++)
+		delete m_tris[i];
+	m_tris.RemoveAll();
+}
+
 CPoint3D CSTLModel::FindCord(CString str)
 {
 	str += "  END";
@@ -252,7 +295,7 @@ void CSTLModel::Draw(COpenGLDC* pDC)
 	for (int i = 0; i<sz; i++)
 	{
 		m_tris[i]->DrawTriangleFace(pDC);            //面片模式
-		m_tris[i]->DrawTriangleFrame(pDC);       //线框模式
+		//m_tris[i]->DrawTriangleFrame(pDC);       //线框模式
 	}
 
 	//pDC->SetMaterialColor(oldClr);
