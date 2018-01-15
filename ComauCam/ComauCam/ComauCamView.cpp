@@ -417,7 +417,7 @@ int CComauCamView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	// TODO:  Add your specialized creation code here
-	m_STLModel = new CSTLModel;
+	m_STLModel = new CSTLModel();
 
 
 	m_pDC1 = new CClientDC(this);

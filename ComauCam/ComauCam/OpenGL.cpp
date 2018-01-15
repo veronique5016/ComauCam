@@ -133,4 +133,71 @@ void COpenGLDC::DrawLine(const CPoint3D& sp, const CPoint3D& ep, int lineStyle/*
 	//SetColor(oldClr);
 }
 
+void COpenGLDC::DrawPoint(const CPoint3D & pt)
+{
+	glBegin(GL_POINTS);
+		glVertex3f(pt.x, pt.y, pt.z);
+	glEnd();
+}
 
+void COpenGLDC::DrawSelPoint(const CPoint3D & pt, int ShapeType, COLORREF clr)
+{
+	double len = 10; // 暂时不清楚作用，后期要进行修改
+	switch(ShapeType)
+	{
+	case ST_RECT:
+		{
+			CPoint3D pt1(pt.x - len, pt.y - len, pt.z);
+			CPoint3D pt2(pt.x + len, pt.y - len, pt.z);
+			CPoint3D pt3(pt.x + len, pt.y + len, pt.z);
+			CPoint3D pt4(pt.x - len, pt.y + len, pt.z);
+
+			DrawLine(pt1, pt2);
+			DrawLine(pt2, pt3);
+			DrawLine(pt3, pt4);
+			DrawLine(pt4, pt1);
+			// 			DrawTriChip(CVector3D(0,0,1),pt1,pt2,pt3);
+			// 			DrawTriChip(CVector3D(0,0,1),pt3,pt4,pt1);
+			break;
+		}
+	case ST_CIRCLE:
+		{
+			double step = 2 * PI / 20;
+			double r = 1.2*len;
+			CPoint3D ptFrom(pt.x + r, pt.y, 0);
+			CPoint3D ptTo;
+			for (double theta = step; theta<2 * PI; theta = theta + step)
+			{
+				ptTo = CPoint3D(pt.x + r*cos(theta), pt.y + r*sin(theta), 0);
+				DrawLine(ptFrom, ptTo);
+				ptFrom = ptTo;
+			}
+			ptTo = CPoint3D(pt.x + r, pt.y, 0);
+			DrawLine(ptFrom, ptTo);
+
+			break;
+		}	
+	case ST_TRIANGLE:
+		{
+			double r = 1.5*len;
+			CPoint3D pt1(pt.x - 0.866*r, pt.y - 0.5*r, 0);
+			CPoint3D pt2(pt.x + 0.866*r, pt.y - 0.5*r, 0);
+			CPoint3D pt3(pt.x, pt.y + r, 0);
+			DrawLine(pt1, pt2);
+			DrawLine(pt2, pt3);
+			DrawLine(pt3, pt1);
+
+			break;
+		}
+
+	}
+}
+
+CEntity::CEntity()
+{
+	m_ShowTriangleFace = false;
+}
+
+CEntity::~CEntity()
+{
+}

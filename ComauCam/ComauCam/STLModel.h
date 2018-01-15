@@ -9,11 +9,11 @@
 
 
 
-class CSTLModel :public CObject, public TopologySTL
+class CSTLModel :public CEntity, public TopologySTL
 {
 public:
-	CSTLModel(void);
-	~CSTLModel(void);
+	CSTLModel();
+	~CSTLModel();
 
 public:
 	TriangleAry m_tris;

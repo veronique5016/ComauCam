@@ -334,7 +334,7 @@ BOOL CSTLModel::IsSpace(TCHAR ch)
 
 void CSTLModel::Draw(COpenGLDC* pDC, bool ShowTri)
 {
-	COLORREF oldClr;
+	//COLORREF oldClr;
 
 	//pDC->GetMaterialColor(oldClr);
 	//if (GetIsSelected())

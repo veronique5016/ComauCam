@@ -195,9 +195,17 @@ void LTriangle::Draw(COpenGLDC* pDC)
 }
 */
 
-void LTriangle::Draw(COpenGLDC* pDC)
+void LTriangle::Draw(COpenGLDC* pDC, bool ShowTri)
 {
-	pDC->DrawTriChip(*n, *v1, *v2, *v3);
+	if (ShowTri)
+	{
+		pDC->DrawTriChip(*n, *v1, *v2, *v3);
+	}
+	else
+	{
+		pDC->DrawTriFrame(*v1, *v2, *v3);
+	}
+	
 }
 //////////////////////////////////////////////////////////////////////////
 TopologySTL::TopologySTL()

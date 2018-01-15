@@ -41,7 +41,7 @@ struct LEdgeHull
 	bool operator < (const LEdgeHull& edgeHull);
 };
 
-struct LTriangle 
+struct LTriangle : public CEntity
 {
 	LTriangle();
 	LTriangle(LVertex* v1, LVertex* v2, LVertex* v3);
@@ -49,8 +49,8 @@ struct LTriangle
 	LTriangle* GetNbTri2() const;
 	LTriangle* GetNbTri3() const;
 	CVector3D* GntNormal();
-	//virtual void Draw(COpenGLDC* pDC);
-	void Draw(COpenGLDC* pDC);   // 新添的，不知道能不能用，上面那句是原始的
+	virtual void Draw(COpenGLDC* pDC, bool ShowTri);
+//	void Draw(COpenGLDC* pDC);   // 新添的，不知道能不能用，上面那句是原始的
 
 	LVertex *v1, *v2, *v3;  // 逆时针排列
 	LEdge   *e1, *e2, *e3;  // 半边
