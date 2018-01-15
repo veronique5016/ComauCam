@@ -42,12 +42,12 @@ BEGIN_MESSAGE_MAP(CComauCamView, CView)
 	ON_COMMAND(ID_FILE_SAVE, &CComauCamView::OnFileSave)
 	ON_COMMAND(ID_Start_Slice, &CComauCamView::OnStartSlice)
 	ON_COMMAND(ID_Sweep, &CComauCamView::OnSweep)
-	ON_COMMAND(ID_WriteGCode, &CComauCamView::OnWritegcode)
-	ON_COMMAND(ID_DISPLAYMODE, &CComauCamView::OnDisplaymode)
-	ON_COMMAND(ID_SHOWSELECTEDLAYER, &CComauCamView::OnShowselectedlayer)
-	ON_COMMAND(ID_FIVEAXISGCODE, &CComauCamView::OnFiveaxisgcode)
-	ON_COMMAND(ID_moveandRotate, &CComauCamView::Onmoveandrotate)
-	ON_COMMAND(ID_ONCENTER, &CComauCamView::OnOncenter)
+	ON_COMMAND(ID_WriteGCode, &CComauCamView::OnWriteGCode)
+	ON_COMMAND(ID_DISPLAYMODE, &CComauCamView::OnDisplayMode)
+	ON_COMMAND(ID_SHOWSELECTEDLAYER, &CComauCamView::OnShowSelectedLayers)
+	ON_COMMAND(ID_FIVEAXISGCODE, &CComauCamView::OnFiveAxisGCode)
+	ON_COMMAND(ID_moveandRotate, &CComauCamView::OnMoveandRotate)
+	ON_COMMAND(ID_ONCENTER, &CComauCamView::OnCenterOn)
 END_MESSAGE_MAP()
 
 // CComauCamView 构造/析构
@@ -55,15 +55,15 @@ END_MESSAGE_MAP()
 CComauCamView::CComauCamView()
 {
 	// TODO: 在此处添加构造代码
-	m_bCanSTLDraw = false;   
-	m_bCanSliceDraw = false;
-	m_bCanSweepDraw = false;
+	m_bSTLDraw = false;   
+	m_bSliceDraw = false;
+	m_bSweepDraw = false;
 
-	m_ShowTriFace = false;
-	m_ShowPolygon = false;
+	m_bTriFaceDraw = false;
+	m_bPolygonDraw = false;
 	
-	startLayer = 1;
-	endLayer = 0;
+	m_nStartLayer = 1;
+	m_nEndLayer = 0;
 }
 
 CComauCamView::~CComauCamView()
@@ -159,11 +159,11 @@ void CComauCamView::SetCamPos(int axis, int value, BOOL increment, BOOL apply)
 {
 	if (increment)
 	{
-		camPos[axis] += (float)value*camPos[axis] / 100;
+		m_fCamPos[axis] += (float)value*m_fCamPos[axis] / 100;
 	}
 	else
 	{
-		camPos[axis] = (float)value / 2;
+		m_fCamPos[axis] = (float)value / 2;
 	}
 
 	::glMatrixMode(GL_MODELVIEW);
@@ -177,11 +177,11 @@ void CComauCamView::SetScenePos(int axis, int value, BOOL increment, BOOL apply)
 {
 	if (increment)
 	{
-		scenePos[axis] += (float)value*scenePos[axis] / 100;
+		m_fScenePos[axis] += (float)value*m_fScenePos[axis] / 100;
 	}
 	else
 	{
-		scenePos[axis] = (float)value / 2;
+		m_fScenePos[axis] = (float)value / 2;
 	}
 
 	::glMatrixMode(GL_MODELVIEW);
@@ -192,9 +192,9 @@ void CComauCamView::SetScenePos(int axis, int value, BOOL increment, BOOL apply)
 void CComauCamView::SetSceneTrans(int axis, int value, BOOL increment, BOOL apply)
 {
 	if (increment)
-		scenePos[axis] += value;
+		m_fScenePos[axis] += value;
 	else
-		scenePos[axis] -= value;
+		m_fScenePos[axis] -= value;
 
 	RenderScene();
 }
@@ -202,9 +202,9 @@ void CComauCamView::SetSceneTrans(int axis, int value, BOOL increment, BOOL appl
 void CComauCamView::SetSceneRot(int axis, int value, BOOL increment, BOOL apply)
 {
 	if (increment)
-		sceneRot[axis] += (sceneRot[axis] >= 360) ? (-360 + value / 2) : value / 2;
+		m_fSceneRot[axis] += (m_fSceneRot[axis] >= 360) ? (-360 + value / 2) : value / 2;
 	else
-		sceneRot[axis] = (sceneRot[axis] >= 360) ? (-360 + value / 2) : value / 2;
+		m_fSceneRot[axis] = (m_fSceneRot[axis] >= 360) ? (-360 + value / 2) : value / 2;
 
 	RenderScene();
 }
@@ -308,43 +308,43 @@ BOOL CComauCamView::RenderScene()
 	::glMatrixMode(GL_MODELVIEW);
 	::glLoadIdentity();
 
-	::glTranslatef(camPos[0], camPos[1], camPos[2]);    //三个参数分别表示了在三个坐标上的位移值
-	::glRotatef(camRot[0], 1.0F, 0.0F, 0.0F);           //物体将绕着(0,0,0)到(x,y,z)的直线以逆时针旋转X
-	::glRotatef(camRot[1], 0.0F, 1.0F, 0.0F);
-	::glRotatef(camRot[2], 0.0F, 0.0F, 1.0F);
+	::glTranslatef(m_fCamPos[0], m_fCamPos[1], m_fCamPos[2]);    //三个参数分别表示了在三个坐标上的位移值
+	::glRotatef(m_fCamRot[0], 1.0F, 0.0F, 0.0F);           //物体将绕着(0,0,0)到(x,y,z)的直线以逆时针旋转X
+	::glRotatef(m_fCamRot[1], 0.0F, 1.0F, 0.0F);
+	::glRotatef(m_fCamRot[2], 0.0F, 0.0F, 1.0F);
 
 	::glPushMatrix();
-	::glTranslatef(scenePos[0], scenePos[1], scenePos[2]);
-	::glRotatef(sceneRot[0], 1.0F, 0.0F, 0.0F);
-	::glRotatef(sceneRot[1], 0.0F, 1.0F, 0.0F);
-	::glRotatef(sceneRot[2], 0.0F, 0.0F, 1.0F);
+	::glTranslatef(m_fScenePos[0], m_fScenePos[1], m_fScenePos[2]);
+	::glRotatef(m_fSceneRot[0], 1.0F, 0.0F, 0.0F);
+	::glRotatef(m_fSceneRot[1], 0.0F, 1.0F, 0.0F);
+	::glRotatef(m_fSceneRot[2], 0.0F, 0.0F, 1.0F);
 
 
 	//////
 	m_pDC->DrawAxis();
-	if (m_bCanSTLDraw)
+	if (m_bSTLDraw)
 	{
-		for (int i = 0; i<m_models.size(); i++)
+		for (int i = 0; i<m_vecpSTLModels.size(); i++)
 		{
-			m_models[i]->Draw(m_pDC, m_ShowTriFace);
+			m_vecpSTLModels[i]->Draw(m_pDC, m_bTriFaceDraw);
 		}
 	} 
-	if (m_bCanSliceDraw)
+	if (m_bSliceDraw)
 	{
-		for (unsigned int i = 0; i < m_slices.size(); i++)
+		for (unsigned int i = 0; i < m_vecpSlices.size(); i++)
 		{
-			if (endLayer == 0)
+			if (m_nEndLayer == 0)
 			{
-				endLayer = m_slices[0]->m_layers.size();
+				m_nEndLayer = m_vecpSlices[0]->m_vecpLayers.size();
 			}
-			m_slices[0]->drawLayer(m_ShowPolygon, startLayer, endLayer);
+			m_vecpSlices[0]->DrawLayer(m_bPolygonDraw, m_nStartLayer, m_nEndLayer);
 		}
 	}
-	if (m_bCanSweepDraw)
+	if (m_bSweepDraw)
 	{
-		for (unsigned int i = 0; i < m_sweeps.size(); i++)
+		for (unsigned int i = 0; i < m_vecpSweeps.size(); i++)
 		{
-			m_sweeps[0]->drawRoute(startLayer, endLayer);
+			m_vecpSweeps[0]->DrawRoute(m_nStartLayer, m_nEndLayer);
 		}
 	}
 
@@ -362,27 +362,27 @@ void CComauCamView::Init()
 	///////////////////////////
 
 
-	camPos[0] = 0.0f;
-	camPos[1] = 0.0f;//-30.0f
-	camPos[2] = -2000.0f;
-	camRot[0] = -75.0f;
-	camRot[1] = 0.0f;
-	camRot[2] = 0.0f;
-	scenePos[0] = 0.0f;
-	scenePos[1] = 0.0f;
-	scenePos[2] = 0.0f;
-	sceneRot[0] = 0.0f;
-	sceneRot[1] = 0.0f;
-	sceneRot[2] = 0.0f;
+	m_fCamPos[0] = 0.0f;
+	m_fCamPos[1] = 0.0f;//-30.0f
+	m_fCamPos[2] = -2000.0f;
+	m_fCamRot[0] = -75.0f;
+	m_fCamRot[1] = 0.0f;
+	m_fCamRot[2] = 0.0f;
+	m_fScenePos[0] = 0.0f;
+	m_fScenePos[1] = 0.0f;
+	m_fScenePos[2] = 0.0f;
+	m_fSceneRot[0] = 0.0f;
+	m_fSceneRot[1] = 0.0f;
+	m_fSceneRot[2] = 0.0f;
 
-	m_width = 2000;
-	m_height = 2000;
+	m_dWidth = 2000;
+	m_dHeight = 2000;
 
 
-	mouseprevpoint.x = 0;
-	mouseprevpoint.y = 0;
-	mouserightdown = FALSE;
-	mouseleftdown = FALSE;
+	m_ptMousePrevPoint.x = 0;
+	m_ptMousePrevPoint.y = 0;
+	m_bIsMouseRightDown = FALSE;
+	m_bIsMouseLeftDown = FALSE;
 
 
 
@@ -424,9 +424,9 @@ void CComauCamView::OnStlopen()
 		CString str = _T(" ");
 		str = filedlg.GetPathName();
 		stlModel->ReadSTL(str);
-		m_bCanSTLDraw = true;
-		m_ShowTriFace = true;
-		m_models.push_back(stlModel);
+		m_bSTLDraw = true;
+		m_bTriFaceDraw = true;
+		m_vecpSTLModels.push_back(stlModel);
 
 		Invalidate(TRUE);
 	}
@@ -484,7 +484,7 @@ void CComauCamView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	ReleaseCapture();
-	mouseleftdown = FALSE;
+	m_bIsMouseLeftDown = FALSE;
 //	SetSceneRot(0, (point.y - mouseprevpoint.y), TRUE, TRUE);
 //	SetSceneRot(2, (point.x - mouseprevpoint.x), TRUE, TRUE);
 
@@ -495,7 +495,7 @@ void CComauCamView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	SetCapture();
-	mouseleftdown = TRUE;
+	m_bIsMouseLeftDown = TRUE;
 //	mouseprevpoint.x = point.x;
 //	mouseprevpoint.y = point.y;
 
@@ -505,22 +505,22 @@ void CComauCamView::OnLButtonDown(UINT nFlags, CPoint point)
 void CComauCamView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	if (mouserightdown)
+	if (m_bIsMouseRightDown)
 	{
 		//SetCamPos(1, -(point.y - mouseprevpoint.y), TRUE, TRUE);
-		SetSceneTrans(2, (point.y - mouseprevpoint.y), FALSE, TRUE);
-		SetSceneTrans(0, (point.x - mouseprevpoint.x), TRUE, TRUE);
+		SetSceneTrans(2, (point.y - m_ptMousePrevPoint.y), FALSE, TRUE);
+		SetSceneTrans(0, (point.x - m_ptMousePrevPoint.x), TRUE, TRUE);
 
 	}
-	else if (mouseleftdown)
+	else if (m_bIsMouseLeftDown)
 	{
-		SetSceneRot(0, (point.y - mouseprevpoint.y), TRUE, TRUE);
-		SetSceneRot(2, (point.x - mouseprevpoint.x), TRUE, TRUE);
+		SetSceneRot(0, (point.y - m_ptMousePrevPoint.y), TRUE, TRUE);
+		SetSceneRot(2, (point.x - m_ptMousePrevPoint.x), TRUE, TRUE);
 	}
 	CView::OnMouseMove(nFlags, point);
 
-	mouseprevpoint.x = point.x;
-	mouseprevpoint.y = point.y;
+	m_ptMousePrevPoint.x = point.x;
+	m_ptMousePrevPoint.y = point.y;
 
 }
 
@@ -530,11 +530,11 @@ BOOL CComauCamView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	if (zDelta>0)
 	{
-		camPos[2] *= 0.8;
+		m_fCamPos[2] *= 0.8;
 	}
 	else
 	{
-		camPos[2] *= 1.25;
+		m_fCamPos[2] *= 1.25;
 	}
 	Invalidate(TRUE);
 
@@ -545,9 +545,9 @@ void CComauCamView::OnRButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	SetCapture();
-	mouserightdown = TRUE;
-	mouseprevpoint.x = point.x;
-	mouseprevpoint.y = point.y;
+	m_bIsMouseRightDown = TRUE;
+	m_ptMousePrevPoint.x = point.x;
+	m_ptMousePrevPoint.y = point.y;
 
 	CView::OnRButtonDown(nFlags, point);
 }
@@ -556,27 +556,27 @@ void CComauCamView::OnRButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	ReleaseCapture();
-	mouserightdown = FALSE;
-	SetCamPos(1, (point.y - mouseprevpoint.y), TRUE, TRUE);
+	m_bIsMouseRightDown = FALSE;
+	SetCamPos(1, (point.y - m_ptMousePrevPoint.y), TRUE, TRUE);
 	CView::OnRButtonUp(nFlags, point);
 }
 
 void CComauCamView::OnDeletemodel()
 {
 	// TODO: Add your command handler code here
-	m_models.clear();
-	m_slices.clear();
-	m_sweeps.clear();
+	m_vecpSTLModels.clear();
+	m_vecpSlices.clear();
+	m_vecpSweeps.clear();
 
-	m_bCanSTLDraw = false;
-	m_bCanSliceDraw = false;
-	m_bCanSweepDraw = false;
+	m_bSTLDraw = false;
+	m_bSliceDraw = false;
+	m_bSweepDraw = false;
 
-	m_ShowTriFace = false;
-	m_ShowPolygon = false;
+	m_bTriFaceDraw = false;
+	m_bPolygonDraw = false;
 
-	startLayer = 1;
-	endLayer = 0;
+	m_nStartLayer = 1;
+	m_nEndLayer = 0;
 
 	RenderScene();
 }
@@ -591,7 +591,7 @@ void CComauCamView::OnFileSave()
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
-		m_models[0]->WriteSTL(strFilePath);
+		m_vecpSTLModels[0]->WriteSTL(strFilePath);
 		SetDlgItemText(ID_FILE_SAVE, strFilePath);
 	}
 }
@@ -603,16 +603,16 @@ void CComauCamView::OnStartSlice()
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		unsigned int szModel = m_models.size();
+		unsigned int szModel = m_vecpSTLModels.size();
 		for (unsigned int i = 0; i < szModel; i++)
 		{
 			CSlice* pSlice = new CSlice();
-			pSlice->height = dialog.m_sliceDistance;
-			pSlice->loadSTLModel(m_models[i]);
-			pSlice->slice(m_models[i]);
-			m_slices.push_back(pSlice);
-			m_bCanSliceDraw = true;
-			m_bCanSTLDraw = false;
+			pSlice->height = dialog.m_dSliceDistance;
+			pSlice->LoadSTLModel(m_vecpSTLModels[i]);
+			pSlice->Slice(m_vecpSTLModels[i]);
+			m_vecpSlices.push_back(pSlice);
+			m_bSliceDraw = true;
+			m_bSTLDraw = false;
 			Invalidate(TRUE);
 		}
 	}
@@ -625,50 +625,50 @@ void CComauCamView::OnSweep()
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		unsigned int szSlice = m_slices.size();
+		unsigned int szSlice = m_vecpSlices.size();
 		for (unsigned int i = 0; i < szSlice; i++)
 		{
 			CSweep* pSweep = new CSweep();
-			pSweep->distance = dialog.m_sweepDistance;
-			pSweep->loadSliceModel(m_slices[i]);
-			pSweep->sweep();
-			m_sweeps.push_back(pSweep);
-			m_bCanSweepDraw = true;
-			m_bCanSTLDraw = false;
-			m_bCanSliceDraw = false;
+			pSweep->m_dDistance = dialog.m_dSweepDistance;
+			pSweep->LoadSliceModel(m_vecpSlices[i]);
+			pSweep->Sweep();
+			m_vecpSweeps.push_back(pSweep);
+			m_bSweepDraw = true;
+			m_bSTLDraw = false;
+			m_bSliceDraw = false;
 			Invalidate(TRUE);
 		}
 	}
 }
 
-void CComauCamView::OnWritegcode()
+void CComauCamView::OnWriteGCode()
 {
 	// TODO: 在此添加命令处理程序代码
-	unsigned int sz = m_sweeps.size();
+	unsigned int sz = m_vecpSweeps.size();
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
 	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
 	CString strFilePath;
-	gcodeOut = new GCode();
+	m_pGCode = new CGCode();
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
 		for (unsigned int i = 0; i < sz; i++)
 		{
-			gcodeOut->loadSweepModel(m_sweeps[i]);
-			gcodeOut->writeGCode(strFilePath);
+			m_pGCode->LoadSweepModel(m_vecpSweeps[i]);
+			m_pGCode->Write(strFilePath);
 		}
 		SetDlgItemText(ID_WriteGCode, strFilePath);
 	}
 }
 
-void CComauCamView::OnFiveaxisgcode()
+void CComauCamView::OnFiveAxisGCode()
 {
 	// TODO: 在此添加命令处理程序代码
-	unsigned int sz = m_sweeps.size();
+	unsigned int sz = m_vecpSweeps.size();
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
 	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
 	CString strFilePath;	
-	gcodeOut = new GCode();
+	m_pGCode = new CGCode();
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
@@ -676,53 +676,53 @@ void CComauCamView::OnFiveaxisgcode()
 		{
 			//m_sweeps[i]->writeFiveAxisGCode(strFilePath);
 			
-			gcodeOut->loadSweepModel(m_sweeps[i]);
-			gcodeOut->writeFiveAxisGCode(strFilePath);
+			m_pGCode->LoadSweepModel(m_vecpSweeps[i]);
+			m_pGCode->WriteFiveAxis(strFilePath);
 		}
 		SetDlgItemText(ID_WriteGCode, strFilePath);
 	}
 }
 
-void CComauCamView::OnDisplaymode()
+void CComauCamView::OnDisplayMode()
 {
 	// TODO: 在此添加命令处理程序代码
-	DisplayDlg dialog;
+	CDisplayDlg dialog;
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		m_ShowTriFace = dialog.m_ShowTriangle;
-		m_ShowPolygon = dialog.m_ShowPolygon;
-		m_bCanSTLDraw = dialog.m_showStlModel;
-		m_bCanSliceDraw = dialog.m_showSliceModel;
-		m_bCanSweepDraw = dialog.m_showSweepModel;
+		m_bTriFaceDraw = dialog.m_bTriangleDraw;
+		m_bPolygonDraw = dialog.m_bPolygonDraw;
+		m_bSTLDraw = dialog.m_bSTLModelDraw;
+		m_bSliceDraw = dialog.m_bSliceModelDraw;
+		m_bSweepDraw = dialog.m_bSweepModelDraw;
 		Invalidate(TRUE);
 	}
 }
 
-void CComauCamView::OnShowselectedlayer()
+void CComauCamView::OnShowSelectedLayers()
 {
 	// TODO: 在此添加命令处理程序代码
-	LayerDlg dialog;
+	CLayerDlg dialog;
 	UpdateData(FALSE);
-	for (unsigned int i = 0; i < m_slices[0]->m_layers.size(); i++)
+	for (unsigned int i = 0; i < m_vecpSlices[0]->m_vecpLayers.size(); i++)
 	{
-		if (m_slices[0]->m_layers[i]->layer_coordinate[2].dz != 1.0)
+		if (m_vecpSlices[0]->m_vecpLayers[i]->m_vLayerCoordinate[2].dz != 1.0)
 		{
-			dialog.firstTurnLayer = i;
+			dialog.m_nFirstTurnLayer = i;
 			break;
 		}
 	}
-	dialog.numberofLayers = m_slices[0]->m_layers.size();
+	dialog.m_nNumberofLayers = m_vecpSlices[0]->m_vecpLayers.size();
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		startLayer = dialog.startLayer;
-		endLayer = dialog.endLayer;
+		m_nStartLayer = dialog.m_nStartLayer;
+		m_nEndLayer = dialog.m_nEndLayer;
 		Invalidate(TRUE);
 	}
 }
 
-void CComauCamView::Onmoveandrotate()
+void CComauCamView::OnMoveandRotate()
 {
 	// TODO: 在此添加命令处理程序代码
 	TransferDlg dialog;
@@ -736,23 +736,23 @@ void CComauCamView::Onmoveandrotate()
 		double xaxis = dialog.x_axis;
 		double yaxis = dialog.y_axis;
 		double zaxis = dialog.z_axis;
-		for (unsigned int i = 0; i < m_models.size(); i++)
+		for (unsigned int i = 0; i < m_vecpSTLModels.size(); i++)
 		{
-			m_models[i]->moveModel(CVector3D(xmove, ymove, zmove));
-			m_models[i]->rotateModel(angle, CVector3D(xaxis, yaxis, zaxis));
+			m_vecpSTLModels[i]->MoveModel(CVector3D(xmove, ymove, zmove));
+			m_vecpSTLModels[i]->RotateModel(angle, CVector3D(xaxis, yaxis, zaxis));
 		}
 		Invalidate(TRUE);
 	}
 }
 
-void CComauCamView::OnOncenter()
+void CComauCamView::OnCenterOn()
 {
 	// TODO: 在此添加命令处理程序代码
 	CVector3D offset_vec;
-	for (unsigned int i = 0; i < m_models.size(); i++)
+	for (unsigned int i = 0; i < m_vecpSTLModels.size(); i++)
 	{
-		offset_vec = m_models[i]->onCenter();
-		m_models[i]->moveModel(offset_vec);
+		offset_vec = m_vecpSTLModels[i]->OnCenter();
+		m_vecpSTLModels[i]->MoveModel(offset_vec);
 		RenderScene();
 	}
 }

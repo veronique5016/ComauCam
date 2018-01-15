@@ -13,7 +13,7 @@ IMPLEMENT_DYNAMIC(CSliceDlg, CDialogEx)
 
 CSliceDlg::CSliceDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DIALOG1, pParent)
-	, m_sliceDistance(10)
+	, m_dSliceDistance(10)
 {
 
 }
@@ -25,7 +25,7 @@ CSliceDlg::~CSliceDlg()
 void CSliceDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT1, m_sliceDistance);
+	DDX_Text(pDX, IDC_EDIT1, m_dSliceDistance);
 }
 
 

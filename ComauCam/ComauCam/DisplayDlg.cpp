@@ -9,39 +9,39 @@
 
 // DisplayDlg ¶Ô»°¿ò
 
-IMPLEMENT_DYNAMIC(DisplayDlg, CDialogEx)
+IMPLEMENT_DYNAMIC(CDisplayDlg, CDialogEx)
 
-DisplayDlg::DisplayDlg(CWnd* pParent /*=NULL*/)
+CDisplayDlg::CDisplayDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DISPLAYDIALOG, pParent)
-	, m_ShowTriangle(FALSE)
-	, m_ShowFrame(FALSE)
-	, m_ShowPolygon(FALSE)
-	, m_ShowLines(FALSE)
-	, m_showStlModel(FALSE)
-	, m_showSliceModel(FALSE)
-	, m_showSweepModel(FALSE)
+	, m_bTriangleDraw(FALSE)
+	, m_bFrameDraw(FALSE)
+	, m_bPolygonDraw(FALSE)
+	, m_bLinesDraw(FALSE)
+	, m_bSTLModelDraw(FALSE)
+	, m_bSliceModelDraw(FALSE)
+	, m_bSweepModelDraw(FALSE)
 {
 
 }
 
-DisplayDlg::~DisplayDlg()
+CDisplayDlg::~CDisplayDlg()
 {
 }
 
-void DisplayDlg::DoDataExchange(CDataExchange* pDX)
+void CDisplayDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Check(pDX, IDC_SHOWTRIANGLE, m_ShowTriangle);
-	DDX_Check(pDX, IDC_SHOWFRAME, m_ShowFrame);
-	DDX_Check(pDX, IDC_SHOWPOLYGON, m_ShowPolygon);
-	DDX_Check(pDX, IDC_SHOWLINES, m_ShowLines);
-	DDX_Check(pDX, IDC_CANSTLSHOW, m_showStlModel);
-	DDX_Check(pDX, IDC_CANSLICESHOW, m_showSliceModel);
-	DDX_Check(pDX, IDC_CANSWEEPSHOW, m_showSweepModel);
+	DDX_Check(pDX, IDC_SHOWTRIANGLE, m_bTriangleDraw);
+	DDX_Check(pDX, IDC_SHOWFRAME, m_bFrameDraw);
+	DDX_Check(pDX, IDC_SHOWPOLYGON, m_bPolygonDraw);
+	DDX_Check(pDX, IDC_SHOWLINES, m_bLinesDraw);
+	DDX_Check(pDX, IDC_CANSTLSHOW, m_bSTLModelDraw);
+	DDX_Check(pDX, IDC_CANSLICESHOW, m_bSliceModelDraw);
+	DDX_Check(pDX, IDC_CANSWEEPSHOW, m_bSweepModelDraw);
 }
 
 
-BEGIN_MESSAGE_MAP(DisplayDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CDisplayDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 

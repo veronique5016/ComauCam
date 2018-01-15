@@ -9,33 +9,33 @@
 
 // LayerDlg ¶Ô»°¿ò
 
-IMPLEMENT_DYNAMIC(LayerDlg, CDialogEx)
+IMPLEMENT_DYNAMIC(CLayerDlg, CDialogEx)
 
-LayerDlg::LayerDlg(CWnd* pParent /*=NULL*/)
+CLayerDlg::CLayerDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_SHOWLAYERDIALOG, pParent)
-	, startLayer(1)
-	, endLayer(1)
-	, numberofLayers(0)
-	, firstTurnLayer(0)
+	, m_nStartLayer(1)
+	, m_nEndLayer(1)
+	, m_nNumberofLayers(0)
+	, m_nFirstTurnLayer(0)
 {
 
 }
 
-LayerDlg::~LayerDlg()
+CLayerDlg::~CLayerDlg()
 {
 }
 
-void LayerDlg::DoDataExchange(CDataExchange* pDX)
+void CLayerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT1, startLayer);
-	DDX_Text(pDX, IDC_EDIT2, endLayer);
-	DDX_Text(pDX, IDC_EDIT3, firstTurnLayer);
-	DDX_Text(pDX, IDC_EDIT4, numberofLayers);
+	DDX_Text(pDX, IDC_EDIT1, m_nStartLayer);
+	DDX_Text(pDX, IDC_EDIT2, m_nEndLayer);
+	DDX_Text(pDX, IDC_EDIT3, m_nFirstTurnLayer);
+	DDX_Text(pDX, IDC_EDIT4, m_nNumberofLayers);
 }
 
 
-BEGIN_MESSAGE_MAP(LayerDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CLayerDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 

@@ -1,25 +1,25 @@
 #include "stdafx.h"
 #include "LVertex.h"
 
-LVertex::LVertex()
+CLVertex::CLVertex()
 {
 
 }
 
-LVertex::LVertex(const LVertex& vertex)
+CLVertex::CLVertex(const CLVertex& vertex)
 {
 	x = vertex.x;
 	y = vertex.y;
 	z = vertex.z;
 }
-LVertex::LVertex(const CPoint3D& pt)
+CLVertex::CLVertex(const CPoint3D& pt)
 {
 	x = pt.x;
 	y = pt.y;
 	z = pt.z;
 }
 
-bool LVertex::operator < (const LVertex& vertex)  // 左下角 到 右上角
+bool CLVertex::operator < (const CLVertex& vertex)  // 左下角 到 右上角
 {
 	if ((x<vertex.x)
 		|| (x == vertex.x && y<vertex.y)
@@ -33,7 +33,7 @@ bool LVertex::operator < (const LVertex& vertex)  // 左下角 到 右上角
 	}
 }
 
-bool LVertex::operator > (const LVertex& vertex)
+bool CLVertex::operator > (const CLVertex& vertex)
 {
 	if (*this == vertex)
 	{
@@ -43,7 +43,7 @@ bool LVertex::operator > (const LVertex& vertex)
 	return !((*this)<vertex);
 }
 
-bool LVertex::IsLower(const LVertex& vertex)//顶点比较函数
+bool CLVertex::IsLower(const CLVertex& vertex)//顶点比较函数
 {
 	if (z < vertex.z)
 	{
@@ -55,7 +55,7 @@ bool LVertex::IsLower(const LVertex& vertex)//顶点比较函数
 	}
 }
 
-bool LVertex::IsLower(LVertex* pVertex)
+bool CLVertex::IsLower(CLVertex* pVertex)
 {
 	return IsLower(*pVertex);
 }
@@ -63,14 +63,14 @@ bool LVertex::IsLower(LVertex* pVertex)
 
 //////////////////////////////////////////////////////////////////////////
 
-LEdge::LEdge()
+CLEdge::CLEdge()
 {
 	v1 = v2 = NULL;
 	t = NULL;
 	e_prev = e_next = e_adja = NULL;
 }
 
-LEdge::LEdge(LVertex* _v1, LVertex* _v2)
+CLEdge::CLEdge(CLVertex* _v1, CLVertex* _v2)
 {
 	v1 = _v1;
 	v2 = _v2;
@@ -78,18 +78,18 @@ LEdge::LEdge(LVertex* _v1, LVertex* _v2)
 	e_adja = NULL;
 }
 //////////////////////////////////////////////////////////////////////////
-LTriangle::LTriangle()
+CLTriangle::CLTriangle()
 {
 	v1 = v2 = v3 = NULL;
 	e1 = e2 = e3 = NULL;
 	n = NULL;
-	b_use = false;     //面片是否被使用
-	FaceType = 0;  //面片类型
-	IntersectLine1 = NULL;     //上一面片已经求交的相交线，用于寻找下一相交线
-	IntersectLine2= NULL;      //另一条相交线
+	m_bUse = false;     //面片是否被使用
+	m_nFaceType = 0;  //面片类型
+	m_pIntersectLine1 = NULL;     //上一面片已经求交的相交线，用于寻找下一相交线
+	m_pIntersectLine2= NULL;      //另一条相交线
 }
 
-LTriangle::LTriangle(LVertex* v1, LVertex* v2, LVertex* v3)
+CLTriangle::CLTriangle(CLVertex* v1, CLVertex* v2, CLVertex* v3)
 {
 	this->v1 = v1;
 	this->v2 = v2;
@@ -99,7 +99,7 @@ LTriangle::LTriangle(LVertex* v1, LVertex* v2, LVertex* v3)
 	n = NULL;
 }
 
-CVector3D* LTriangle::GntNormal()
+CVector3D* CLTriangle::GntNormal()
 {
 	CVector3D vec1 = *v2 - *v1;
 	CVector3D vec2 = *v3 - *v2;
@@ -109,22 +109,22 @@ CVector3D* LTriangle::GntNormal()
 	return n;  // 返回n放在外面数组里以便统一管理
 }
 
-LTriangle* LTriangle::GetNbTri1() const//寻找附近面片
+CLTriangle* CLTriangle::GetNbTri1() const//寻找附近面片
 {
 	return e1->e_adja ? e1->e_adja->t : NULL;
 }
 
-LTriangle* LTriangle::GetNbTri2() const
+CLTriangle* CLTriangle::GetNbTri2() const
 {
 	return e2->e_adja ? e2->e_adja->t : NULL;
 }
 
-LTriangle* LTriangle::GetNbTri3() const
+CLTriangle* CLTriangle::GetNbTri3() const
 {
 	return e3->e_adja ? e3->e_adja->t : NULL;
 }
 
-void LTriangle::Draw_LTriangle(COpenGLDC* pDC)
+void CLTriangle::DrawLTriangle(COpenGLDC* pDC)
 {
 	pDC->DrawTriChip(*n, *v1, *v2, *v3);
 
@@ -132,9 +132,9 @@ void LTriangle::Draw_LTriangle(COpenGLDC* pDC)
 
 //////////////////////////////////////////////////////////////////////////
 
-bool LEdgeHull::IsOpposite(const LEdgeHull& edgeHull)//判断两条线是否方向相反
+bool CLEdgeHull::IsOpposite(const CLEdgeHull& edgeHull)//判断两条线是否方向相反
 {
-	if (edge->v1 == edgeHull.edge->v2 && edge->v2 == edgeHull.edge->v1)//即二者的起点终点刚好相反
+	if (m_pEdge->v1 == edgeHull.m_pEdge->v2 && m_pEdge->v2 == edgeHull.m_pEdge->v1)//即二者的起点终点刚好相反
 	{
 		return true;
 	}
@@ -144,17 +144,17 @@ bool LEdgeHull::IsOpposite(const LEdgeHull& edgeHull)//判断两条线是否方向相反
 	}
 }
 
-bool LEdgeHull::operator < (const LEdgeHull& edgeHull)
+bool CLEdgeHull::operator < (const CLEdgeHull& edgeHull)
 {
-	LVertex v1 = *edge->v1;  // v1 < v2
-	LVertex v2 = *edge->v2;
+	CLVertex v1 = *m_pEdge->v1;  // v1 < v2
+	CLVertex v2 = *m_pEdge->v2;
 	if (v2 < v1)
 	{
 		swap(v1, v2);
 	}
 
-	LVertex v1_ = *edgeHull.edge->v1;
-	LVertex v2_ = *edgeHull.edge->v2;
+	CLVertex v1_ = *edgeHull.m_pEdge->v1;
+	CLVertex v2_ = *edgeHull.m_pEdge->v2;
 	if (v2_ < v1_)
 	{
 		swap(v1_, v2_);
@@ -190,53 +190,53 @@ bool LEdgeHull::operator < (const LEdgeHull& edgeHull)
 }
 
 //////////////////////////////////////////////////////////////////////////
-TopologySTL::TopologySTL()
+CTopologySTL::CTopologySTL()
 {
 
 }
 
-TopologySTL::~TopologySTL()
+CTopologySTL::~CTopologySTL()
 {
-	unsigned int sz = m_vertices.size();
+	unsigned int sz = m_vecpVertices.size();
 	for (int i = sz - 1; i >= 0; i--)
 	{
-		if (NULL != m_vertices[i])
+		if (NULL != m_vecpVertices[i])
 		{
-			delete m_vertices[i];
-			m_vertices[i] = NULL;
+			delete m_vecpVertices[i];
+			m_vecpVertices[i] = NULL;
 		}
 	}
-	m_vertices.clear();
+	m_vecpVertices.clear();
 
-	sz = m_ltris.size();
+	sz = m_vecpLTris.size();
 	for (int i = sz - 1; i >= 0; i--)
 	{
-		if (NULL != m_ltris[i])
+		if (NULL != m_vecpLTris[i])
 		{
-			delete m_ltris[i];
-			m_ltris[i] = NULL;
+			delete m_vecpLTris[i];
+			m_vecpLTris[i] = NULL;
 		}
 	}
-	m_ltris.clear();
+	m_vecpLTris.clear();
 
-	sz = m_edges.size();
+	sz = m_vecpEdges.size();
 	for (int i = sz - 1; i >= 0; i--)
 	{
-		if (NULL != m_edges[i])
+		if (NULL != m_vecpEdges[i])
 		{
-			delete m_edges[i];
-			m_edges[i] = NULL;
+			delete m_vecpEdges[i];
+			m_vecpEdges[i] = NULL;
 		}
 	}
-	m_edges.clear();
+	m_vecpEdges.clear();
 
-	sz = m_normals.size();
+	sz = m_vecpNormals.size();
 	for (int i = sz - 1; i >= 0; i--)
 	{
-		if (NULL != m_normals[i])
+		if (NULL != m_vecpNormals[i])
 		{
-			delete m_normals[i];
-			m_normals[i] = NULL;
+			delete m_vecpNormals[i];
+			m_vecpNormals[i] = NULL;
 		}
 	}
 }

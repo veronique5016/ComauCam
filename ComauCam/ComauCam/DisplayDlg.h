@@ -3,13 +3,13 @@
 
 // DisplayDlg 对话框
 
-class DisplayDlg : public CDialogEx
+class CDisplayDlg : public CDialogEx
 {
-	DECLARE_DYNAMIC(DisplayDlg)
+	DECLARE_DYNAMIC(CDisplayDlg)
 
 public:
-	DisplayDlg(CWnd* pParent = NULL);   // 标准构造函数
-	virtual ~DisplayDlg();
+	CDisplayDlg(CWnd* pParent = NULL);   // 标准构造函数
+	virtual ~CDisplayDlg();
 
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
@@ -21,12 +21,12 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	BOOL m_ShowTriangle;
-	BOOL m_ShowFrame;
-	BOOL m_ShowPolygon;
-	BOOL m_ShowLines;
+	BOOL m_bTriangleDraw;
+	BOOL m_bFrameDraw;
+	BOOL m_bPolygonDraw;
+	BOOL m_bLinesDraw;
 
-	BOOL m_showStlModel;
-	BOOL m_showSliceModel;
-	BOOL m_showSweepModel;
+	BOOL m_bSTLModelDraw;
+	BOOL m_bSliceModelDraw;
+	BOOL m_bSweepModelDraw;
 };

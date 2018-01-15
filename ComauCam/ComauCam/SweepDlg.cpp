@@ -13,7 +13,7 @@ IMPLEMENT_DYNAMIC(CSweepDlg, CDialogEx)
 
 CSweepDlg::CSweepDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_DIALOG2, pParent)
-	, m_sweepDistance(10)
+	, m_dSweepDistance(10)
 {
 
 }
@@ -25,7 +25,7 @@ CSweepDlg::~CSweepDlg()
 void CSweepDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT1, m_sweepDistance);
+	DDX_Text(pDX, IDC_EDIT1, m_dSweepDistance);
 }
 
 

@@ -1,208 +1,205 @@
 #include "stdafx.h"
 #include "Layer.h"
 
-LPoint::LPoint()
-{
-	//p_prev = NULL;
-	//p_next = NULL;
-}
-LPoint::~LPoint()
+CLPoint::CLPoint()
 {
 }
-LPoint::LPoint(const LPoint& lpoint)
+CLPoint::~CLPoint()
+{
+}
+CLPoint::CLPoint(const CLPoint& lpoint)
 {
 	x = lpoint.x;
 	y = lpoint.y;
 	z = lpoint.z;
 }
-LPoint::LPoint(const CPoint3D & pt)
+CLPoint::CLPoint(const CPoint3D & pt)
 {
 	x = pt.x;
 	y = pt.y;
 	z = pt.z;
 }
-LPoint::LPoint(double x, double y, double z)
+CLPoint::CLPoint(double x, double y, double z)
 {
 	this->x = x;
 	this->y = y;
 	this->z = z;
 }
 
-LPoint LPoint::operator+=(const CVector3D & v)
+CLPoint CLPoint::operator+=(const CVector3D & v)
 {
-	return LPoint(x + v.dx, y + v.dy, z + v.dz);
+	return CLPoint(x + v.dx, y + v.dy, z + v.dz);
 }
 
-Segment::Segment()
+CSegment::CSegment()
 {
-	pstart = LPoint(0, 0, 0);
-	pend = LPoint(0, 0, 0);
-	triangle =new LTriangle();
-	segment_vec = CVector3D(0, 0, 0);
+	m_ptStart = CLPoint(0, 0, 0);
+	m_ptEnd = CLPoint(0, 0, 0);
+	m_pTriangle =new CLTriangle();
+	m_vSegmentVec = CVector3D(0, 0, 0);
 }
-Segment::Segment(const Segment& lsegment)
+CSegment::CSegment(const CSegment& lsegment)
 {
-	pstart = lsegment.pstart;
-	pend = lsegment.pend;
-	triangle = lsegment.triangle;
-	segment_vec = lsegment.segment_vec;
+	m_ptStart = lsegment.m_ptStart;
+	m_ptEnd = lsegment.m_ptEnd;
+	m_pTriangle = lsegment.m_pTriangle;
+	m_vSegmentVec = lsegment.m_vSegmentVec;
 }
-Segment::Segment(LPoint startpoint, LPoint endpoint, LTriangle* tri)
+CSegment::CSegment(CLPoint startpoint, CLPoint endpoint, CLTriangle* tri)
 {
-	pstart = startpoint;
-	pend = endpoint;
-	triangle = tri;
+	m_ptStart = startpoint;
+	m_ptEnd = endpoint;
+	m_pTriangle = tri;
 	CPoint3D p1 = CPoint3D(startpoint.x, startpoint.y, startpoint.z);
 	CPoint3D p2 = CPoint3D(endpoint.x, endpoint.y, endpoint.z);
-	segment_vec = CVector3D(p1, p2);
-	segment_vec.Normalize();
+	m_vSegmentVec = CVector3D(p1, p2);
+	m_vSegmentVec.Normalize();
 }
 
-Segment::~Segment()
+CSegment::~CSegment()
 {
 }
 
-Boundary::Boundary()
+CBoundary::CBoundary()
 {
 }
-Boundary::~Boundary()
+CBoundary::~CBoundary()
 {
-	unsigned int szP = m_segments.size();
+	unsigned int szP = m_vecpSegments.size();
 	for (unsigned int i = 0; i < szP; i++)
 	{
-		delete m_segments[i];
-		m_segments[i] = NULL;
+		delete m_vecpSegments[i];
+		m_vecpSegments[i] = NULL;
 	}
-	m_segments.clear();
+	m_vecpSegments.clear();
 }
 
-SliceLayer::SliceLayer()
+CSliceLayer::CSliceLayer()
 {
-	layer_coordinate[0] = CVector3D(1, 0, 0);
-	layer_coordinate[1] = CVector3D(0, 1, 0);
-	layer_coordinate[2] = CVector3D(0, 0, 1);
+	m_vLayerCoordinate[0] = CVector3D(1, 0, 0);
+	m_vLayerCoordinate[1] = CVector3D(0, 1, 0);
+	m_vLayerCoordinate[2] = CVector3D(0, 0, 1);
 }
-SliceLayer::~SliceLayer()
+CSliceLayer::~CSliceLayer()
 {
-	unsigned int szP = m_Boundaries.size();
+	unsigned int szP = m_vecpBoundaries.size();
 	for (unsigned int i = 0; i < szP; i++)
 	{
-		delete m_Boundaries[i];
-		m_Boundaries[i] = NULL;
+		delete m_vecpBoundaries[i];
+		m_vecpBoundaries[i] = NULL;
 	}
-	m_Boundaries.clear();
+	m_vecpBoundaries.clear();
 }
 
-SweepPoint::SweepPoint()
+CSweepPoint::CSweepPoint()
 {
 }
-SweepPoint::SweepPoint(double ix, double iy, double iz, bool left)
+CSweepPoint::CSweepPoint(double ix, double iy, double iz, bool left)
 {
 	x = ix;
 	y = iy;
 	z = iz;
-	isLeft = left;
 }
-SweepPoint::~SweepPoint()
+CSweepPoint::~CSweepPoint()
 {
 }
 
-SweepLine::SweepLine()
+CSweepLine::CSweepLine()
 {
 }
-SweepLine::~SweepLine()
+CSweepLine::~CSweepLine()
 {
 }
 
-SweepLayer::SweepLayer()
+CSweepLayer::CSweepLayer()
 {
 }
-SweepLayer::SweepLayer(const SliceLayer & sliceLayer)
+CSweepLayer::CSweepLayer(const CSliceLayer & sliceLayer)
 {
-	layerPoint = sliceLayer.layerPoint;
-	layer_coordinate[0] = sliceLayer.layer_coordinate[0];
-	layer_coordinate[1] = sliceLayer.layer_coordinate[1];
-	layer_coordinate[2] = sliceLayer.layer_coordinate[2];
-	unsigned int sz = sliceLayer.m_Boundaries.size();
+	m_ptLayerPoint = sliceLayer.m_ptLayerPoint;
+	m_vLayerCoordinate[0] = sliceLayer.m_vLayerCoordinate[0];
+	m_vLayerCoordinate[1] = sliceLayer.m_vLayerCoordinate[1];
+	m_vLayerCoordinate[2] = sliceLayer.m_vLayerCoordinate[2];
+	unsigned int sz = sliceLayer.m_vecpBoundaries.size();
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		m_Boundaries.push_back(sliceLayer.m_Boundaries[i]);
+		m_vecpBoundaries.push_back(sliceLayer.m_vecpBoundaries[i]);
 	}
 }
-SweepLayer::SweepLayer(const SweepLayer & sweepLayer)
+CSweepLayer::CSweepLayer(const CSweepLayer & sweepLayer)
 {
-	layerPoint = sweepLayer.layerPoint;
-	layer_coordinate[0] = sweepLayer.layer_coordinate[0];
-	layer_coordinate[1] = sweepLayer.layer_coordinate[1];
-	layer_coordinate[2] = sweepLayer.layer_coordinate[2];
-	unsigned int sz = sweepLayer.m_Boundaries.size();
+	m_ptLayerPoint = sweepLayer.m_ptLayerPoint;
+	m_vLayerCoordinate[0] = sweepLayer.m_vLayerCoordinate[0];
+	m_vLayerCoordinate[1] = sweepLayer.m_vLayerCoordinate[1];
+	m_vLayerCoordinate[2] = sweepLayer.m_vLayerCoordinate[2];
+	unsigned int sz = sweepLayer.m_vecpBoundaries.size();
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		m_Boundaries.push_back(sweepLayer.m_Boundaries[i]);
+		m_vecpBoundaries.push_back(sweepLayer.m_vecpBoundaries[i]);
 	}
 
-	unsigned int szL = sweepLayer.m_sweeplines.size();
+	unsigned int szL = sweepLayer.m_vecpSweepLines.size();
 	for (unsigned int i = 0; i < szL; i++)
 	{
-		m_sweeplines.push_back(sweepLayer.m_sweeplines[i]);
+		m_vecpSweepLines.push_back(sweepLayer.m_vecpSweepLines[i]);
 	}
 
-	unsigned int szP = sweepLayer.m_Route.size();
+	unsigned int szP = sweepLayer.m_vecpRoute.size();
 	for (unsigned int i = 0; i < szP; i++)
 	{
-		m_Route.push_back(new CPoint3D(*sweepLayer.m_Route[i]));
+		m_vecpRoute.push_back(new CPoint3D(*sweepLayer.m_vecpRoute[i]));
 	}
 
-	unsigned int szT = sweepLayer.m_turnRoute.size();
+	unsigned int szT = sweepLayer.m_vecpTurnRoute.size();
 	for (unsigned int i = 0; i < szT; i++)
 	{
-		m_turnRoute.push_back(new FPoint(*sweepLayer.m_turnRoute[i]));
+		m_vecpTurnRoute.push_back(new CFPoint(*sweepLayer.m_vecpTurnRoute[i]));
 	}
 }
-SweepLayer::~SweepLayer()
+CSweepLayer::~CSweepLayer()
 {
-	unsigned int szB = offsetBoundaries.size();
+	unsigned int szB = m_vecpOffsetBoundaries.size();
 	for (unsigned int i = 0; i < szB; i++)
 	{
-		delete offsetBoundaries[i];
-		offsetBoundaries[i] = NULL;
+		delete m_vecpOffsetBoundaries[i];
+		m_vecpOffsetBoundaries[i] = NULL;
 	}
-	offsetBoundaries.clear();
+	m_vecpOffsetBoundaries.clear();
 
-	unsigned int szR = m_Route.size();
+	unsigned int szR = m_vecpRoute.size();
 	for (unsigned int i = 0; i < szR; i++)
 	{
-		delete m_Route[i];
-		m_Route[i] = NULL;
+		delete m_vecpRoute[i];
+		m_vecpRoute[i] = NULL;
 	}
-	m_Route.clear();
+	m_vecpRoute.clear();
 
-	unsigned int szL = m_sweeplines.size();
+	unsigned int szL = m_vecpSweepLines.size();
 	for (unsigned int i = 0; i < szR; i++)
 	{
-		delete m_sweeplines[i];
-		m_sweeplines[i] = NULL;
+		delete m_vecpSweepLines[i];
+		m_vecpSweepLines[i] = NULL;
 	}
-	m_sweeplines.clear();
+	m_vecpSweepLines.clear();
 
-	unsigned int szT = m_turnRoute.size();
+	unsigned int szT = m_vecpTurnRoute.size();
 	for (unsigned int i = 0; i < szT; i++)
 	{
-		delete m_turnRoute[i];
-		m_turnRoute[i] = NULL;
+		delete m_vecpTurnRoute[i];
+		m_vecpTurnRoute[i] = NULL;
 	}
-	m_turnRoute.clear();
+	m_vecpTurnRoute.clear();
 }
 
-FPoint::FPoint()
+CFPoint::CFPoint()
 {
 }
 
-FPoint::~FPoint()
+CFPoint::~CFPoint()
 {
 }
 
-FPoint::FPoint(const CPoint3D & pt, double a, double c)
+CFPoint::CFPoint(const CPoint3D & pt, double a, double c)
 {
 	x = pt.x;
 	y = pt.y;
@@ -211,7 +208,7 @@ FPoint::FPoint(const CPoint3D & pt, double a, double c)
 	C = c;
 }
 
-FPoint::FPoint(const CPoint3D & pt)
+CFPoint::CFPoint(const CPoint3D & pt)
 {
 	x = pt.x;
 	y = pt.y;
@@ -220,7 +217,7 @@ FPoint::FPoint(const CPoint3D & pt)
 	C = 0;
 }
 
-FPoint::FPoint(const FPoint & pt)
+CFPoint::CFPoint(const CFPoint & pt)
 {
 	x = pt.x;
 	y = pt.y;

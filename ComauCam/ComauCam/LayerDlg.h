@@ -3,13 +3,13 @@
 
 // LayerDlg 对话框
 
-class LayerDlg : public CDialogEx
+class CLayerDlg : public CDialogEx
 {
-	DECLARE_DYNAMIC(LayerDlg)
+	DECLARE_DYNAMIC(CLayerDlg)
 
 public:
-	LayerDlg(CWnd* pParent = NULL);   // 标准构造函数
-	virtual ~LayerDlg();
+	CLayerDlg(CWnd* pParent = NULL);   // 标准构造函数
+	virtual ~CLayerDlg();
 
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
@@ -21,8 +21,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	int startLayer;
-	int endLayer;
-	int numberofLayers;
-	int firstTurnLayer;
+	int m_nStartLayer;
+	int m_nEndLayer;
+	int m_nNumberofLayers;
+	int m_nFirstTurnLayer;
 };

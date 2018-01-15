@@ -27,4 +27,3 @@ public:
 	CPoint3D A, B, C;
 	CVector3D Normal;
 };
-typedef   CTypedPtrArray<CObArray, CTriangle*> TriangleAry;

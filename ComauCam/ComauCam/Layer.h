@@ -7,125 +7,104 @@ using namespace std;
 
 //struct SliceLayer;
 
-struct LPoint : public CPoint3D
+struct CLPoint : public CPoint3D
 {
 public:
-	LPoint();
-	~LPoint();
-	LPoint(const LPoint& lpoint);
-	LPoint(const CPoint3D& pt);
-	LPoint(double x, double y, double z);
+	CLPoint();
+	~CLPoint();
+	CLPoint(const CLPoint& lpoint);
+	CLPoint(const CPoint3D& pt);
+	CLPoint(double x, double y, double z);
 
-	LPoint operator+=(const CVector3D& v);                 // 点和向量加等
+	CLPoint operator+=(const CVector3D& v);                 // 点和向量加等
 public:
 	//LPoint *p_prev, *p_next;
 };
 
-struct FPoint : public CPoint3D
+struct CFPoint : public CPoint3D
 {
 public:
-	FPoint();
-	~FPoint();
-	FPoint(const CPoint3D& pt, double a, double c);
-	FPoint(const CPoint3D& pt);
-	FPoint(const FPoint& pt);
+	CFPoint();
+	~CFPoint();
+	CFPoint(const CPoint3D& pt, double a, double c);
+	CFPoint(const CPoint3D& pt);
+	CFPoint(const CFPoint& pt);
 
 public:
 	double A;
 	double C;
 };
 
-struct Segment
+struct CSegment
 {
 public:
-	Segment();
-	Segment(const Segment& lsegment);
-	Segment(LPoint startpoint, LPoint endpoint, LTriangle* tri);
-	~Segment();
+	CSegment();
+	CSegment(const CSegment& lsegment);
+	CSegment(CLPoint startpoint, CLPoint endpoint, CLTriangle* tri);
+	~CSegment();
 
 public:
-	LPoint pstart, pend;
-	LTriangle* triangle;
-	CVector3D segment_vec;
+	CLPoint m_ptStart, m_ptEnd;
+	CLTriangle* m_pTriangle;
+	CVector3D m_vSegmentVec;
 };
 
-struct Boundary
+struct CBoundary
 {
 public:
-	Boundary();
-	~Boundary();
+	CBoundary();
+	~CBoundary();
 
 public:
-	vector<Segment*> m_segments;
+	vector<CSegment*> m_vecpSegments;
 };
 
 //切片平面
-struct SliceLayer
+struct CSliceLayer
 {
 public:
-	SliceLayer();
-	~SliceLayer();
+	CSliceLayer();
+	~CSliceLayer();
 
 public:
-	CPoint3D layerPoint;
-	CVector3D layer_coordinate[3];
-	vector<Boundary*> m_Boundaries;   //截交得到的轮廓，不经修改 size = 1, 如果轮廓内部有空洞或其他情况，则 size 会增加
+	CPoint3D m_ptLayerPoint;
+	CVector3D m_vLayerCoordinate[3];
+	vector<CBoundary*> m_vecpBoundaries;   //截交得到的轮廓，不经修改 size = 1, 如果轮廓内部有空洞或其他情况，则 size 会增加
 };
 
 //扫描路径与轮廓相交得到的交点
-struct SweepPoint : public CPoint3D
+struct CSweepPoint : public CPoint3D
 {
 public:
-	SweepPoint();
-	SweepPoint(double ix, double iy, double iz, bool left);
-	~SweepPoint();
-	bool isLeft;
+	CSweepPoint();
+	CSweepPoint(double ix, double iy, double iz, bool left);
+	~CSweepPoint();
 };
 
-struct SweepLine
+struct CSweepLine
 {
 public:
-	SweepLine();
-	~SweepLine();
+	CSweepLine();
+	~CSweepLine();
 
 public:
-	CPoint3D line_point;
-	CVector3D line_vec;
-	CVector3D line_normal;
+	CPoint3D m_ptLinePoint;
+	CVector3D m_vLineVec;
+	CVector3D m_vLineNormal;
 };
 
-struct SweepLayer : public SliceLayer
+struct CSweepLayer : public CSliceLayer
 {
 public:
-	SweepLayer();
-	SweepLayer(const SliceLayer& sliceLayer);
-	SweepLayer(const SweepLayer& sweepLayer);
-	~SweepLayer();
+	CSweepLayer();
+	CSweepLayer(const CSliceLayer& sliceLayer);
+	CSweepLayer(const CSweepLayer& sweepLayer);
+	~CSweepLayer();
 
 public:
-	vector<SweepLine*> m_sweeplines;
-	vector<Boundary*> offsetBoundaries;
-	vector<CPoint3D*> m_Route;
-	vector<FPoint*> m_turnRoute;
+	vector<CSweepLine*> m_vecpSweepLines;
+	vector<CBoundary*> m_vecpOffsetBoundaries;
+	vector<CPoint3D*> m_vecpRoute;
+	vector<CFPoint*> m_vecpTurnRoute;
 };
 
-/*
-struct Boundary
-{
-public:
-Boundary();
-~Boundary();
-vector<PolyLine*> m_Boundary;
-};
-*/
-//用于轮廓偏置
-/*
-struct CLine
-{
-public:
-CLine();
-~CLine();
-CPoint3D line_point1;
-CPoint3D line_point2;
-CVector3D line_vec;
-};*/

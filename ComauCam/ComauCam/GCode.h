@@ -4,17 +4,17 @@
 
 using namespace std;
 
-class GCode
+class CGCode
 {
 public:
-	GCode();
-	~GCode();
+	CGCode();
+	~CGCode();
 
 public:
-	void writeGCode(CString sFilePath);
-	void writeFiveAxisGCode(CString sFilePath);
-	void loadSweepModel(CSweep* sweepModel);
+	void Write(CString sFilePath);
+	void WriteFiveAxis(CString sFilePath);
+	void LoadSweepModel(CSweep* sweepModel);
 
 public:
-	vector<SweepLayer*> m_gcode_layers;
+	vector<CSweepLayer*> m_vecpGCodeLayers;
 };

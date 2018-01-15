@@ -24,18 +24,18 @@ protected: // 仅从序列化创建
 // 特性
 public:
 	CComauCamDoc* GetDocument() const;
-	vector<CSTLModel*> m_models;
-	vector<CSlice*> m_slices;
-	vector<CSweep*> m_sweeps;
-	GCode* gcodeOut;
-	bool m_bCanSTLDraw;
-	bool m_bCanSliceDraw;
-	bool m_bCanSweepDraw;
+	vector<CSTLModel*> m_vecpSTLModels;
+	vector<CSlice*> m_vecpSlices;
+	vector<CSweep*> m_vecpSweeps;
+	CGCode* m_pGCode;
+	bool m_bSTLDraw;
+	bool m_bSliceDraw;
+	bool m_bSweepDraw;
 
-	bool m_ShowTriFace;
-	bool m_ShowPolygon;
+	bool m_bTriFaceDraw;
+	bool m_bPolygonDraw;
 
-	int startLayer, endLayer;
+	int m_nStartLayer, m_nEndLayer;
 
 // 操作
 public:
@@ -61,14 +61,14 @@ public:
 	//-----------------------------------------------------
 	//设置窗口像素格式（MFC中搭建OpenGL环境）
 
-	float		camRot[3];
-	float		camPos[3];
-	float		sceneRot[3];
-	float		scenePos[3];
-	double  m_width, m_height;
-	BOOL mouserightdown;
-	BOOL mouseleftdown;
-	CPoint mouseprevpoint;
+	float		m_fCamRot[3];
+	float		m_fCamPos[3];
+	float		m_fSceneRot[3];
+	float		m_fScenePos[3];
+	double  m_dWidth, m_dHeight;
+	BOOL m_bIsMouseRightDown;
+	BOOL m_bIsMouseLeftDown;
+	CPoint m_ptMousePrevPoint;
 	COpenGLDC* m_pDC;
 	CDC* m_pDC1;
 	HGLRC  m_hRC;        //着色描述表
@@ -84,11 +84,6 @@ public:
 	void SetCamPos(int axis, int value, BOOL increment, BOOL apply);
 	void SetScenePos(int axis, int value, BOOL increment, BOOL apply);
 
-
-
-private:
-//	CStringArray m_sIgesLines;
-	CTypedPtrArray<CObArray, CSTLModel*> m_entities;
 
 // 生成的消息映射函数
 protected:
@@ -112,12 +107,12 @@ public:
 
 	afx_msg void OnStartSlice();
 	afx_msg void OnSweep();
-	afx_msg void OnWritegcode();
-	afx_msg void OnDisplaymode();
-	afx_msg void OnShowselectedlayer();
-	afx_msg void OnFiveaxisgcode();
-	afx_msg void Onmoveandrotate();
-	afx_msg void OnOncenter();
+	afx_msg void OnWriteGCode();
+	afx_msg void OnDisplayMode();
+	afx_msg void OnShowSelectedLayers();
+	afx_msg void OnFiveAxisGCode();
+	afx_msg void OnMoveandRotate();
+	afx_msg void OnCenterOn();
 };
 
 #ifndef _DEBUG  // ComauCamView.cpp 中的调试版本

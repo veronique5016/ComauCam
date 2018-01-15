@@ -21,5 +21,5 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	double m_sweepDistance;
+	double m_dSweepDistance;
 };
