@@ -7,19 +7,6 @@ using namespace std;
 
 //struct SliceLayer;
 
-struct CLPoint : public CPoint3D
-{
-public:
-	CLPoint();
-	~CLPoint();
-	CLPoint(const CLPoint& lpoint);
-	CLPoint(const CPoint3D& pt);
-	CLPoint(double x, double y, double z);
-
-	CLPoint operator+=(const CVector3D& v);                 // 点和向量加等
-public:
-	//LPoint *p_prev, *p_next;
-};
 
 //扫描路径与轮廓相交得到的交点
 struct CSweepPoint : public CPoint3D
@@ -40,10 +27,10 @@ struct CSegment
 public:
 	CSegment();
 	CSegment(const CSegment& lsegment);
-	CSegment(CLPoint startpoint, CLPoint endpoint, CLTriangle* tri);
+	CSegment(CPoint3D startpoint, CPoint3D endpoint, CLTriangle* tri);
 	~CSegment();
 public:
-	CLPoint m_ptStart, m_ptEnd;
+	CPoint3D m_ptStart, m_ptEnd;
 	CLTriangle* m_pTriangle;
 	CVector3D m_vSegmentVec;
 };

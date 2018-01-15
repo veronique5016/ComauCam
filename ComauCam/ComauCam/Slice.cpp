@@ -86,11 +86,11 @@ void CSlice::Slice(CSTLModel* model)
 				//求偏移后的线段与前后线段的交点,形成新的轮廓
 				CPoint3D point_out;
 				GetCrossPoint(point_out, *m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i], *m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[(i - 1) % szL]);
-				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart = CLPoint(point_out);
-				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[(i - 1) % szL]->m_ptEnd = CLPoint(point_out);
+				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart = CPoint3D(point_out);
+				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[(i - 1) % szL]->m_ptEnd = CPoint3D(point_out);
 				GetCrossPoint(point_out, *m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i], *m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[(i + 1) % szL]);
-				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd = CLPoint(point_out);
-				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[(i + 1) % szL]->m_ptStart = CLPoint(point_out);
+				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd = CPoint3D(point_out);
+				m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[(i + 1) % szL]->m_ptStart = CPoint3D(point_out);
 
 				//定义变法向切平面的坐标系和平面上一点
 				CSliceLayer* pTurnLayer = new CSliceLayer();
@@ -182,8 +182,8 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 	while (true)
 	{
 		CBoundary* m_boundary = new CBoundary();
-		CLPoint* tmpstartPoint = new CLPoint();
-		CLPoint* tmpendPoint = new CLPoint();
+		CPoint3D* tmpstartPoint = new CPoint3D();
+		CPoint3D* tmpendPoint = new CPoint3D();
 
 		//设定起始相交边，并存入m_Slice_edge容器	
 		GetInterSectEdge(layer, pCurFace);  
@@ -400,7 +400,7 @@ void CSlice::JudgeOtherLine(CSliceLayer* layer, CLTriangle* pCurFace)
 }
 
 
-void CSlice::CalIntersectPoint(CSliceLayer* layer, CLEdge * edge, CLTriangle*pCurFace, CLPoint* point)
+void CSlice::CalIntersectPoint(CSliceLayer* layer, CLEdge * edge, CLTriangle*pCurFace, CPoint3D* point)
 {
 	int e1_plane, e2_plane;
 	CPoint3D e1_tmp, e2_tmp;
@@ -493,7 +493,7 @@ void CSlice::ModifyTurnLayer(CSliceLayer* layer)
 	CPoint3D intersect;
 	//确定变法向切平面的宽度
 	MoveSegment(tmp_boundary[seg_index], layer->m_vLayerCoordinate[0] * (-2));
-	CLPoint tmp_swap = tmp_boundary[seg_index]->m_ptStart;
+	CPoint3D tmp_swap = tmp_boundary[seg_index]->m_ptStart;
 	tmp_boundary[seg_index]->m_ptStart = tmp_boundary[seg_index]->m_ptEnd;
 	tmp_boundary[seg_index]->m_ptEnd = tmp_swap;
 	tmp_boundary[seg_index]->m_vSegmentVec = CVector3D(0, 0, 0) - tmp_boundary[seg_index]->m_vSegmentVec;

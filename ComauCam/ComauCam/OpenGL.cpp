@@ -153,7 +153,7 @@ void COpenGLDC::DrawSTLModel(CSTLModel * model, bool showTri)
 
 void COpenGLDC::DrawLayer(CSliceLayer * layer, bool showPolygon, double color[])
 {
-	CLPoint point;
+	CPoint3D point;
 	unsigned int szpolyline = layer->m_vecpBoundaries.size();
 	for (unsigned int j = 0; j < szpolyline; j++)
 	{
@@ -194,7 +194,7 @@ void COpenGLDC::DrawSliceModel(CSlice* model, bool showPolygon, int start, int e
 {
 	double color[3];
 	unsigned int szlayer = model->m_vecpLayers.size();
-	CLPoint point;
+	CPoint3D point;
 	for (int i = (start - 1); i<end; i++)
 	{	
 		if (model->m_vecpLayers[i]->m_vLayerCoordinate[2].dz == 1.0)

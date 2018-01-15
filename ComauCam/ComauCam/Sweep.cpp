@@ -195,8 +195,8 @@ void CSweep::Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 		line2 = *boundary->m_vecpSegments[(i + 1) % sz];
 
 		GetCrossPoint(point_out, line1, line2);
-		boundary->m_vecpSegments[i]->m_ptEnd = CLPoint(point_out);
-		boundary->m_vecpSegments[(i + 1) % sz]->m_ptStart = CLPoint(point_out);
+		boundary->m_vecpSegments[i]->m_ptEnd = CPoint3D(point_out);
+		boundary->m_vecpSegments[(i + 1) % sz]->m_ptStart = CPoint3D(point_out);
 	}
 }
 

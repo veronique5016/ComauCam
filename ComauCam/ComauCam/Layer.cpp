@@ -1,40 +1,11 @@
 #include "stdafx.h"
 #include "Layer.h"
 
-CLPoint::CLPoint()
-{
-}
-CLPoint::~CLPoint()
-{
-}
-CLPoint::CLPoint(const CLPoint& lpoint)
-{
-	x = lpoint.x;
-	y = lpoint.y;
-	z = lpoint.z;
-}
-CLPoint::CLPoint(const CPoint3D & pt)
-{
-	x = pt.x;
-	y = pt.y;
-	z = pt.z;
-}
-CLPoint::CLPoint(double x, double y, double z)
-{
-	this->x = x;
-	this->y = y;
-	this->z = z;
-}
-
-CLPoint CLPoint::operator+=(const CVector3D & v)
-{
-	return CLPoint(x + v.dx, y + v.dy, z + v.dz);
-}
 
 CSegment::CSegment()
 {
-	m_ptStart = CLPoint(0, 0, 0);
-	m_ptEnd = CLPoint(0, 0, 0);
+	m_ptStart = CPoint3D(0, 0, 0);
+	m_ptEnd = CPoint3D(0, 0, 0);
 	m_pTriangle =new CLTriangle();
 	m_vSegmentVec = CVector3D(0, 0, 0);
 }
@@ -45,7 +16,7 @@ CSegment::CSegment(const CSegment& lsegment)
 	m_pTriangle = lsegment.m_pTriangle;
 	m_vSegmentVec = lsegment.m_vSegmentVec;
 }
-CSegment::CSegment(CLPoint startpoint, CLPoint endpoint, CLTriangle* tri)
+CSegment::CSegment(CPoint3D startpoint, CPoint3D endpoint, CLTriangle* tri)
 {
 	m_ptStart = startpoint;
 	m_ptEnd = endpoint;
@@ -144,8 +115,8 @@ void CSliceLayer::MakeBoundaryCCW()
 	for (unsigned int i = 0; i < sz; i++)
 	{
 		m_vecpBoundaries[0]->m_vecpSegments.push_back(new CSegment(*tmp[i]));
-		m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart = CLPoint(tmp[i]->m_ptEnd);
-		m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd = CLPoint(tmp[i]->m_ptStart);
+		m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart = CPoint3D(tmp[i]->m_ptEnd);
+		m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd = CPoint3D(tmp[i]->m_ptStart);
 		m_vecpBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec = CVector3D(CPoint3D(m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart), CPoint3D(m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptEnd));
 		m_vecpBoundaries[0]->m_vecpSegments[i]->m_vSegmentVec.Normalize();
 	}
@@ -158,7 +129,7 @@ void CSliceLayer::RearrangeBoundary()
 	int index = 0;
 	for (unsigned int i = 0; i < szP; i++)
 	{
-		CLPoint tmp_point = m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart;
+		CPoint3D tmp_point = m_vecpBoundaries[0]->m_vecpSegments[i]->m_ptStart;
 		double tmp_position = tmp_point.x + tmp_point.y;
 		if (tmp_position < position)
 		{
