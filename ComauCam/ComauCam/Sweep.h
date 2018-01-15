@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define EXTRUDER_DIAMETER 0.4
+
 #define ANGLE_RESOLUTION 1
 
 struct SweepPoint : public CPoint3D

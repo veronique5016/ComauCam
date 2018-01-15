@@ -6,6 +6,8 @@
 using namespace std;
 
 
+#define EXTRUDER_DIAMETER 0.4
+
 //面片类型 
 #define NO_POINT_ON_SURFACE 1
 #define ONE_POINT_ON_SURFACE 2 
@@ -31,7 +33,7 @@ public:
 	~Layer();
 	CPoint3D layerPoint;
 	CVector3D layer_gravity;
-	vector<PolyLine*> m_Polylines;
+	vector<PolyLine*> m_Polylines;   //截交得到的轮廓，不经修改 size = 1
 };
 
 class CSlice
@@ -43,9 +45,10 @@ public:
 	void slice(CSTLModel* model);  //切片函数
 	void getpolylinePoints(Layer* layer);
 	void drawpolyline(double color[]);
-	double getTurn();     // 获取模型转折点
+	double getTurnPoint();     // 获取模型转折点
+	CVector3D getTurnVec();
 
-protected:
+public:
 	void InterSect(Layer* layer, LTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
 	void CalIntersectPoint(Layer* layer, LEdge * edge, LTriangle*pCurFace, CPoint3D* point);	// 求轮廓点
 	void JudgeFaceType(Layer* layer, LTriangle* pCurFace);    //判断面片的类型
@@ -55,15 +58,22 @@ protected:
 	double ReturnZmid(const LTriangle* Ltri);
 
 	double ReturnZtype(double v1, double v2, double v3, int ztype);
+	void begin3DSlice(double z_min, double z_max, double& z, double dz);
+	void begin5DSlice(double z_min, double z_max, double& z, double dz);
+	bool isBoundaryCCW(Layer* layer);	//函数存在很大问题，当向量的某个分量的值非常小时，可能会出现一些莫名其妙的问题 
+	void makeBoundaryCCW(Layer* layer);
+
+	bool lineNeedSupport();
 
 public:
 	vector<LEdge*> m_Slice_edge;     //存储相交边
 	vector<Layer*> m_layers;         //存储片层
 	vector<LTriangle*> m_tris_slice;   //保存一份三角面片，作为初始数据
-
 	vector<LTriangle*> z_tris;
+
 
 	double height;
 	CVector3D gravity;
+	bool need_support;
 };
 

@@ -31,9 +31,11 @@ Layer::~Layer()
 	m_Polylines.clear();
 }
 
-CSlice::CSlice(void):height(10)
+CSlice::CSlice(void)
 {
+	height = 10;
 	gravity = CVector3D(0, 0, 1);
+	need_support = false;
 }
 
 CSlice::~CSlice(void)
@@ -73,15 +75,16 @@ void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
 	}
 }
 
-double CSlice::getTurn()
+double CSlice::getTurnPoint()
 {
+
 	unsigned int sz = m_tris_slice.size();
 	CVector3D* tmp_normal = NULL;	
 
 	for (unsigned int i = 0; i < sz; i++)
 	{
 		tmp_normal = m_tris_slice[i]->n;
-		if ((tmp_normal->dz < 0) && (tmp_normal->dz>-1))
+		if ((tmp_normal->dz < 0) && (tmp_normal->dz>-0.999))
 			z_tris.push_back(m_tris_slice[i]);
 	}
 
@@ -99,9 +102,44 @@ double CSlice::getTurn()
 	}
 }
 
+CVector3D CSlice::getTurnVec()
+{
+	CVector3D vec = CVector3D(0, 0, 1);
+	CPoint3D p1;
+	CPoint3D p2;
+	p1.x = z_tris[0]->v1->x;
+	p1.y = z_tris[0]->v1->y;
+	p1.z = z_tris[0]->v1->z;
+
+	p2.z = p1.z;
+	if (z_tris[0]->n->dy <= 0.00001 && z_tris[0]->n->dy >= -0.00001)
+	{
+		p2.x = p1.x;
+		p2.y = p1.y+1.0;
+	}
+	else if (z_tris[0]->n->dx <= 0.00001 && z_tris[0]->n->dx >= -0.00001)
+	{
+		p2.x = p1.x + 1.0;
+		p2.y = p1.y;
+	}
+	else
+	{
+		p2.x = p1.x - 1.0;
+		p2.y = p1.y + p1.x*z_tris[0]->n->dx / z_tris[0]->n->dy;
+	}
+	CVector3D tmp_vec = CVector3D(p2, p1);
+	tmp_vec.Normalize();
+	double result = tmp_vec | *z_tris[0]->n;
+	vec = *z_tris[0]->n*tmp_vec;
+	vec.Normalize();
+	if (vec.dz <= 0.0)
+		vec = CVector3D(0.0, 0.0, 0.0) - vec;
+	return vec;
+}
+
 void CSlice::slice(CSTLModel* model)
 {
-	gravity = CVector3D(1, 0, 1);
+	gravity = CVector3D(0, 0, 1);
 	double z_Min, z_Max;  //模型极限尺寸
 	double z;  //切片高度
 	double dz;   //切片层厚
@@ -111,6 +149,7 @@ void CSlice::slice(CSTLModel* model)
 	z_Max = ex[5];
 	z = z_Min + 0.1;  //第一个切片层，无法设为 z_Min
 	dz = height;   //层高
+
 
 /////////////////////////////////
 	//获取变姿态后切平面的法向量
@@ -141,23 +180,30 @@ void CSlice::slice(CSTLModel* model)
 // 切第一部分
 /////////////////////////////////
 	double zmin_turn;
-	zmin_turn = getTurn();
-//	z_Max = zmin_turn;
-	while (true)
+	zmin_turn = getTurnPoint();
+	CVector3D turn_vec = getTurnVec();
+	if (zmin_turn != 0.0)
 	{
-		Layer* tmp_layer = new Layer();
-		CPoint3D tmp_layer_point = CPoint3D(0,0,z);
-		tmp_layer->layer_gravity = gravity;
-		tmp_layer->layerPoint = tmp_layer_point;
+		need_support = true;
+	}
+	if (!need_support)
+	{
+		begin3DSlice(z_Min, z_Max, z, dz);
+	}
+	else
+	{
+		z_Max = zmin_turn;
+		begin3DSlice(z_Min, z_Max, z, dz);
 
-		m_layers.push_back(tmp_layer);
 
-		getpolylinePoints(m_layers[m_layers.size()-1]);
-		if (z >= (z_Max - dz))
-		{    
-			break;
+		z_Min = zmin_turn + 0.1;
+		z_Max = 90.0;
+		//z = z_Min;
+		while (z < z_Min)
+		{
+			z += dz;
 		}
-		z += dz;
+		begin5DSlice(z_Min, z_Max, z, dz);
 	}
 
 /////////////////////////////////
@@ -233,36 +279,6 @@ void CSlice::slice(CSTLModel* model)
 		z += dz;
 	}*/
 
-//////////////////////////////////
-// 切第二部分
-/////////////////////////////////
-/*	gravity = CVector3D(3, 0, 4);
-
-	CPoint3D planepoint2 = CPoint3D(30.0, 0.0, 50.0);
-	CVector3D lineVector2 = CVector3D(0.0, 0.0, 1.0);
-	CPoint3D linepoint2 = CPoint3D(0.0, 0.0, 0.0);
-	tmp_cal = ::CalPlaneLineIntersectPoint(*tmp_norm, planepoint2, lineVector2, linepoint2);
-
-	z = tmp_cal.z;
-//	z = 72.5;
-	z_Max = 135.0;
-	dz = height;
-	while (true)
-	{
-		Layer* tmp_layer = new Layer();
-		CPoint3D tmp_layer_point = CPoint3D(0, 0, z);
-		tmp_layer->layer_gravity = gravity;
-		tmp_layer->layerPoint = tmp_layer_point;
-
-		m_layers.push_back(tmp_layer);
-
-		getpolylinePoints(m_layers[m_layers.size() - 1]);
-		if (z >= (z_Max - dz))
-		{
-			break;
-		}
-		z += dz;
-	}*/
 }
 
 void CSlice::getpolylinePoints(Layer* layer)
@@ -295,12 +311,6 @@ void CSlice::getpolylinePoints(Layer* layer)
 			}
 		}
 	}
-
-
-
-////////////////////////////////////断点处
-
-
 
 	unsigned int szStatus = status.size();
 	for (unsigned int i = 0; i<szStatus; i++)       //对相交面片进行面片分类
@@ -340,11 +350,6 @@ void CSlice::getpolylinePoints(Layer* layer)
 			//求交点，并保持点
 
 
-
-/////////////////////////////////////////////断点处    CalIntersectPoint函数目测有bug
-
-
-
 			CalIntersectPoint(layer, pCurFace->OtherIntersectLine, pCurFace, tmpLinkPoint);
 			m_polyline->m_Linkpoints.push_back(new CPoint3D(*tmpLinkPoint));
 
@@ -360,12 +365,6 @@ void CSlice::getpolylinePoints(Layer* layer)
 				break;
 			}
 		}
-
-
-
-//////////////////////////////////////////断点处
-
-
 
 		//跳出内层循环来到这，判断status中是否还有未被使用的面片，
 		//如有，把面片置为当前，开始下一轮廓寻点；如没有，跳出外层循环
@@ -385,13 +384,13 @@ void CSlice::drawpolyline(double color[])
 			unsigned int szPoint = m_layers[i]->m_Polylines[j]->m_Linkpoints.size();
 			for (unsigned int k = 0; k<(szPoint-1); k++)
 			{
-				CPoint3D* point1 = new CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k]));
-				CPoint3D* point2 = new CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1]));
+				CPoint3D point1 = CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k]));
+				CPoint3D point2 = CPoint3D(*(m_layers[i]->m_Polylines[j]->m_Linkpoints[k + 1]));
 				glLineWidth(1.5f);
 				glBegin(GL_LINES);
 				glColor3f(color[0], color[1], color[2]);
-				glVertex3f(point1->x, point1->y, point1->z);
-				glVertex3f(point2->x, point2->y, point2->z);
+				glVertex3f(point1.x, point1.y, point1.z);
+				glVertex3f(point2.x, point2.y, point2.z);
 				glEnd();
 			}
 		}
@@ -716,3 +715,171 @@ double CSlice::ReturnZtype(double v1, double v2, double v3, int ztype)
 		return z3;
 	}
 }
+
+void CSlice::begin3DSlice(double z_min, double z_max, double &z, double dz)
+{
+	while (true)
+	{
+		Layer* tmp_layer = new Layer();
+		CPoint3D tmp_layer_point = CPoint3D(0, 0, z);
+		tmp_layer->layer_gravity = gravity;
+		tmp_layer->layerPoint = tmp_layer_point;
+
+		m_layers.push_back(tmp_layer);
+
+		getpolylinePoints(m_layers[m_layers.size() - 1]);
+
+		if (z >= (z_max - dz))
+		{
+			break;
+		}
+		z += dz;
+	}
+}
+
+void CSlice::begin5DSlice(double z_min, double z_max, double& z, double dz)
+{
+	Layer* tmp_layer = new Layer();
+	CPoint3D tmp_layer_point = CPoint3D(0, 0, 0);
+	vector<CPoint3D*> cross_point;
+	double x_max;
+	while (true)
+	{
+		tmp_layer_point = CPoint3D(0, 0, z);
+		tmp_layer->layer_gravity = gravity;
+		tmp_layer->layerPoint = tmp_layer_point;
+
+		m_layers.push_back(tmp_layer);
+
+		getpolylinePoints(m_layers[m_layers.size() - 1]);
+
+		// 获取轮廓点后对部分轮廓点进行偏置
+		unsigned int sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
+		x_max = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]->x;
+		for (unsigned int i = 0; i < sz; i++)
+		{
+			if (x_max <= m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x)
+				x_max = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x;
+		}
+
+		bool isCCW = isBoundaryCCW(m_layers[m_layers.size() - 1]);
+		if (!isCCW)
+		{
+			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
+		}
+
+		for (unsigned int i = 0; i < sz; i++)
+		{
+			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x == x_max)// 判断需要修改
+			{
+				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->x -= 2.0;
+				cross_point.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]);
+				tmp_layer_point = *m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i];
+			}
+		}
+		cross_point.erase(cross_point.begin(),cross_point.begin()+1);
+
+		// 斜切面进行切片
+		tmp_layer->layer_gravity = CVector3D(3,0,4);
+		tmp_layer->layerPoint = tmp_layer_point;
+
+		m_layers.push_back(tmp_layer);
+
+		getpolylinePoints(m_layers[m_layers.size() - 1]);
+
+		if (!isBoundaryCCW(m_layers[m_layers.size() - 1]))
+		{
+			makeBoundaryCCW(m_layers[m_layers.size() - 1]);
+		}
+
+		unsigned int tmp_sz = m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size();
+		for (unsigned int i = 0; i < m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.size(); i++)
+		{
+			if (m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[i]->z > tmp_layer_point.z)
+			{
+				m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + i);
+				i = 0;
+			}
+		}
+
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.erase(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin(), m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.begin() + 1);
+		for (unsigned int i = 0; i < cross_point.size(); i++)
+		{
+			m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(cross_point[cross_point.size()-i-1]);
+		}
+		m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints.push_back(m_layers[m_layers.size() - 1]->m_Polylines[0]->m_Linkpoints[0]);
+
+
+		cross_point.clear();
+
+		if (z >= (z_max - dz))
+		{
+			break;
+		}
+		z += dz;
+	}
+}
+
+bool CSlice::isBoundaryCCW(Layer* layer)
+{
+	unsigned int sz = layer->m_Polylines[0]->m_Linkpoints.size();
+	int i = 0;
+	double angle = 0.0;
+	CVector3D vec, vec1, vec2;
+	if (sz < 3)
+	{
+		return false;
+	}
+	else
+	{
+		while (angle==0.0)
+		{
+			vec1 = CVector3D(*layer->m_Polylines[0]->m_Linkpoints[i], *layer->m_Polylines[0]->m_Linkpoints[i+1]);
+			vec2 = CVector3D(*layer->m_Polylines[0]->m_Linkpoints[i+1], *layer->m_Polylines[0]->m_Linkpoints[i+2]);
+			if (vec1.dz < 0.00001&&vec1.dz>-0.00001)
+			{
+				vec1.dz = 0;
+			}
+			if (vec2.dz < 0.00001&&vec2.dz>-0.00001)
+			{
+				vec2.dz = 0;
+			}
+			angle = ::GetAngle(vec1, vec2);
+			i += 1;
+		}
+		vec = vec1*vec2;
+		if (vec.dz < 0.00001&&vec.dz>-0.00001)
+		{
+			vec.dz = 0;
+		}
+		angle = ::GetAngle(vec, layer->layer_gravity);
+		if (angle > (PI / 2))
+			return false;
+		else
+			return true;
+	}
+}
+
+void CSlice::makeBoundaryCCW(Layer* layer)
+{
+	unsigned int sz = layer->m_Polylines[0]->m_Linkpoints.size();
+	vector<CPoint3D*> tmp;
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		tmp.push_back(layer->m_Polylines[0]->m_Linkpoints[sz - 1 - i]);
+	}
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		layer->m_Polylines[0]->m_Linkpoints[i] = tmp[i];
+	}
+
+}
+
+bool CSlice::lineNeedSupport()
+{
+	return false;
+}
+
+
+
+
