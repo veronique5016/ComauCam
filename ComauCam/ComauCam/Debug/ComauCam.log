@@ -4,18 +4,18 @@
   TransferDlg.cpp
   SweepDlg.cpp
   Sweep.cpp
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\sweep.cpp(31): warning C4101: “z”: 未引用的局部变量
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\sweep.cpp(31): warning C4101: “x_max”: 未引用的局部变量
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\sweep.cpp(31): warning C4101: “x_min”: 未引用的局部变量
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\sweep.cpp(31): warning C4101: “x”: 未引用的局部变量
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “z”: 未引用的局部变量
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_max”: 未引用的局部变量
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_min”: 未引用的局部变量
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x”: 未引用的局部变量
   STLModel.cpp
   SliceDlg.cpp
   Slice.cpp
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\slice.cpp(486): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\slice.cpp(486): warning C4018: “<”: 有符号/无符号不匹配
   PropertiesWnd.cpp
   OutputWnd.cpp
   OpenGL.cpp
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\opengl.cpp(224): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\opengl.cpp(224): warning C4018: “<”: 有符号/无符号不匹配
   MainFrm.cpp
   LVertex.cpp
   LayerDlg.cpp
@@ -25,19 +25,20 @@ e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\opengl.cpp(224): war
   FileView.cpp
   DisplayDlg.cpp
   ComauCamView.cpp
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\comaucamview.cpp(324): warning C4018: “<”: 有符号/无符号不匹配
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\comaucamview.cpp(690): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\comaucamview.cpp(691): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\comaucamview.cpp(692): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\comaucamview.cpp(693): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\comaucamview.cpp(694): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(324): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(690): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(691): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(692): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(693): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(694): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
   正在生成代码...
-e:\课题\程序资料\cam 各版本\comaucam-1-14\comaucam\gemobase.cpp(380): warning C4715: “CVector3D::GetC_Angle”: 不是所有的控件路径都返回值
+e:\project\program files\camversion\comaucam\comaucam\gemobase.cpp(380): warning C4715: “CVector3D::GetC_Angle”: 不是所有的控件路径都返回值
   正在编译...
   ComauCamDoc.cpp
   ComauCam.cpp
   ClassView.cpp
   正在生成代码...
-    正在创建库 E:\课题\程序资料\CAM 各版本\ComauCam-1-14\Debug\ComauCam.lib 和对象 E:\课题\程序资料\CAM 各版本\ComauCam-1-14\Debug\ComauCam.exp
-  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-1-14\Debug\ComauCam.exe
-  ComauCam.vcxproj -> E:\课题\程序资料\CAM 各版本\ComauCam-1-14\Debug\ComauCam.pdb (Partial PDB)
+  LINK : 没有找到 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exe 或上一个增量链接没有生成它；正在执行完全链接
+    正在创建库 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.lib 和对象 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exp
+  ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exe
+  ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.pdb (Partial PDB)
