@@ -410,3 +410,32 @@ void PointToQuad(CPoint3D quad[4], CPoint3D point, double offset, CVector3D coor
 	tmp = point + offset_vec*offset;
 	quad[3] = tmp;
 }
+
+void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
+{
+	CPoint3D point_out;
+	unsigned int sz = boundary->m_vecpSegments.size();
+
+	CVector3D offset_vec;
+	CPoint3D tmp_point;
+	CSegment line1, line2;
+
+	//将轮廓中所有的线段往内偏移一个距离
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		offset_vec = coordinate[2] * boundary->m_vecpSegments[i]->m_vSegmentVec;
+		offset_vec.Normalize();
+		MoveSegment(boundary->m_vecpSegments[i], CVector3D(offset_vec*offset));
+	}
+
+	//对偏移后的线段求交点，形成偏移后的轮廓
+	for (unsigned int i = 0; i < sz; i++)
+	{
+		line1 = *boundary->m_vecpSegments[i];
+		line2 = *boundary->m_vecpSegments[(i + 1) % sz];
+
+		GetCrossPoint(point_out, line1, line2);
+		boundary->m_vecpSegments[i]->m_ptEnd = CPoint3D(point_out);
+		boundary->m_vecpSegments[(i + 1) % sz]->m_ptStart = CPoint3D(point_out);
+	}
+}

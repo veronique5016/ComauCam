@@ -63,6 +63,7 @@ void CSlice::Slice(CSTLModel* model)
 		for (unsigned int i = 0; i < szL; i++)
 		{
 			double angle = GetAngle(CVector3D(0, 0, 1), CVector3D(*m_vecpLayers[index]->m_vecpBoundaries[0]->m_vecpSegments[i]->m_pTriangle->n))*180.0 / PI;
+			//标准静态挂流角度为128°
 			if (angle > 110.0)
 			{
 				//偏移该线段

@@ -36,7 +36,7 @@ void CSweep::Sweep()
 		{
 			CSweepLayer* layer =m_vecpSweepLayers[i];
 			CBoundary* tmp_boundary = new CBoundary(*layer->m_vecpBoundaries[0]);
-			Offset(tmp_boundary, -5, layer->m_vLayerCoordinate);
+			::Offset(tmp_boundary, -15, layer->m_vLayerCoordinate);
 			unsigned int szB = tmp_boundary->m_vecpSegments.size();
 			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(tmp_boundary->m_vecpSegments[0]->m_ptStart));
 			for (unsigned int j = 0; j < szB; j++)
@@ -54,10 +54,10 @@ void CSweep::Sweep()
 
 		int sum = 0;
 		CBoundary* tmp = m_vecpSweepLayers[i]->m_vecpBoundaries[0];
-		while (sum < 3)
+		while (sum < 1)
 		{
 			CBoundary* offsetBoundary = new CBoundary(*tmp);
-			Offset(offsetBoundary, 2, m_vecpSweepLayers[i]->m_vLayerCoordinate);
+			::Offset(offsetBoundary, 2, m_vecpSweepLayers[i]->m_vLayerCoordinate);
 			unsigned int szOffset = offsetBoundary->m_vecpSegments.size();
 			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(offsetBoundary->m_vecpSegments[0]->m_ptStart));
 			for (unsigned int j = 0; j < szOffset; j++)
@@ -164,40 +164,6 @@ void CSweep::YaxisSweep(CSweepLayer* layer)
 		}
 	}	*/
 	/////////
-}
-
-
-void CSweep::Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
-{
-	CPoint3D point_out;
-	unsigned int sz = boundary->m_vecpSegments.size();
-	/*layer->m_vecpOffsetBoundaries.push_back(new CBoundary());
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		layer->m_vecpOffsetBoundaries[0]->m_vecpSegments.push_back(new CSegment(*layer->m_vecpBoundaries[0]->m_vecpSegments[i]));
-	}*/
-	CVector3D offset_vec;
-	CPoint3D tmp_point;
-	CSegment line1, line2;
-
-	//将轮廓中所有的线段往内偏移一个距离
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		offset_vec = coordinate[2] * boundary->m_vecpSegments[i]->m_vSegmentVec;
-		offset_vec.Normalize();
-		MoveSegment(boundary->m_vecpSegments[i], CVector3D(offset_vec*offset));
-	}
-
-	//对偏移后的线段求交点，形成偏移后的轮廓
-	for (unsigned int i = 0; i < sz; i++)
-	{
-		line1 = *boundary->m_vecpSegments[i];
-		line2 = *boundary->m_vecpSegments[(i + 1) % sz];
-
-		GetCrossPoint(point_out, line1, line2);
-		boundary->m_vecpSegments[i]->m_ptEnd = CPoint3D(point_out);
-		boundary->m_vecpSegments[(i + 1) % sz]->m_ptStart = CPoint3D(point_out);
-	}
 }
 
 void CSweep::LoadSliceModel(CSlice* slicemodel)

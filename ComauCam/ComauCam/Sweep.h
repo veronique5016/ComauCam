@@ -16,7 +16,6 @@ public:
 public:
 	void LoadSliceModel(CSlice* slicemodel);
 	void Sweep();
-	void Offset(CBoundary* layer, double offset, CVector3D coordinate[]);	//由于某些很小的向量分量，最终得到的偏置轮廓可能与原轮廓不共面
 	void YaxisSweep(CSweepLayer* layer);
 
 	void CalACAngle(CSweepLayer* layer);

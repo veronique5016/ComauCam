@@ -5,9 +5,6 @@
 
 using namespace std;
 
-//struct SliceLayer;
-
-
 //扫描路径与轮廓相交得到的交点
 struct CSweepPoint : public CPoint3D
 {
@@ -101,8 +98,9 @@ public:
 	vector<CSweepPoint*> m_vecpTurnRoute;
 };
 
-
+/////////////////////////
 //输出函数
+/////////////////////////
 
 //移动线段
 void AFX_API_EXPORT MoveSegment(CSegment* lsegment, CVector3D vec);
@@ -113,3 +111,6 @@ void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CSweepLine line1, CSegment l
 
 //以一点为中心，扩充成一个正方形
 void PointToQuad(CPoint3D quad[4], CPoint3D point, double offset, CVector3D coordinate[3]);
+
+//偏移轮廓
+void Offset(CBoundary* boundary, double offset, CVector3D coordinate[]);//由于某些很小的向量分量，最终得到的偏置轮廓可能与原轮廓不共面
