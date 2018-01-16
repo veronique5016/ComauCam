@@ -253,7 +253,8 @@ CVector3D CVector3D::operator*(const CVector3D& v) const    //²æ³Ë
 
 double CVector3D::operator|(const CVector3D& v) const      //µã³Ë
 {
-	return dx*v.dx + dy*v.dy + dz*v.dz;
+	double result = dx*v.dx + dy*v.dy + dz*v.dz;
+	return result;
 }
 
 CVector3D CVector3D::operator*(const CMatrix3D& matrix) const
@@ -338,7 +339,7 @@ double CVector3D::GetAngle(CVector3D v1, CVector3D v2) const
 	if (dotProduct<-1)
 		dotProduct = -1;
 
-	return acos(v1 | v2);
+	return acos(dotProduct);
 }
 
 BOOL CVector3D::IsZeroLength() const
@@ -634,7 +635,7 @@ double GetAngle(CVector3D v1, CVector3D v2)
 {
 	v1.Normalize();
 	v2.Normalize();
-	return acos(v1 | v2);
+	return Angle(v1, v2);
 }
 double Angle(const CVector3D& v1, const CVector3D& v2)
 {
@@ -912,7 +913,9 @@ double CalPointtoLine(const CPoint3D & point, const CPoint3D & startPoint, const
 {
 	double distance;
 	CVector3D line1 = CVector3D(startPoint, endPoint);
+	line1.Normalize();
 	CVector3D line2 = CVector3D(startPoint, point);
+	line2.Normalize();
 	double angle = ::GetAngle(line1, line2);
 	distance = ::GetDistance(startPoint, point) * sin(angle);
 	if (distance < 0)

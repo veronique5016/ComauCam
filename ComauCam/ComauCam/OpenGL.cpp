@@ -225,9 +225,15 @@ void COpenGLDC::DrawSweepModel(CSweep * model, int start, int end)
 	{
 		//»­ÂÖÀª
 		unsigned int szB = model->m_vecpSweepLayers[i]->m_vecpBoundaries[0]->m_vecpSegments.size();
-		glColor3f(1.0, 0.0, 0.0);
+		//glColor3f(1.0, 0.0, 0.0);
 		for (unsigned int j = 0; j < szB; j++)
 		{
+			if (j%3 == 0)
+				glColor3f(1.0, .0, 0.0);
+			else if(j%3 ==1)
+				glColor3f(0.0, 1.0, 0.0);
+			else
+				glColor3f(0.0, 0.0, 1.0);
 			CPoint3D p1 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j]);
 			CPoint3D p2 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j + 1]);
 			DrawCuboid(p1, p2, model->m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
@@ -236,6 +242,12 @@ void COpenGLDC::DrawSweepModel(CSweep * model, int start, int end)
 		unsigned int sz = model->m_vecpSweepLayers[i]->m_vecpRoute.size();
 		for (unsigned int j = szB + 1; j < sz - 1; j++)
 		{
+			if (j % 3 == 0)
+				glColor3f(1.0, 0.0, 0.0);
+			else if (j % 3 == 1)
+				glColor3f(0.0, 1.0, 0.0);
+			else
+				glColor3f(0.0, 0.0, 1.0);
 			CPoint3D p1 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j]);
 			CPoint3D p2 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j + 1]);
 			DrawCuboid(p1, p2, model->m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
@@ -315,7 +327,7 @@ void COpenGLDC::DrawCuboid(CPoint3D pStart, CPoint3D pEnd, CVector3D normal)
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);
 	glBegin(GL_QUADS);
-	glColor3f(1.0f, 0.0f, 0.0f);
+	//glColor3f(1.0f, 0.0f, 0.0f);
 	//glNormal3f(xAxis.dx, xAxis.dy, xAxis.dz);
 	glVertex3f(startQuad[0].x, startQuad[0].y, startQuad[0].z);
 	glVertex3f(startQuad[1].x, startQuad[1].y, startQuad[1].z);

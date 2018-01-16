@@ -3,6 +3,7 @@
 #include "Triangle.h"
 #include <vector>
 #include "Layer.h"
+
 using namespace std;
 
 #define EXTRUDER_DIAMETER 1
@@ -40,7 +41,6 @@ public:
 	void ModifyTurnLayer(CSliceLayer* layer);	//对变法向切平面轮廓进行修改	
 	
 public:
-	vector<CLEdge*> m_vecpSliceEdge;     //存储相交边
 	vector<CSliceLayer*> m_vecpLayers;     //存储片层
 	vector<CLTriangle*> m_vecpSliceTris;   //保存一份三角面片，作为初始数据
 	double m_dHeight; // 层切面间距

@@ -188,7 +188,7 @@ void CSliceLayer::DeletePoints()
 			pNext = tmp_segments[j%szTemp]->m_ptEnd;
 			pNextNext = tmp_segments[(j + 1) % szTemp]->m_ptEnd;
 			double distance = CalPointtoLine(pNext, pCur, pNextNext);
-			if (distance <= 0.0001)
+			if (distance <= 0.001)
 			{
 				tmp_segments[j%szTemp]->m_ptEnd = tmp_segments[(j + 1) % szTemp]->m_ptEnd;
 				CPoint3D p1 = CPoint3D(tmp_segments[j%szTemp]->m_ptStart);
