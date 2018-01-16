@@ -24,7 +24,7 @@ struct CLEdge   // Half edge structure    半边数据结构
 	CLEdge();
 	CLEdge(CLVertex* _v1, CLVertex* _v2);
 
-	CLVertex   *v1, *v2;     // Two vertices, v1: start   v2: end
+	CLVertex   *v_start, *v_end;     // Two vertices, v1: start   v2: end
 	CLTriangle *t;              // The triangle the edge belong to  边从属的三角片
 	CLEdge     *e_prev,    // previous edge
 		*e_next,    // next edge

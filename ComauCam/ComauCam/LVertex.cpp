@@ -65,15 +65,15 @@ bool CLVertex::IsLower(CLVertex* pVertex)
 
 CLEdge::CLEdge()
 {
-	v1 = v2 = NULL;
+	v_start = v_end = NULL;
 	t = NULL;
 	e_prev = e_next = e_adja = NULL;
 }
 
 CLEdge::CLEdge(CLVertex* _v1, CLVertex* _v2)
 {
-	v1 = _v1;
-	v2 = _v2;
+	v_start = _v1;
+	v_end = _v2;
 
 	e_adja = NULL;
 }
@@ -86,7 +86,7 @@ CLTriangle::CLTriangle()
 	m_bUse = false;     //面片是否被使用
 	m_nFaceType = 0;  //面片类型
 	m_pIntersectLine1 = NULL;     //上一面片已经求交的相交线，用于寻找下一相交线
-	m_pIntersectLine2= NULL;      //另一条相交线
+	m_pIntersectLine2 = NULL;      //另一条相交线
 }
 
 CLTriangle::CLTriangle(CLVertex* v1, CLVertex* v2, CLVertex* v3)
@@ -97,6 +97,8 @@ CLTriangle::CLTriangle(CLVertex* v1, CLVertex* v2, CLVertex* v3)
 
 	e1 = e2 = e3 = NULL;
 	n = NULL;
+	m_pIntersectLine1 = NULL;
+	m_pIntersectLine2 = NULL;
 }
 
 CVector3D* CLTriangle::GntNormal()
@@ -128,7 +130,7 @@ CLTriangle* CLTriangle::GetNbTri3() const
 
 bool CLEdgeHull::IsOpposite(const CLEdgeHull& edgeHull)//判断两条线是否方向相反
 {
-	if (m_pEdge->v1 == edgeHull.m_pEdge->v2 && m_pEdge->v2 == edgeHull.m_pEdge->v1)//即二者的起点终点刚好相反
+	if (m_pEdge->v_start == edgeHull.m_pEdge->v_end && m_pEdge->v_end == edgeHull.m_pEdge->v_start)//即二者的起点终点刚好相反
 	{
 		return true;
 	}
@@ -140,15 +142,15 @@ bool CLEdgeHull::IsOpposite(const CLEdgeHull& edgeHull)//判断两条线是否方向相反
 
 bool CLEdgeHull::operator < (const CLEdgeHull& edgeHull)
 {
-	CLVertex v1 = *m_pEdge->v1;  // v1 < v2
-	CLVertex v2 = *m_pEdge->v2;
+	CLVertex v1 = *m_pEdge->v_start;  // v1 < v2
+	CLVertex v2 = *m_pEdge->v_end;
 	if (v2 < v1)
 	{
 		swap(v1, v2);
 	}
 
-	CLVertex v1_ = *edgeHull.m_pEdge->v1;
-	CLVertex v2_ = *edgeHull.m_pEdge->v2;
+	CLVertex v1_ = *edgeHull.m_pEdge->v_start;
+	CLVertex v2_ = *edgeHull.m_pEdge->v_end;
 	if (v2_ < v1_)
 	{
 		swap(v1_, v2_);
