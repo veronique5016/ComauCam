@@ -1,7 +1,4 @@
-﻿  Sweep.cpp
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “z”: 未引用的局部变量
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_max”: 未引用的局部变量
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_min”: 未引用的局部变量
-e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x”: 未引用的局部变量
+﻿  Layer.cpp
+e:\project\program files\camversion\comaucam\comaucam\layer.cpp(246): warning C4018: “<”: 有符号/无符号不匹配
   ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.pdb (Partial PDB)

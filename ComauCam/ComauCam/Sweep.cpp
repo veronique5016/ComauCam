@@ -36,7 +36,7 @@ void CSweep::Sweep()
 		{
 			CSweepLayer* layer =m_vecpSweepLayers[i];
 			CBoundary* tmp_boundary = new CBoundary(*layer->m_vecpBoundaries[0]);
-			::Offset(tmp_boundary, -15, layer->m_vLayerCoordinate);
+			::Offset(tmp_boundary, -5, layer->m_vLayerCoordinate);
 			unsigned int szB = tmp_boundary->m_vecpSegments.size();
 			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(tmp_boundary->m_vecpSegments[0]->m_ptStart));
 			for (unsigned int j = 0; j < szB; j++)
@@ -57,7 +57,7 @@ void CSweep::Sweep()
 		while (sum < 1)
 		{
 			CBoundary* offsetBoundary = new CBoundary(*tmp);
-			::Offset(offsetBoundary, 2, m_vecpSweepLayers[i]->m_vLayerCoordinate);
+			::Offset(offsetBoundary, 1, m_vecpSweepLayers[i]->m_vLayerCoordinate);
 			unsigned int szOffset = offsetBoundary->m_vecpSegments.size();
 			m_vecpSweepLayers[i]->m_vecpRoute.push_back(new CPoint3D(offsetBoundary->m_vecpSegments[0]->m_ptStart));
 			for (unsigned int j = 0; j < szOffset; j++)

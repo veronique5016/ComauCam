@@ -390,32 +390,28 @@ void GetCrossPoint(CPoint3D & pt_out, CSweepLine line1, CSegment line2)
 void PointToQuad(CPoint3D quad[4], CPoint3D point, double offset, CVector3D coordinate[3])
 {
 	CPoint3D tmp = point;
-	CVector3D offset_vec = coordinate[1] + coordinate[2];
-	offset_vec.Normalize();
-	tmp = point + offset_vec*offset;
-	quad[0] = tmp;
+	double x = -1.0;
+	double y = -1.0;
+	for (int i = 0; i < 4; i++)
+	{
+		CVector3D offset_vec = coordinate[1]*x + coordinate[2]*y;
+		offset_vec.Normalize();
+		tmp = point + offset_vec*offset;
+		quad[i] = tmp;
 
-	offset_vec = coordinate[2] - coordinate[1];
-	offset_vec.Normalize();
-	tmp = point + offset_vec*offset;
-	quad[1] = tmp;
-
-	offset_vec = CVector3D(0, 0, 0) - coordinate[2] - coordinate[1];
-	offset_vec.Normalize();
-	tmp = point + offset_vec*offset;
-	quad[2] = tmp;
-
-	offset_vec = coordinate[1] - coordinate[2];
-	offset_vec.Normalize();
-	tmp = point + offset_vec*offset;
-	quad[3] = tmp;
+		if (x < 0)
+			x = 1.0;
+		else if (y < 0)
+			y = 1.0;
+		else
+			x = -1.0;
+	}
 }
 
 void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 {
-	CPoint3D point_out;
 	unsigned int sz = boundary->m_vecpSegments.size();
-
+	CPoint3D point_out;
 	CVector3D offset_vec;
 	CPoint3D tmp_point;
 	CSegment line1, line2;
@@ -437,5 +433,35 @@ void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 		GetCrossPoint(point_out, line1, line2);
 		boundary->m_vecpSegments[i]->m_ptEnd = CPoint3D(point_out);
 		boundary->m_vecpSegments[(i + 1) % sz]->m_ptStart = CPoint3D(point_out);
+	}
+
+	//判断需要删除的多余线段
+	for (unsigned int i = 0; i < boundary->m_vecpSegments.size(); i++)
+	{
+		CVector3D tmp_vec = boundary->m_vecpSegments[i]->m_vSegmentVec;
+		boundary->m_vecpSegments[i]->m_vSegmentVec = CVector3D(boundary->m_vecpSegments[i]->m_ptStart, boundary->m_vecpSegments[i]->m_ptEnd);
+		boundary->m_vecpSegments[i]->m_vSegmentVec.Normalize();
+		double length = ::GetDistance(boundary->m_vecpSegments[i]->m_ptStart, boundary->m_vecpSegments[i]->m_ptEnd);
+		CVector3D sum_vec = tmp_vec + boundary->m_vecpSegments[i]->m_vSegmentVec;
+		if (fabs(sum_vec.dx) < 0.000001
+			&& fabs(sum_vec.dy) < 0.000001
+			&& fabs(sum_vec.dz) < 0.000001)
+		{
+			boundary->m_vecpSegments.erase(boundary->m_vecpSegments.begin() + i);
+			i = 0;
+		}
+	}
+	//生成新的轮廓
+	for (unsigned int i = 0; i < boundary->m_vecpSegments.size(); i++)
+	{
+		line1 = *boundary->m_vecpSegments[i];
+		line2 = *boundary->m_vecpSegments[(i + 1) % boundary->m_vecpSegments.size()];
+
+		if (line1.m_ptEnd != line2.m_ptStart)
+		{
+			GetCrossPoint(point_out, line1, line2);
+			boundary->m_vecpSegments[i]->m_ptEnd = CPoint3D(point_out);
+			boundary->m_vecpSegments[(i + 1) % boundary->m_vecpSegments.size()]->m_ptStart = CPoint3D(point_out);
+		}
 	}
 }
