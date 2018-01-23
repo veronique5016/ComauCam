@@ -22,8 +22,8 @@ public:
 	void CalFiveAxisValue(CSweepLayer* layer);
 
 public:
-	vector<CSliceLayer*> m_vecpSliceLayers;	//保存一份切平面，作为初始数据
-	vector<CSweepLayer*> m_vecpSweepLayers;
+	vector<CSliceLayer*> m_vpSliceLayers;	//保存一份切平面，作为初始数据
+	vector<CSweepLayer*> m_vpSweepLayers;
 
 	double m_dDistance;	//扫描路径间距
 };

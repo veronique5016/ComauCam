@@ -332,7 +332,7 @@ BOOL CComauCamView::RenderScene()
 		{
 			if (m_nEndLayer == 0)
 			{
-				m_nEndLayer = m_vecpSlices[0]->m_vecpLayers.size();
+				m_nEndLayer = m_vecpSlices[0]->m_vpLayers.size();
 			}
 			m_pDC->DrawSliceModel(m_vecpSlices[0], m_bPolygonDraw, m_nStartLayer, m_nEndLayer);
 		}
@@ -701,15 +701,15 @@ void CComauCamView::OnShowSelectedLayers()
 	// TODO: 在此添加命令处理程序代码
 	CLayerDlg dialog;
 	UpdateData(FALSE);
-	for (unsigned int i = 0; i < m_vecpSlices[0]->m_vecpLayers.size(); i++)
+	for (unsigned int i = 0; i < m_vecpSlices[0]->m_vpLayers.size(); i++)
 	{
-		if (m_vecpSlices[0]->m_vecpLayers[i]->m_vLayerCoordinate[2].dz != 1.0)
+		if (m_vecpSlices[0]->m_vpLayers[i]->m_vCoordinate[2].dz != 1.0)
 		{
 			dialog.m_nFirstTurnLayer = i;
 			break;
 		}
 	}
-	dialog.m_nNumberofLayers = m_vecpSlices[0]->m_vecpLayers.size();
+	dialog.m_nNumberofLayers = m_vecpSlices[0]->m_vpLayers.size();
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);

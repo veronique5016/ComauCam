@@ -154,10 +154,10 @@ void COpenGLDC::DrawSTLModel(CSTLModel * model, bool showTri)
 void COpenGLDC::DrawLayer(CSliceLayer * layer, bool showPolygon, double color[])
 {
 	CPoint3D point;
-	unsigned int szpolyline = layer->m_vecpBoundaries.size();
+	unsigned int szpolyline = layer->m_vpBoundaries.size();
 	for (unsigned int j = 0; j < szpolyline; j++)
 	{
-		unsigned int szLine = layer->m_vecpBoundaries[j]->m_vecpSegments.size();
+		unsigned int szLine = layer->m_vpBoundaries[j]->m_vpSegments.size();
 		glLineWidth(1.5f);
 
 		//»æÖÆÆ½ÃæÂÖÀª
@@ -167,9 +167,9 @@ void COpenGLDC::DrawLayer(CSliceLayer * layer, bool showPolygon, double color[])
 			glColor3f(color[0], color[1], color[2]);
 			for (unsigned int k = 0; k < szLine; k++)
 			{
-				point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
+				point = layer->m_vpBoundaries[j]->m_vpSegments[k]->m_ptStart;
 				glVertex3f(point.x, point.y, point.z);
-				point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
+				point = layer->m_vpBoundaries[j]->m_vpSegments[k]->m_ptEnd;
 				glVertex3f(point.x, point.y, point.z);
 			}
 			glEnd();
@@ -179,10 +179,16 @@ void COpenGLDC::DrawLayer(CSliceLayer * layer, bool showPolygon, double color[])
 		glColor3f(color[0], color[1], color[2]);
 		for (unsigned int k = 0; k<szLine; k++)
 		{
+			if (k % 3 == 0)
+				glColor3f(1.0, .0, 0.0);
+			else if (k % 3 == 1)
+				glColor3f(0.0, 1.0, 0.0);
+			else
+				glColor3f(0.0, 0.0, 1.0);
 			glBegin(GL_LINE_LOOP);
-			point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptStart;
+			point = layer->m_vpBoundaries[j]->m_vpSegments[k]->m_ptStart;
 			glVertex3f(point.x, point.y, point.z);
-			point = layer->m_vecpBoundaries[j]->m_vecpSegments[k]->m_ptEnd;
+			point = layer->m_vpBoundaries[j]->m_vpSegments[k]->m_ptEnd;
 			glVertex3f(point.x, point.y, point.z);
 			glEnd();
 		}
@@ -193,11 +199,11 @@ void COpenGLDC::DrawLayer(CSliceLayer * layer, bool showPolygon, double color[])
 void COpenGLDC::DrawSliceModel(CSlice* model, bool showPolygon, int start, int end)
 {
 	double color[3];
-	unsigned int szlayer = model->m_vecpLayers.size();
+	unsigned int szlayer = model->m_vpLayers.size();
 	CPoint3D point;
 	for (int i = (start - 1); i<end; i++)
 	{	
-		if (model->m_vecpLayers[i]->m_vLayerCoordinate[2].dz == 1.0)
+		if (model->m_vpLayers[i]->m_vCoordinate[2].dz == 1.0)
 		{
 			color[0] = 1.0;
 			color[1] = 0.0;
@@ -209,22 +215,22 @@ void COpenGLDC::DrawSliceModel(CSlice* model, bool showPolygon, int start, int e
 			color[1] = 1.0;
 			color[2] = 0.0;
 		}
-		DrawLayer(model->m_vecpLayers[i], showPolygon, color);
+		DrawLayer(model->m_vpLayers[i], showPolygon, color);
 
-		if (model->m_vecpLayers[i]->m_pAddictedLayer != NULL)
+		/*if (model->m_vpLayers[i]->m_pAddictedLayer != NULL)
 		{
-			DrawLayer(model->m_vecpLayers[i]->m_pAddictedLayer, showPolygon, color);
-		}
+			DrawLayer(model->m_vpLayers[i]->m_pAddictedLayer, showPolygon, color);
+		}*/
 	}
 }
 
 void COpenGLDC::DrawSweepModel(CSweep * model, int start, int end)
 {
-	unsigned int szL = model->m_vecpSweepLayers.size();
+	unsigned int szL = model->m_vpSweepLayers.size();
 	for (unsigned int i = (start - 1); i < end; i++)
 	{
 		//»­ÂÖÀª
-		unsigned int szB = model->m_vecpSweepLayers[i]->m_vecpBoundaries[0]->m_vecpSegments.size();
+		unsigned int szB = model->m_vpSweepLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
 		//glColor3f(1.0, 0.0, 0.0);
 		for (unsigned int j = 0; j < szB; j++)
 		{
@@ -234,12 +240,12 @@ void COpenGLDC::DrawSweepModel(CSweep * model, int start, int end)
 				glColor3f(0.0, 1.0, 0.0);
 			else
 				glColor3f(0.0, 0.0, 1.0);
-			CPoint3D p1 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j]);
-			CPoint3D p2 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j + 1]);
-			DrawCuboid(p1, p2, model->m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
+			CPoint3D p1 = CPoint3D(*model->m_vpSweepLayers[i]->m_vpRoute[j]);
+			CPoint3D p2 = CPoint3D(*model->m_vpSweepLayers[i]->m_vpRoute[j + 1]);
+			DrawCuboid(p1, p2, model->m_vpSweepLayers[i]->m_vCoordinate[2]);
 		}
 		//»­Â·¾¶
-		unsigned int sz = model->m_vecpSweepLayers[i]->m_vecpRoute.size();
+		unsigned int sz = model->m_vpSweepLayers[i]->m_vpRoute.size();
 		for (unsigned int j = szB + 1; j < sz - 1; j++)
 		{
 			if (j % 3 == 0)
@@ -248,9 +254,9 @@ void COpenGLDC::DrawSweepModel(CSweep * model, int start, int end)
 				glColor3f(0.0, 1.0, 0.0);
 			else
 				glColor3f(0.0, 0.0, 1.0);
-			CPoint3D p1 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j]);
-			CPoint3D p2 = CPoint3D(*model->m_vecpSweepLayers[i]->m_vecpRoute[j + 1]);
-			DrawCuboid(p1, p2, model->m_vecpSweepLayers[i]->m_vLayerCoordinate[2]);
+			CPoint3D p1 = CPoint3D(*model->m_vpSweepLayers[i]->m_vpRoute[j]);
+			CPoint3D p2 = CPoint3D(*model->m_vpSweepLayers[i]->m_vpRoute[j + 1]);
+			DrawCuboid(p1, p2, model->m_vpSweepLayers[i]->m_vCoordinate[2]);
 		}
 	}
 }

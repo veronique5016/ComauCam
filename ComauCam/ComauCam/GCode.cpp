@@ -39,43 +39,43 @@ void CGCode::Write(CString sFilePath)
 		for (unsigned int i = 0; i < szLayer; i++)
 		{
 			str.Format(_T("G0 X%.3f Y%.3f Z%.3f i%.3f j%.3f k%.3f\n"),
-				m_vecpGCodeLayers[i]->m_vecpRoute[0]->x,
-				m_vecpGCodeLayers[i]->m_vecpRoute[0]->y,
-				m_vecpGCodeLayers[i]->m_vecpRoute[0]->z,
-				m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dx,
-				m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dy,
-				m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dz);
+				m_vecpGCodeLayers[i]->m_vpRoute[0]->x,
+				m_vecpGCodeLayers[i]->m_vpRoute[0]->y,
+				m_vecpGCodeLayers[i]->m_vpRoute[0]->z,
+				m_vecpGCodeLayers[i]->m_vCoordinate[2].dx,
+				m_vecpGCodeLayers[i]->m_vCoordinate[2].dy,
+				m_vecpGCodeLayers[i]->m_vCoordinate[2].dz);
 			fileout.WriteString(str);
-			unsigned int szB = m_vecpGCodeLayers[i]->m_vecpBoundaries[0]->m_vecpSegments.size();
+			unsigned int szB = m_vecpGCodeLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
 			for (unsigned int j = 1; j < szB + 1; j++)
 			{
-				length = GetDistance(*m_vecpGCodeLayers[i]->m_vecpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vecpRoute[j]);
+				length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 				volumn += length * 0.2;
 				str.Format(_T("G1 X%.3f Y%.3f Z%.3f i%.3f j%.3f k%.3f E-%.5f\n"),
-					m_vecpGCodeLayers[i]->m_vecpRoute[j]->x, m_vecpGCodeLayers[i]->m_vecpRoute[j]->y, m_vecpGCodeLayers[i]->m_vecpRoute[j]->z, (volumn / 6.0),
-					m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dx,
-					m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dy,
-					m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dz);
+					m_vecpGCodeLayers[i]->m_vpRoute[j]->x, m_vecpGCodeLayers[i]->m_vpRoute[j]->y, m_vecpGCodeLayers[i]->m_vpRoute[j]->z, (volumn / 6.0),
+					m_vecpGCodeLayers[i]->m_vCoordinate[2].dx,
+					m_vecpGCodeLayers[i]->m_vCoordinate[2].dy,
+					m_vecpGCodeLayers[i]->m_vCoordinate[2].dz);
 				fileout.WriteString(str);
 			}
 			str.Format(_T("G0 X%.3f Y%.3f Z%.3f i%.3f j%.3f k%.3f\n"),
-				m_vecpGCodeLayers[i]->m_vecpRoute[szB + 1]->x,
-				m_vecpGCodeLayers[i]->m_vecpRoute[szB + 1]->y,
-				m_vecpGCodeLayers[i]->m_vecpRoute[szB + 1]->z,
-				m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dx,
-				m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dy,
-				m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dz);
+				m_vecpGCodeLayers[i]->m_vpRoute[szB + 1]->x,
+				m_vecpGCodeLayers[i]->m_vpRoute[szB + 1]->y,
+				m_vecpGCodeLayers[i]->m_vpRoute[szB + 1]->z,
+				m_vecpGCodeLayers[i]->m_vCoordinate[2].dx,
+				m_vecpGCodeLayers[i]->m_vCoordinate[2].dy,
+				m_vecpGCodeLayers[i]->m_vCoordinate[2].dz);
 			fileout.WriteString(str);
-			unsigned int sz = m_vecpGCodeLayers[i]->m_vecpRoute.size();
+			unsigned int sz = m_vecpGCodeLayers[i]->m_vpRoute.size();
 			for (unsigned int j = szB + 2; j < sz; j++)
 			{
-				length = GetDistance(*m_vecpGCodeLayers[i]->m_vecpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vecpRoute[j]);
+				length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 				volumn += length * 0.2;
 				str.Format(_T("G1 X%.3f Y%.3f Z%.3f i%.3f j%.3f k%.3f E-%.5f\n"),
-					m_vecpGCodeLayers[i]->m_vecpRoute[j]->x, m_vecpGCodeLayers[i]->m_vecpRoute[j]->y, m_vecpGCodeLayers[i]->m_vecpRoute[j]->z,(volumn / 6.0),
-					m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dx,
-					m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dy,
-					m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dz);
+					m_vecpGCodeLayers[i]->m_vpRoute[j]->x, m_vecpGCodeLayers[i]->m_vpRoute[j]->y, m_vecpGCodeLayers[i]->m_vpRoute[j]->z,(volumn / 6.0),
+					m_vecpGCodeLayers[i]->m_vCoordinate[2].dx,
+					m_vecpGCodeLayers[i]->m_vCoordinate[2].dy,
+					m_vecpGCodeLayers[i]->m_vCoordinate[2].dz);
 				fileout.WriteString(str);
 			}
 		}
@@ -114,33 +114,33 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 		unsigned int szLayer = m_vecpGCodeLayers.size();
 		for (unsigned int i = 0; i < szLayer; i++)
 		{
-			if (m_vecpGCodeLayers[i]->m_vLayerCoordinate[2].dz == 1.0)
+			if (m_vecpGCodeLayers[i]->m_vCoordinate[2].dz == 1.0)
 			{
 				str.Format(_T("G0 X%.3f Y%.3f Z%.3f\n"),
-					m_vecpGCodeLayers[i]->m_vecpRoute[0]->x,
-					m_vecpGCodeLayers[i]->m_vecpRoute[0]->y,
-					m_vecpGCodeLayers[i]->m_vecpRoute[0]->z);
+					m_vecpGCodeLayers[i]->m_vpRoute[0]->x,
+					m_vecpGCodeLayers[i]->m_vpRoute[0]->y,
+					m_vecpGCodeLayers[i]->m_vpRoute[0]->z);
 				fileout.WriteString(str);
-				unsigned int szB = m_vecpGCodeLayers[i]->m_vecpBoundaries[0]->m_vecpSegments.size();
+				unsigned int szB = m_vecpGCodeLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
 				for (unsigned int j = 1; j < szB+1; j++)
 				{
-					length = GetDistance(*m_vecpGCodeLayers[i]->m_vecpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vecpRoute[j]);
+					length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 					volumn += length * 0.2;
 					str.Format(_T("G1 X%.3f Y%.3f E-%.5f\n"),
-						m_vecpGCodeLayers[i]->m_vecpRoute[j]->x, m_vecpGCodeLayers[i]->m_vecpRoute[j]->y, (volumn / 6.0));
+						m_vecpGCodeLayers[i]->m_vpRoute[j]->x, m_vecpGCodeLayers[i]->m_vpRoute[j]->y, (volumn / 6.0));
 					fileout.WriteString(str);
 				}
 				str.Format(_T("G0 X%.3f Y%.3f\n"),
-					m_vecpGCodeLayers[i]->m_vecpRoute[szB + 1]->x,
-					m_vecpGCodeLayers[i]->m_vecpRoute[szB + 1]->y);
+					m_vecpGCodeLayers[i]->m_vpRoute[szB + 1]->x,
+					m_vecpGCodeLayers[i]->m_vpRoute[szB + 1]->y);
 				fileout.WriteString(str);
-				unsigned int sz = m_vecpGCodeLayers[i]->m_vecpRoute.size();
+				unsigned int sz = m_vecpGCodeLayers[i]->m_vpRoute.size();
 				for (unsigned int j = szB+2; j < sz; j++)
 				{
-					length = GetDistance(*m_vecpGCodeLayers[i]->m_vecpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vecpRoute[j]);
+					length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 					volumn += length * 0.2;
 					str.Format(_T("G1 X%.3f Y%.3f E-%.5f\n"),
-						m_vecpGCodeLayers[i]->m_vecpRoute[j]->x, m_vecpGCodeLayers[i]->m_vecpRoute[j]->y, (volumn / 6.0));
+						m_vecpGCodeLayers[i]->m_vpRoute[j]->x, m_vecpGCodeLayers[i]->m_vpRoute[j]->y, (volumn / 6.0));
 					fileout.WriteString(str);
 				}
 			}
@@ -148,35 +148,35 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 			{
 				//喷头先往上抬20mm
 				str.Format(_T("G0 X%.3f Y%.3f Z%.3f\n"),
-					m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->x,
-					m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->y,
-					m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->z + 20.0);
+					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->x,
+					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->y,
+					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->z + 20.0);
 				fileout.WriteString(str);
 				//AC轴转动
 				str.Format(_T("G0 A%.3f C%.3f\n"),
-					(m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->A * 180 / PI),
-					(m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->C * 180 / PI));
+					(m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->A * 180 / PI),
+					(m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->C * 180 / PI));
 				fileout.WriteString(str);
 				//喷头移动到要打印的点
 				str.Format(_T("G0 X%.3f Y%.3f Z%.3f\n"),
-					m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->x,
-					m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->y,
-					m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->z);
+					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->x,
+					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->y,
+					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->z);
 				fileout.WriteString(str);
 
-				for (unsigned int j = 1; j < m_vecpGCodeLayers[i]->m_vecpTurnRoute.size(); j++)
+				for (unsigned int j = 1; j < m_vecpGCodeLayers[i]->m_vpTurnRoute.size(); j++)
 				{
-					length = GetDistance(*m_vecpGCodeLayers[i]->m_vecpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vecpRoute[j]);
+					length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 					volumn += length * 0.2*1.25;
 					str.Format(_T("G1 X%.3f Y%.3f E-%.5f\n"),
-						m_vecpGCodeLayers[i]->m_vecpTurnRoute[j]->x,
-						m_vecpGCodeLayers[i]->m_vecpTurnRoute[j]->y, (volumn / 6.0));
+						m_vecpGCodeLayers[i]->m_vpTurnRoute[j]->x,
+						m_vecpGCodeLayers[i]->m_vpTurnRoute[j]->y, (volumn / 6.0));
 					fileout.WriteString(str);
 				}
 
 				//喷头抬升20mm
 				str.Format(_T("G0 Z%.3f\n"),
-					m_vecpGCodeLayers[i]->m_vecpTurnRoute[0]->z + 20);
+					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->z + 20);
 				fileout.WriteString(str);
 				//AC轴反转
 				str.Format(_T("G0 C0 A0\n"));
@@ -198,9 +198,9 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 
 void CGCode::LoadSweepModel(CSweep* sweepModel)
 {
-	unsigned int sz = sweepModel->m_vecpSweepLayers.size();
+	unsigned int sz = sweepModel->m_vpSweepLayers.size();
 	for (unsigned int i = 0; i < sz; i++)
 	{
-		m_vecpGCodeLayers.push_back(new CSweepLayer(*sweepModel->m_vecpSweepLayers[i]));
+		m_vecpGCodeLayers.push_back(new CSweepLayer(*sweepModel->m_vpSweepLayers[i]));
 	}
 }

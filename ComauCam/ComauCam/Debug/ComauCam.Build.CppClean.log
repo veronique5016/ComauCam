@@ -14,7 +14,6 @@ e:\project\program files\camversion\comaucam\comaucam\debug\mainfrm.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\opengl.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\outputwnd.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\propertieswnd.obj
-e:\project\program files\camversion\comaucam\comaucam\debug\slice.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\slicedlg.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\stlmodel.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\sweep.obj
@@ -25,6 +24,7 @@ e:\project\program files\camversion\comaucam\comaucam\debug\viewtree.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\classview.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\comaucam.obj
 e:\project\program files\camversion\comaucam\comaucam\debug\comaucamdoc.obj
+e:\project\program files\camversion\comaucam\comaucam\debug\slice.obj
 e:\project\program files\camversion\comaucam\debug\comaucam.lib
 e:\project\program files\camversion\comaucam\debug\comaucam.exp
 e:\project\program files\camversion\comaucam\debug\comaucam.ilk
