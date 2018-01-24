@@ -328,7 +328,7 @@ BOOL CComauCamView::RenderScene()
 	} 
 	if (m_bSliceDraw)
 	{
-		for (unsigned int i = 0; i < m_vecpSlices.size(); i++)
+		for (int i = 0; i < m_vecpSlices.size(); i++)
 		{
 			if (m_nEndLayer == 0)
 			{
@@ -339,7 +339,7 @@ BOOL CComauCamView::RenderScene()
 	}
 	if (m_bSweepDraw)
 	{
-		for (unsigned int i = 0; i < m_vecpSweeps.size(); i++)
+		for (int i = 0; i < m_vecpSweeps.size(); i++)
 		{
 			m_pDC->DrawSweepModel(m_vecpSweeps[0], m_nStartLayer, m_nEndLayer);
 		}
@@ -600,8 +600,8 @@ void CComauCamView::OnStartSlice()
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		unsigned int szModel = m_vecpSTLModels.size();
-		for (unsigned int i = 0; i < szModel; i++)
+		int szModel = m_vecpSTLModels.size();
+		for (int i = 0; i < szModel; i++)
 		{
 			CSlice* pSlice = new CSlice();
 			pSlice->m_dHeight = dialog.m_dSliceDistance;
@@ -622,8 +622,8 @@ void CComauCamView::OnSweep()
 	if (dialog.DoModal() == IDOK)
 	{
 		UpdateData(TRUE);
-		unsigned int szSlice = m_vecpSlices.size();
-		for (unsigned int i = 0; i < szSlice; i++)
+		int szSlice = m_vecpSlices.size();
+		for (int i = 0; i < szSlice; i++)
 		{
 			CSweep* pSweep = new CSweep();
 			pSweep->m_dDistance = dialog.m_dSweepDistance;
@@ -641,7 +641,7 @@ void CComauCamView::OnSweep()
 void CComauCamView::OnWriteGCode()
 {
 	// TODO: 在此添加命令处理程序代码
-	unsigned int sz = m_vecpSweeps.size();
+	int sz = m_vecpSweeps.size();
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
 	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
 	CString strFilePath;
@@ -649,7 +649,7 @@ void CComauCamView::OnWriteGCode()
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
-		for (unsigned int i = 0; i < sz; i++)
+		for (int i = 0; i < sz; i++)
 		{
 			m_pGCode->LoadSweepModel(m_vecpSweeps[i]);
 			m_pGCode->Write(strFilePath);
@@ -661,7 +661,7 @@ void CComauCamView::OnWriteGCode()
 void CComauCamView::OnFiveAxisGCode()
 {
 	// TODO: 在此添加命令处理程序代码
-	unsigned int sz = m_vecpSweeps.size();
+	int sz = m_vecpSweeps.size();
 	TCHAR szFilter[] = _T("文本文件(*.gcode) | *.gcode | 所有文件(*.*) | *.* || ");
 	CFileDialog fileDlg(FALSE, _T(" "), _T("test"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, szFilter, this);
 	CString strFilePath;	
@@ -669,7 +669,7 @@ void CComauCamView::OnFiveAxisGCode()
 	if (IDOK == fileDlg.DoModal())
 	{
 		strFilePath = fileDlg.GetPathName();
-		for (unsigned int i = 0; i < sz; i++)
+		for (int i = 0; i < sz; i++)
 		{
 			//m_sweeps[i]->writeFiveAxisGCode(strFilePath);
 			
@@ -701,7 +701,7 @@ void CComauCamView::OnShowSelectedLayers()
 	// TODO: 在此添加命令处理程序代码
 	CLayerDlg dialog;
 	UpdateData(FALSE);
-	for (unsigned int i = 0; i < m_vecpSlices[0]->m_vpLayers.size(); i++)
+	for (int i = 0; i < m_vecpSlices[0]->m_vpLayers.size(); i++)
 	{
 		if (m_vecpSlices[0]->m_vpLayers[i]->m_vCoordinate[2].dz != 1.0)
 		{
@@ -733,7 +733,7 @@ void CComauCamView::OnMoveandRotate()
 		double xaxis = dialog.x_axis;
 		double yaxis = dialog.y_axis;
 		double zaxis = dialog.z_axis;
-		for (unsigned int i = 0; i < m_vecpSTLModels.size(); i++)
+		for (int i = 0; i < m_vecpSTLModels.size(); i++)
 		{
 			m_vecpSTLModels[i]->MoveModel(CVector3D(xmove, ymove, zmove));
 			m_vecpSTLModels[i]->RotateModel(angle, CVector3D(xaxis, yaxis, zaxis));
@@ -746,7 +746,7 @@ void CComauCamView::OnCenterOn()
 {
 	// TODO: 在此添加命令处理程序代码
 	CVector3D offset_vec;
-	for (unsigned int i = 0; i < m_vecpSTLModels.size(); i++)
+	for (int i = 0; i < m_vecpSTLModels.size(); i++)
 	{
 		offset_vec = m_vecpSTLModels[i]->OnCenter();
 		m_vecpSTLModels[i]->MoveModel(offset_vec);

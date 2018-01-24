@@ -8,16 +8,16 @@ CSweep::CSweep():m_dDistance(5)
 }
 CSweep::~CSweep()
 {
-	unsigned int szL = m_vpSliceLayers.size();
-	for (unsigned int i = 0; i < szL; i++)
+	int szL = m_vpSliceLayers.size();
+	for (int i = 0; i < szL; i++)
 	{
 		delete m_vpSliceLayers[i];
 		m_vpSliceLayers[i] = NULL;
 	}
 	m_vpSliceLayers.clear();
 
-	unsigned int szW = m_vpSweepLayers.size();
-	for (unsigned int i = 0; i < szW; i++)
+	int szW = m_vpSweepLayers.size();
+	for (int i = 0; i < szW; i++)
 	{
 		delete m_vpSweepLayers[i];
 		m_vpSweepLayers[i] = NULL;
@@ -30,24 +30,24 @@ void CSweep::Sweep()
 {
 	double x_min, x_max, x, z;
 	CPoint3D tmp_point;
-	for (unsigned int i = 0; i < m_vpSweepLayers.size(); i++)
+	for (int i = 0; i < m_vpSweepLayers.size(); i++)
 	{
 		if (i == 0)
 		{
 			CSweepLayer* layer =m_vpSweepLayers[i];
 			CBoundary* tmp_boundary = new CBoundary(*layer->m_vpBoundaries[0]);
 			::Offset(tmp_boundary, -5, layer->m_vCoordinate);
-			unsigned int szB = tmp_boundary->m_vpSegments.size();
+			int szB = tmp_boundary->m_vpSegments.size();
 			m_vpSweepLayers[i]->m_vpRoute.push_back(new CPoint3D(tmp_boundary->m_vpSegments[0]->m_ptStart));
-			for (unsigned int j = 0; j < szB; j++)
+			for (int j = 0; j < szB; j++)
 			{
 				m_vpSweepLayers[i]->m_vpRoute.push_back(new CPoint3D(tmp_boundary->m_vpSegments[j]->m_ptEnd));
 			}
 		}
 		//将最外层轮廓存入路径中
-		unsigned int szB = m_vpSweepLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
+		int szB = m_vpSweepLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
 		m_vpSweepLayers[i]->m_vpRoute.push_back(new CPoint3D(m_vpSweepLayers[i]->m_vpBoundaries[0]->m_vpSegments[0]->m_ptStart));
-		for (unsigned int j = 0; j < szB; j++)
+		for (int j = 0; j < szB; j++)
 		{
 			m_vpSweepLayers[i]->m_vpRoute.push_back(new CPoint3D(m_vpSweepLayers[i]->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd));
 		}
@@ -58,9 +58,9 @@ void CSweep::Sweep()
 		{
 			CBoundary* offsetBoundary = new CBoundary(*tmp);
 			::Offset(offsetBoundary, 1, m_vpSweepLayers[i]->m_vCoordinate);
-			unsigned int szOffset = offsetBoundary->m_vpSegments.size();
+			int szOffset = offsetBoundary->m_vpSegments.size();
 			m_vpSweepLayers[i]->m_vpRoute.push_back(new CPoint3D(offsetBoundary->m_vpSegments[0]->m_ptStart));
-			for (unsigned int j = 0; j < szOffset; j++)
+			for (int j = 0; j < szOffset; j++)
 			{
 				m_vpSweepLayers[i]->m_vpRoute.push_back(new CPoint3D(offsetBoundary->m_vpSegments[j]->m_ptEnd));
 			}
@@ -73,9 +73,9 @@ void CSweep::Sweep()
 			//设置偏置大小
 			Offset(m_vpSweepLayers[i], 0.9);
 			//寻找轮廓 x 方向的极值
-			unsigned int sz = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments.size();
+			int sz = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments.size();
 			x_min = x_max = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[0]->m_ptStart.x;
-			for (unsigned int j = 0; j < sz; j++)
+			for (int j = 0; j < sz; j++)
 			{
 				if (x_max <= m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[j]->m_ptEnd.x)
 					x_max = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[j]->m_ptEnd.x;
@@ -108,7 +108,7 @@ void CSweep::Sweep()
 		else
 		{
 			unsigned szT = m_vpSweepLayers[i]->m_vpRoute.size();
-			for (unsigned int j = 0; j < szT; j++)
+			for (int j = 0; j < szT; j++)
 			{
 				m_vpSweepLayers[i]->m_vpTurnRoute.push_back(new CSweepPoint(*m_vpSweepLayers[i]->m_vpRoute[(j+1)%szT],0,0));
 			}
@@ -120,15 +120,15 @@ void CSweep::Sweep()
 
 void CSweep::YaxisSweep(CSweepLayer* layer)
 {
-	unsigned int szSeg = layer->m_vpOffsetBoundaries[0]->m_vpSegments.size();
-	unsigned int szLine = layer->m_vpSweepLines.size();
+	int szSeg = layer->m_vpOffsetBoundaries[0]->m_vpSegments.size();
+	int szLine = layer->m_vpSweepLines.size();
 	CPoint3D sweepline_point;
 	CPoint3D pout;
 	CVector3D vec1, vec2;
 	sweepline_point = layer->m_vpSweepLines[szLine-1]->m_ptLinePoint;
 
 	// 遍历轮廓所有线段，求得和扫描线的交点
-	for (unsigned int i = 0; i < szSeg; i++)
+	for (int i = 0; i < szSeg; i++)
 	{
 		vec1 = CVector3D(sweepline_point, layer->m_vpOffsetBoundaries[0]->m_vpSegments[i]->m_ptStart);
 		vec2 = CVector3D(sweepline_point, layer->m_vpOffsetBoundaries[0]->m_vpSegments[i]->m_ptEnd);
@@ -141,7 +141,7 @@ void CSweep::YaxisSweep(CSweepLayer* layer)
 	}
 
 /*	///连成 zigzag 路径的算法需要很大的改动
-	unsigned int szP = crosspoint.size();
+	int szP = crosspoint.size();
 
 	if (layer->m_vpRoute.size() == 0)
 	{
@@ -168,8 +168,8 @@ void CSweep::YaxisSweep(CSweepLayer* layer)
 
 void CSweep::LoadSliceModel(CSlice* slicemodel)
 {	
-	unsigned int szLay = slicemodel->m_vpLayers.size();
-	for (unsigned int i = 0; i < szLay; i++)
+	int szLay = slicemodel->m_vpLayers.size();
+	for (int i = 0; i < szLay; i++)
 	{
 		m_vpSliceLayers.push_back(slicemodel->m_vpLayers[i]);		//为CSweep对象拷贝一份层切面数据
 		m_vpSweepLayers.push_back(new CSweepLayer(*slicemodel->m_vpLayers[i]));

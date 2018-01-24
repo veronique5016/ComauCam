@@ -8,8 +8,8 @@ CSTLModel::CSTLModel(void)
 
 CSTLModel::~CSTLModel(void)
 {
-	unsigned int sz = m_vecpTris.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = m_vecpTris.size();
+	for (int i = 0; i < sz; i++)
 	{
 		delete m_vecpTris[i];
 		m_vecpTris[i] = NULL;
@@ -24,7 +24,7 @@ bool CSTLModel::ReadSTL(CString sFilePath)
 	if (file.Open(sFilePath, CFile::modeRead))
 	{
 		file.Seek(80, CFile::begin);  //跳过前80字节
-		unsigned int num = 0;
+		int num = 0;
 		file.Read(&num, 4);//得到面片数量
 		int fileSize = 80 + 4 + 50 * num;//一个面片占50字节
 		bool bBinary = false;
@@ -51,14 +51,14 @@ bool CSTLModel::ReadSTL(CString sFilePath)
 
 bool CSTLModel::ReadBinarySTL(CFile& file)
 {
-	unsigned int n = 0;
+	int n = 0;
 	float f;
 	byte b;
 	CVector3D v;
 	CPoint3D A, B, C;
 	file.Seek(80, CFile::begin);
 	file.Read(&n, 4);//得到n为面片数量
-	for (unsigned int i = 0; i<n; i++)
+	for (int i = 0; i<n; i++)
 	{
 		file.Read(&f, 4); v.dx = f;//每个数值占4字节
 		file.Read(&f, 4); v.dy = f;
@@ -174,8 +174,8 @@ void CSTLModel::FindExtreme(double ext[]) // 找到 m_vecpVertices 中 x、y、z 坐标
 	double z_min = m_vecpVertices[0]->z;
 	double z_max = z_min;
 
-	unsigned int sz = m_vecpVertices.size();
-	for (unsigned int i = 1; i<sz; i++)
+	int sz = m_vecpVertices.size();
+	for (int i = 1; i<sz; i++)
 	{
 		if (m_vecpVertices[i]->x > x_max)
 		{
@@ -336,8 +336,8 @@ BOOL CSTLModel::IsSpace(TCHAR ch)
 
 void CSTLModel::MoveModel(CVector3D vec)
 {
-	unsigned int sz = m_vecpTris.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = m_vecpTris.size();
+	for (int i = 0; i < sz; i++)
 	{
 		m_vecpTris[i]->Move(vec);
 	}
@@ -345,8 +345,8 @@ void CSTLModel::MoveModel(CVector3D vec)
 
 void CSTLModel::RotateModel(double angle, CVector3D vec)
 {
-	unsigned int sz = m_vecpTris.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = m_vecpTris.size();
+	for (int i = 0; i < sz; i++)
 	{
 		m_vecpTris[i]->Rotate(angle, vec);
 	}
@@ -377,7 +377,7 @@ CVector3D CSTLModel::OnCenter()
 	double x_max = status[0]->A.x;
 	double y_min = status[0]->A.y;
 	double y_max = status[0]->A.y;
-	for (unsigned int i = 0; i < status.size(); i++)
+	for (int i = 0; i < status.size(); i++)
 	{
 		if (x_min >= status[i]->A.x)
 			x_min = status[i]->A.x;
@@ -465,12 +465,12 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 
 	sort(tmp_vertices.begin(), tmp_vertices.end());	//sort函数对给定区间所有元素进行排序
 
-	unsigned int szV = tmp_vertices.size();    // szV == 3* szTri
+	int szV = tmp_vertices.size();    // szV == 3* szTri
 
 	CLVertex* pVertex = new CLVertex(tmp_vertices[0]);
 	m_vecpVertices.push_back(pVertex); //将tmp_vertices里的顶点信息存到半边结构定义的m_vecpVertices里去
 
-	for (unsigned int i = 1; i < szV; i++)
+	for (int i = 1; i < szV; i++)
 	{
 		if (tmp_vertices[i] == tmp_vertices[i - 1])
 		{
@@ -520,10 +520,10 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 		m_vecpLTris[i]->e3 = e3;
 	}
 
-	unsigned int szE = m_vecpEdges.size();
+	int szE = m_vecpEdges.size();
 	vector<CLEdgeHull> edgeHulls;
 	CLEdgeHull edgeHull;            //定义一个结构变量
-	for (unsigned int i = 0; i<szE; i++)
+	for (int i = 0; i<szE; i++)
 	{
 		edgeHull.m_pEdge = m_vecpEdges[i];//先将半边结构中的边存到结构变量中
 		edgeHulls.push_back(edgeHull);//再将结构变量中的数据存到动态数组中
@@ -531,7 +531,7 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 
 	sort(edgeHulls.begin(), edgeHulls.end());//排序？？？
 
-	for (unsigned int i = 0; i<szE - 1; i++)
+	for (int i = 0; i<szE - 1; i++)
 	{
 		if (edgeHulls[i].IsOpposite(edgeHulls[i + 1]))//如果两条边的方向是相反的
 		{
@@ -541,7 +541,7 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 		}
 	}
 
-	for (unsigned int i = 0; i < m_vecpEdges.size(); i++)
+	for (int i = 0; i < m_vecpEdges.size(); i++)
 	{
 		if(m_vecpEdges[i]->e_adja == NULL)
 			AfxMessageBox(_T("Topologize failed!!"), MB_OK, 0);
@@ -551,7 +551,7 @@ void CSTLModel::Topologize()	// 建立拓扑关系
 CLVertex* CSTLModel::SearchPtInVertices(const CPoint3D& pt) //在半边结构的顶点数组中寻找这个点								  
 {
 	CLVertex vertex(pt);
-	unsigned int sz = m_vecpVertices.size();
+	int sz = m_vecpVertices.size();
 	int min_i = 0;              //最小编号
 	int max_i = sz - 1;           //最大编号
 

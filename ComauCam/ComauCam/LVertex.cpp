@@ -193,7 +193,7 @@ CTopologySTL::CTopologySTL()
 
 CTopologySTL::~CTopologySTL()
 {
-	unsigned int sz = m_vecpVertices.size();
+	int sz = m_vecpVertices.size();
 	for (int i = sz - 1; i >= 0; i--)
 	{
 		if (NULL != m_vecpVertices[i])

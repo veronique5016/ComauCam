@@ -43,6 +43,7 @@ public:
 struct CSliceFrag
 {
 	CSliceFrag();
+	CSliceFrag(const CSliceFrag& fragment);
 	~CSliceFrag();
 
 public:
@@ -110,7 +111,7 @@ void AFX_API_EXPORT MoveSegment(CSegment* lsegment, CVector3D vec);
 
 //求两线段交点
 void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CSegment seg1, CSegment seg2);
-void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CPoint3D pt1, CVector3D line_vec, CSegment seg);
+void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CPoint3D pt1, CVector3D line_vec, CPoint3D segSp, CPoint3D segEp);
 void AFX_API_EXPORT GetCrossPoint(CPoint3D& pt_out, CSweepLine line1, CSegment line2);
 
 //以一点为中心，扩充成一个正方形

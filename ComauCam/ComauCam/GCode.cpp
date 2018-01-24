@@ -7,8 +7,8 @@ CGCode::CGCode()
 
 CGCode::~CGCode()
 {
-	unsigned int szL = m_vecpGCodeLayers.size();
-	for (unsigned int i = 0; i < szL; i++)
+	int szL = m_vecpGCodeLayers.size();
+	for (int i = 0; i < szL; i++)
 	{
 		delete m_vecpGCodeLayers[i];
 		m_vecpGCodeLayers[i] = NULL;
@@ -35,8 +35,8 @@ void CGCode::Write(CString sFilePath)
 		CString str;
 		double length = 0.0000;
 		double volumn = 0.0000;
-		unsigned int szLayer = m_vecpGCodeLayers.size();
-		for (unsigned int i = 0; i < szLayer; i++)
+		int szLayer = m_vecpGCodeLayers.size();
+		for (int i = 0; i < szLayer; i++)
 		{
 			str.Format(_T("G0 X%.3f Y%.3f Z%.3f i%.3f j%.3f k%.3f\n"),
 				m_vecpGCodeLayers[i]->m_vpRoute[0]->x,
@@ -46,8 +46,8 @@ void CGCode::Write(CString sFilePath)
 				m_vecpGCodeLayers[i]->m_vCoordinate[2].dy,
 				m_vecpGCodeLayers[i]->m_vCoordinate[2].dz);
 			fileout.WriteString(str);
-			unsigned int szB = m_vecpGCodeLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
-			for (unsigned int j = 1; j < szB + 1; j++)
+			int szB = m_vecpGCodeLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
+			for (int j = 1; j < szB + 1; j++)
 			{
 				length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 				volumn += length * 0.2;
@@ -66,8 +66,8 @@ void CGCode::Write(CString sFilePath)
 				m_vecpGCodeLayers[i]->m_vCoordinate[2].dy,
 				m_vecpGCodeLayers[i]->m_vCoordinate[2].dz);
 			fileout.WriteString(str);
-			unsigned int sz = m_vecpGCodeLayers[i]->m_vpRoute.size();
-			for (unsigned int j = szB + 2; j < sz; j++)
+			int sz = m_vecpGCodeLayers[i]->m_vpRoute.size();
+			for (int j = szB + 2; j < sz; j++)
 			{
 				length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 				volumn += length * 0.2;
@@ -111,8 +111,8 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 		CString str;
 		double length = 0.0000;
 		double volumn = 0.0000;
-		unsigned int szLayer = m_vecpGCodeLayers.size();
-		for (unsigned int i = 0; i < szLayer; i++)
+		int szLayer = m_vecpGCodeLayers.size();
+		for (int i = 0; i < szLayer; i++)
 		{
 			if (m_vecpGCodeLayers[i]->m_vCoordinate[2].dz == 1.0)
 			{
@@ -121,8 +121,8 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 					m_vecpGCodeLayers[i]->m_vpRoute[0]->y,
 					m_vecpGCodeLayers[i]->m_vpRoute[0]->z);
 				fileout.WriteString(str);
-				unsigned int szB = m_vecpGCodeLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
-				for (unsigned int j = 1; j < szB+1; j++)
+				int szB = m_vecpGCodeLayers[i]->m_vpBoundaries[0]->m_vpSegments.size();
+				for (int j = 1; j < szB+1; j++)
 				{
 					length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 					volumn += length * 0.2;
@@ -134,8 +134,8 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 					m_vecpGCodeLayers[i]->m_vpRoute[szB + 1]->x,
 					m_vecpGCodeLayers[i]->m_vpRoute[szB + 1]->y);
 				fileout.WriteString(str);
-				unsigned int sz = m_vecpGCodeLayers[i]->m_vpRoute.size();
-				for (unsigned int j = szB+2; j < sz; j++)
+				int sz = m_vecpGCodeLayers[i]->m_vpRoute.size();
+				for (int j = szB+2; j < sz; j++)
 				{
 					length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 					volumn += length * 0.2;
@@ -164,7 +164,7 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 					m_vecpGCodeLayers[i]->m_vpTurnRoute[0]->z);
 				fileout.WriteString(str);
 
-				for (unsigned int j = 1; j < m_vecpGCodeLayers[i]->m_vpTurnRoute.size(); j++)
+				for (int j = 1; j < m_vecpGCodeLayers[i]->m_vpTurnRoute.size(); j++)
 				{
 					length = GetDistance(*m_vecpGCodeLayers[i]->m_vpRoute[j - 1], *m_vecpGCodeLayers[i]->m_vpRoute[j]);
 					volumn += length * 0.2*1.25;
@@ -198,8 +198,8 @@ void CGCode::WriteFiveAxis(CString sFilePath)
 
 void CGCode::LoadSweepModel(CSweep* sweepModel)
 {
-	unsigned int sz = sweepModel->m_vpSweepLayers.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = sweepModel->m_vpSweepLayers.size();
+	for (int i = 0; i < sz; i++)
 	{
 		m_vecpGCodeLayers.push_back(new CSweepLayer(*sweepModel->m_vpSweepLayers[i]));
 	}

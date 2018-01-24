@@ -9,16 +9,16 @@ CSlice::CSlice(void)
 
 CSlice::~CSlice(void)
 {
-	unsigned int szL = m_vpLayers.size();
-	for (unsigned int i = 0; i < szL; i++)
+	int szL = m_vpLayers.size();
+	for (int i = 0; i < szL; i++)
 	{
 		delete m_vpLayers[i];
 		m_vpLayers[i] = NULL;
 	}
 	m_vpLayers.clear();
 
-	unsigned int sz = m_vpSliceTris.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = m_vpSliceTris.size();
+	for (int i = 0; i < sz; i++)
 	{
 		delete m_vpSliceTris[i];
 		m_vpSliceTris[i] = NULL;
@@ -29,8 +29,8 @@ CSlice::~CSlice(void)
 void CSlice::LoadSTLModel(CSTLModel* model)//载入stl模型
 {
 	model->Topologize();//给模型建立拓扑结构
-	unsigned int szTri = model->m_vecpLTris.size();
-	for (unsigned int j = 0; j<szTri; j++)
+	int szTri = model->m_vecpLTris.size();
+	for (int j = 0; j<szTri; j++)
 	{
 		m_vpSliceTris.push_back(model->m_vecpLTris[j]);     //为CSlice对象拷贝一份三角面片数据
 	}
@@ -61,8 +61,8 @@ void CSlice::Slice(CSTLModel* model)
 		CSliceLayer* pTurnLayer = new CSliceLayer();
 
 		//判断是否需要变法向切片
-		unsigned int szL = m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments.size();
-		for (unsigned int i = 0; i < szL; i++)
+		int szL = m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments.size();
+		for (int i = 0; i < szL; i++)
 		{
 			double angle = GetAngle(CVector3D(0, 0, 1), CVector3D(*m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_pTriangle->n));
 			//标准静态挂流角度为128°
@@ -73,20 +73,17 @@ void CSlice::Slice(CSTLModel* model)
 				Offset(m_vpLayers[index]->m_vpBoundaries[0], offset_dist, m_vpLayers[index]->m_vCoordinate);
 
 				//定义变法向切平面的坐标系和平面上一点
-				
-
 				CPoint3D layer_point = CPoint3D(m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart);
 				layer_point.z = layer_point.z - offset_dist*cos(angle - PI / 2.0)*sin(angle - PI / 2.0);
 				pTurnLayer->m_ptLayerPoint = layer_point;
 
 				GetBoundaryPoints(pTurnLayer);
-				pTurnLayer->OptimizeBoundary();
-	
+				pTurnLayer->OptimizeBoundary();	
 				break;
 			}
 		}
 		szL = m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments.size();
-		for (unsigned int i = 0; i < szL; i++)
+		for (int i = 0; i < szL; i++)
 		{
 			CPoint3D pStart = CPoint3D(m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.x,
 				m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.y,
@@ -95,23 +92,74 @@ void CSlice::Slice(CSTLModel* model)
 				m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.y,
 				0);
 			CPoint3D crosspoint;
+			vector<CPoint3D> crosspoints;
 			CVector3D normal = m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_vSegmentVec * CVector3D(0, 0, 1);
 			normal.Normalize();
-			for (unsigned int j = 0; j < pTurnLayer->m_vpBoundaries[0]->m_vpSegments.size(); j++ )
+
+			for (int j = 0; j < pTurnLayer->m_vpBoundaries[0]->m_vpSegments.size(); j++ )
 			{
-				::GetCrossPoint(crosspoint, pStart, normal, *pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]);
-				double dist = GetDistance(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd);
-				double dist1 = GetDistance(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart, crosspoint);
-				double dist2 = GetDistance(crosspoint, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd);
-				if (fabs(dist - (dist1 + dist2)) < 0.00000000001)
+				CPoint3D segSp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.y, 0);
+				CPoint3D segEp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.y, 0);
+
+				::GetCrossPoint(crosspoint, pStart, normal, segSp, segEp);
+				double dist = GetDistance(segSp, segEp);
+				double dist1 = GetDistance(segSp, crosspoint);
+				double dist2 = GetDistance(crosspoint, segEp);
+				double sum = dist1 + dist2;
+				double error = dist - sum;
+ 				if (fabs(error) < 0.0000000001)
 				{
-					break;
+					crosspoints.push_back(crosspoint);
+				}
+			}			
+			int min_index = 0;
+			for (int j = 0; j < crosspoints.size(); j++)
+			{
+				CVector3D tmp_vec = CVector3D(pStart, crosspoints[j]);
+				double tmp_angle = ::GetAngle(normal, tmp_vec);
+				if (tmp_angle < 0.0001)
+				{
+					if (GetDistance(pStart, crosspoints[j]) <= GetDistance(pStart, crosspoints[min_index]))
+						min_index = j;
 				}
 			}
+
 			CSliceFrag* tmpFrag = new CSliceFrag();
-			tmpFrag->m_ptBoundary[0] = CPoint3D(pStart);
-			tmpFrag->m_ptBoundary[1] = CPoint3D(crosspoint);
-			//m_vpLayers[index]->m_vpFragments[0] = CPoint3D(pStart);
+			tmpFrag->m_ptBoundary[0] = CPoint3D(pStart.x, pStart.y, m_vpLayers[index]->m_ptLayerPoint.z);
+			tmpFrag->m_ptBoundary[1] = CPoint3D(crosspoints[min_index].x, crosspoints[min_index].y, pTurnLayer->m_ptLayerPoint.z);
+			crosspoints.clear();
+
+			for (int j = 0; j < pTurnLayer->m_vpBoundaries[0]->m_vpSegments.size(); j++)
+			{
+				CPoint3D segSp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.y, 0);
+				CPoint3D segEp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.y, 0);
+
+				::GetCrossPoint(crosspoint, pEnd, normal, segSp, segEp);
+				double dist = GetDistance(segSp, segEp);
+				double dist1 = GetDistance(segSp, crosspoint);
+				double dist2 = GetDistance(crosspoint, segEp);
+				double sum = dist1 + dist2;
+				double error = dist - sum;
+				if (fabs(error) < 0.0000000001)
+				{
+					crosspoints.push_back(crosspoint);
+				}
+			}
+			min_index = 0;
+			for (int j = 0; j < crosspoints.size(); j++)
+			{
+				CVector3D tmp_vec = CVector3D(pEnd, crosspoints[j]);
+				double tmp_angle = ::GetAngle(normal, tmp_vec);
+				if (tmp_angle < 0.0001)
+				{
+					if (GetDistance(pEnd, crosspoints[j]) <= GetDistance(pEnd, crosspoints[min_index]))
+						min_index = j;
+				}
+			}
+			tmpFrag->m_ptBoundary[2] = CPoint3D(crosspoints[min_index].x, crosspoints[min_index].y, pTurnLayer->m_ptLayerPoint.z);
+			tmpFrag->m_ptBoundary[3] = CPoint3D(pEnd.x, pEnd.y, m_vpLayers[index]->m_ptLayerPoint.z);
+			crosspoints.clear();
+			m_vpLayers[index]->m_vpFragments.push_back(tmpFrag);
 		}
 		m_vpLayers.push_back(pTurnLayer);
 		z += dz;
@@ -124,8 +172,8 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 	vector<CLTriangle*> status;
 	double v1_dist, v2_dist, v3_dist;
 
-	unsigned int szTri = m_vpSliceTris.size();
-	for (unsigned int i = 0; i < szTri; i++)
+	int szTri = m_vpSliceTris.size();
+	for (int i = 0; i < szTri; i++)
 	{
 		v1_dist = ::CalPointtoPlane(*m_vpSliceTris[i]->v1, layer->m_vCoordinate[2], layer->m_ptLayerPoint);
 		v2_dist = ::CalPointtoPlane(*m_vpSliceTris[i]->v2, layer->m_vCoordinate[2], layer->m_ptLayerPoint);
@@ -147,8 +195,8 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 	}
 
 	// 对相交面片进行面片分类
-	unsigned int szStatus = status.size();
-	for (unsigned int i = 0; i<szStatus; i++)
+	int szStatus = status.size();
+	for (int i = 0; i<szStatus; i++)
 	{
 		JudgeFaceType(layer, status[i]);
 	}
@@ -201,7 +249,7 @@ void CSlice::GetBoundaryPoints(CSliceLayer* layer)
 			CalIntersectPoint(layer, intersectLine, pCurFace, tmpendPoint);
 			*tmpSegment = CSegment(m_boundary->m_vpSegments[m_boundary->m_vpSegments.size() - 1]->m_ptEnd, *tmpendPoint, pCurFace);
 			m_boundary->m_vpSegments.push_back(new CSegment(*tmpSegment));
-			unsigned int szlinkline = m_boundary->m_vpSegments.size();
+			int szlinkline = m_boundary->m_vpSegments.size();
 			//判断轮廓是否闭合
 			if ((m_boundary->m_vpSegments[0]->m_ptStart) ^= (m_boundary->m_vpSegments[szlinkline - 1]->m_ptEnd))
 			{
@@ -463,7 +511,7 @@ void CSlice::GetAddedLayerBoundary(CSliceLayer * layer, CSliceLayer * turn_layer
 void CSlice::ModifyTurnLayer(CSliceLayer* layer)
 {
 	vector<CSegment*> tmp_boundary;
-	for (unsigned int i = 0; i < layer->m_vpBoundaries[0]->m_vpSegments.size(); i++)
+	for (int i = 0; i < layer->m_vpBoundaries[0]->m_vpSegments.size(); i++)
 	{
 		tmp_boundary.push_back(layer->m_vpBoundaries[0]->m_vpSegments[i]);
 	}

@@ -37,16 +37,16 @@ CBoundary::CBoundary()
 }
 CBoundary::CBoundary(const CBoundary & boundary)
 {
-	unsigned int szSeg = boundary.m_vpSegments.size();
-	for (unsigned int i = 0; i < szSeg; i++)
+	int szSeg = boundary.m_vpSegments.size();
+	for (int i = 0; i < szSeg; i++)
 	{
 		m_vpSegments.push_back(new CSegment(*boundary.m_vpSegments[i]));
 	}
 }
 CBoundary::~CBoundary()
 {
-	unsigned int szP = m_vpSegments.size();
-	for (unsigned int i = 0; i < szP; i++)
+	int szP = m_vpSegments.size();
+	for (int i = 0; i < szP; i++)
 	{
 		delete m_vpSegments[i];
 		m_vpSegments[i] = NULL;
@@ -59,10 +59,21 @@ CSliceFrag::CSliceFrag()
 	m_vCoordinate[0] = CVector3D(1, 0, 0);
 	m_vCoordinate[1] = CVector3D(0, 1, 0);
 	m_vCoordinate[2] = CVector3D(0, 0, 1);
-	for (unsigned int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		m_ptBoundary[i] = CPoint3D(0, 0, 0);
 	}
+}
+
+CSliceFrag::CSliceFrag(const CSliceFrag & fragment)
+{
+	m_vCoordinate[0] = fragment.m_vCoordinate[0];
+	m_vCoordinate[1] = fragment.m_vCoordinate[1];
+	m_vCoordinate[2] = fragment.m_vCoordinate[2];
+	m_ptBoundary[0] = fragment.m_ptBoundary[0];
+	m_ptBoundary[1] = fragment.m_ptBoundary[1];
+	m_ptBoundary[2] = fragment.m_ptBoundary[2];
+	m_ptBoundary[3] = fragment.m_ptBoundary[3];
 }
 
 CSliceFrag::~CSliceFrag()
@@ -77,16 +88,16 @@ CSliceLayer::CSliceLayer()
 }
 CSliceLayer::~CSliceLayer()
 {
-	unsigned int szP = m_vpBoundaries.size();
-	for (unsigned int i = 0; i < szP; i++)
+	int szP = m_vpBoundaries.size();
+	for (int i = 0; i < szP; i++)
 	{
 		delete m_vpBoundaries[i];
 		m_vpBoundaries[i] = NULL;
 	}
 	m_vpBoundaries.clear();
 
-	unsigned int szF = m_vpBoundaries.size();
-	for (unsigned int i = 0; i < szF; i++)
+	int szF = m_vpBoundaries.size();
+	for (int i = 0; i < szF; i++)
 	{
 		delete m_vpFragments[i];
 		m_vpFragments[i] = NULL;
@@ -97,7 +108,7 @@ CSliceLayer::~CSliceLayer()
 //取出轮廓中点集的三等分点判断轮廓是否逆时针
 bool CSliceLayer::IsBoundaryCCW()
 {
-	unsigned int sz = m_vpBoundaries[0]->m_vpSegments.size();
+	int sz = m_vpBoundaries[0]->m_vpSegments.size();
 	double angle = -1.0;
 	CPoint3D p1, p2;
 	CVector3D vec1, vec2;
@@ -127,14 +138,14 @@ bool CSliceLayer::IsBoundaryCCW()
 
 void CSliceLayer::MakeBoundaryCCW()
 {
-	unsigned int sz = m_vpBoundaries[0]->m_vpSegments.size();
+	int sz = m_vpBoundaries[0]->m_vpSegments.size();
 	vector<CSegment*> tmp;
-	for (unsigned int i = 0; i < sz; i++)
+	for (int i = 0; i < sz; i++)
 	{
 		tmp.push_back(m_vpBoundaries[0]->m_vpSegments[sz - 1 - i]);
 	}
 	m_vpBoundaries[0]->m_vpSegments.clear();
-	for (unsigned int i = 0; i < sz; i++)
+	for (int i = 0; i < sz; i++)
 	{
 		m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(*tmp[i]));
 		m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart = CPoint3D(tmp[i]->m_ptEnd);
@@ -146,10 +157,10 @@ void CSliceLayer::MakeBoundaryCCW()
 
 void CSliceLayer::RearrangeBoundary()
 {
-	unsigned int szP = m_vpBoundaries[0]->m_vpSegments.size();
+	int szP = m_vpBoundaries[0]->m_vpSegments.size();
 	double position = m_vpBoundaries[0]->m_vpSegments[0]->m_ptStart.x + m_vpBoundaries[0]->m_vpSegments[0]->m_ptStart.y;
 	int index = 0;
-	for (unsigned int i = 0; i < szP; i++)
+	for (int i = 0; i < szP; i++)
 	{
 		CPoint3D tmp_point = m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart;
 		double tmp_position = tmp_point.x + tmp_point.y;
@@ -160,12 +171,12 @@ void CSliceLayer::RearrangeBoundary()
 		}
 	}
 	vector<CSegment*> tmp_segments;
-	for (unsigned int i = 0; i < szP; i++)
+	for (int i = 0; i < szP; i++)
 	{
 		tmp_segments.push_back(m_vpBoundaries[0]->m_vpSegments[(i + index) % szP]);
 	}
 	m_vpBoundaries[0]->m_vpSegments.clear();
-	for (unsigned int i = 0; i < szP; i++)
+	for (int i = 0; i < szP; i++)
 	{
 		m_vpBoundaries[0]->m_vpSegments.push_back(tmp_segments[i]);
 	}
@@ -175,17 +186,17 @@ void CSliceLayer::RearrangeBoundary()
 void CSliceLayer::DeletePoints()
 {
 	vector<CSegment*> tmp_segments;
-	unsigned int szP = m_vpBoundaries[0]->m_vpSegments.size();
+	int szP = m_vpBoundaries[0]->m_vpSegments.size();
 
 	// 取出单个层切面轮廓中的所有线段
-	for (unsigned int j = 0; j < szP; j++)
+	for (int j = 0; j < szP; j++)
 	{
 		tmp_segments.push_back(m_vpBoundaries[0]->m_vpSegments[j]);
 	}
 	m_vpBoundaries[0]->m_vpSegments.clear();
 
-	unsigned int szTemp = tmp_segments.size();
-	for (unsigned int i = 0; i < szTemp; i++)
+	int szTemp = tmp_segments.size();
+	for (int i = 0; i < szTemp; i++)
 	{
 		if (fabs(tmp_segments[i]->m_ptStart.x) <= 0.0000001)
 			tmp_segments[i]->m_ptStart.x = 0;
@@ -204,7 +215,7 @@ void CSliceLayer::DeletePoints()
 	CPoint3D pCur, pNext, pNextNext;
 	while (szTemp >= 3)
 	{
-		for (unsigned int j = 0; j < szTemp; j++)
+		for (int j = 0; j < szTemp; j++)
 		{
 			pCur = tmp_segments[j%szTemp]->m_ptStart;
 			pNext = tmp_segments[j%szTemp]->m_ptEnd;
@@ -226,7 +237,7 @@ void CSliceLayer::DeletePoints()
 	}
 
 	//将删除共线点之后的线段存回 m_vpSegments 中
-	for (unsigned int i = 0; i < tmp_segments.size(); i++)
+	for (int i = 0; i < tmp_segments.size(); i++)
 	{
 		m_vpBoundaries[0]->m_vpSegments.push_back(tmp_segments[i]);
 	}
@@ -245,8 +256,8 @@ double CSliceLayer::ZminofLayer()
 {
 	double zmin;
 	zmin = m_vpBoundaries[0]->m_vpSegments[0]->m_ptStart.z;
-	unsigned int sz = m_vpBoundaries[0]->m_vpSegments.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = m_vpBoundaries[0]->m_vpSegments.size();
+	for (int i = 0; i < sz; i++)
 	{
 		if (zmin > m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.z)
 			zmin = m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.z;
@@ -265,7 +276,7 @@ int CSliceLayer::FindLowestSegment()
 	{
 		int szP = m_vpBoundaries[0]->m_vpSegments.size();
 		double height = m_vpBoundaries[0]->m_vpSegments[0]->m_ptStart.z + m_vpBoundaries[0]->m_vpSegments[0]->m_ptEnd.z;
-		for (unsigned int i = 0; i < szP; i++)
+		for (int i = 0; i < szP; i++)
 		{
 			double tmp_height = m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.z + m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.z;
 			if (height >= tmp_height)
@@ -294,8 +305,8 @@ CSweepLayer::CSweepLayer(const CSliceLayer & sliceLayer)
 	m_vCoordinate[0] = sliceLayer.m_vCoordinate[0];
 	m_vCoordinate[1] = sliceLayer.m_vCoordinate[1];
 	m_vCoordinate[2] = sliceLayer.m_vCoordinate[2];
-	unsigned int sz = sliceLayer.m_vpBoundaries.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = sliceLayer.m_vpBoundaries.size();
+	for (int i = 0; i < sz; i++)
 	{
 		m_vpBoundaries.push_back(sliceLayer.m_vpBoundaries[i]);
 	}
@@ -306,58 +317,58 @@ CSweepLayer::CSweepLayer(const CSweepLayer & sweepLayer)
 	m_vCoordinate[0] = sweepLayer.m_vCoordinate[0];
 	m_vCoordinate[1] = sweepLayer.m_vCoordinate[1];
 	m_vCoordinate[2] = sweepLayer.m_vCoordinate[2];
-	unsigned int sz = sweepLayer.m_vpBoundaries.size();
-	for (unsigned int i = 0; i < sz; i++)
+	int sz = sweepLayer.m_vpBoundaries.size();
+	for (int i = 0; i < sz; i++)
 	{
 		m_vpBoundaries.push_back(sweepLayer.m_vpBoundaries[i]);
 	}
 
-	unsigned int szL = sweepLayer.m_vpSweepLines.size();
-	for (unsigned int i = 0; i < szL; i++)
+	int szL = sweepLayer.m_vpSweepLines.size();
+	for (int i = 0; i < szL; i++)
 	{
 		m_vpSweepLines.push_back(sweepLayer.m_vpSweepLines[i]);
 	}
 
-	unsigned int szP = sweepLayer.m_vpRoute.size();
-	for (unsigned int i = 0; i < szP; i++)
+	int szP = sweepLayer.m_vpRoute.size();
+	for (int i = 0; i < szP; i++)
 	{
 		m_vpRoute.push_back(new CPoint3D(*sweepLayer.m_vpRoute[i]));
 	}
 
-	unsigned int szT = sweepLayer.m_vpTurnRoute.size();
-	for (unsigned int i = 0; i < szT; i++)
+	int szT = sweepLayer.m_vpTurnRoute.size();
+	for (int i = 0; i < szT; i++)
 	{
 		m_vpTurnRoute.push_back(new CSweepPoint(*sweepLayer.m_vpTurnRoute[i]));
 	}
 }
 CSweepLayer::~CSweepLayer()
 {
-	unsigned int szB = m_vpOffsetBoundaries.size();
-	for (unsigned int i = 0; i < szB; i++)
+	int szB = m_vpOffsetBoundaries.size();
+	for (int i = 0; i < szB; i++)
 	{
 		delete m_vpOffsetBoundaries[i];
 		m_vpOffsetBoundaries[i] = NULL;
 	}
 	m_vpOffsetBoundaries.clear();
 
-	unsigned int szR = m_vpRoute.size();
-	for (unsigned int i = 0; i < szR; i++)
+	int szR = m_vpRoute.size();
+	for (int i = 0; i < szR; i++)
 	{
 		delete m_vpRoute[i];
 		m_vpRoute[i] = NULL;
 	}
 	m_vpRoute.clear();
 
-	unsigned int szL = m_vpSweepLines.size();
-	for (unsigned int i = 0; i < szR; i++)
+	int szL = m_vpSweepLines.size();
+	for (int i = 0; i < szR; i++)
 	{
 		delete m_vpSweepLines[i];
 		m_vpSweepLines[i] = NULL;
 	}
 	m_vpSweepLines.clear();
 
-	unsigned int szT = m_vpTurnRoute.size();
-	for (unsigned int i = 0; i < szT; i++)
+	int szT = m_vpTurnRoute.size();
+	for (int i = 0; i < szT; i++)
 	{
 		delete m_vpTurnRoute[i];
 		m_vpTurnRoute[i] = NULL;
@@ -402,11 +413,11 @@ void GetCrossPoint(CPoint3D& pt_out, CSegment seg1, CSegment seg2)
 	GetCrossPoint(pt_out, seg1.m_ptStart, seg1.m_ptEnd, seg2.m_ptStart, seg2.m_ptEnd);
 }
 
-void GetCrossPoint(CPoint3D & pt_out, CPoint3D pt1, CVector3D line_vec, CSegment seg)
+void GetCrossPoint(CPoint3D & pt_out, CPoint3D pt1, CVector3D line_vec, CPoint3D segSp, CPoint3D segEp)
 {
 	CPoint3D pStart = pt1;
 	CPoint3D pEnd = pStart + line_vec * 10;
-	GetCrossPoint(pt_out, pStart, pEnd, seg.m_ptStart, seg.m_ptEnd);
+	GetCrossPoint(pt_out, pStart, pEnd, segSp, segEp);
 }
 
 void GetCrossPoint(CPoint3D & pt_out, CSweepLine line1, CSegment line2)
@@ -439,14 +450,14 @@ void PointToQuad(CPoint3D quad[4], CPoint3D point, double offset, CVector3D coor
 
 void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 {
-	unsigned int sz = boundary->m_vpSegments.size();
+	int sz = boundary->m_vpSegments.size();
 	CPoint3D point_out;
 	CVector3D offset_vec;
 	CPoint3D tmp_point;
 	CSegment line1, line2;
 
 	//将轮廓中所有的线段往内偏移一个距离
-	for (unsigned int i = 0; i < sz; i++)
+	for (int i = 0; i < sz; i++)
 	{
 		offset_vec = coordinate[2] * boundary->m_vpSegments[i]->m_vSegmentVec;
 		offset_vec.Normalize();
@@ -454,7 +465,7 @@ void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 	}
 
 	//对偏移后的线段求交点，形成偏移后的轮廓
-	for (unsigned int i = 0; i < sz; i++)
+	for (int i = 0; i < sz; i++)
 	{
 		line1 = *boundary->m_vpSegments[i];
 		line2 = *boundary->m_vpSegments[(i + 1) % sz];
@@ -465,7 +476,7 @@ void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 	}
 
 	//判断需要删除的多余线段
-	for (unsigned int i = 0; i < boundary->m_vpSegments.size(); i++)
+	for (int i = 0; i < boundary->m_vpSegments.size(); i++)
 	{
 		CVector3D tmp_vec = boundary->m_vpSegments[i]->m_vSegmentVec;
 		boundary->m_vpSegments[i]->m_vSegmentVec = CVector3D(boundary->m_vpSegments[i]->m_ptStart, boundary->m_vpSegments[i]->m_ptEnd);
@@ -481,7 +492,7 @@ void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 		}
 	}
 	//生成新的轮廓
-	for (unsigned int i = 0; i < boundary->m_vpSegments.size(); i++)
+	for (int i = 0; i < boundary->m_vpSegments.size(); i++)
 	{
 		line1 = *boundary->m_vpSegments[i];
 		line2 = *boundary->m_vpSegments[(i + 1) % boundary->m_vpSegments.size()];
