@@ -34,11 +34,6 @@ public:
 	void GetInterSectEdge(CSliceLayer* layer, CLTriangle* pCurFace);   //轮廓求交算法初始化，求出第一条交线，和第一个交点；
 	void JudgeFaceType(CSliceLayer* layer, CLTriangle* pCurFace);    //判断与切片平面相交面片的类型
 	void JudgeOtherLine(CSliceLayer* layer, CLTriangle* pCurFace);   //判断另一条相交线
-
-public:
-	void GetAddedLayerBoundary(CSliceLayer* layer, CSegment turnlayer_seg, CSegment layer_seg);
-	void GetAddedLayerBoundary(CSliceLayer* layer, CSliceLayer* turn_layer, CSliceLayer* z_layer);
-	void ModifyTurnLayer(CSliceLayer* layer);	//对变法向切平面轮廓进行修改	
 	
 public:
 	vector<CSliceLayer*> m_vpLayers;     //存储片层

@@ -64,7 +64,6 @@ public:
 	void DeletePoints();
 	void OptimizeBoundary();
 	double ZminofLayer();
-	int FindLowestSegment();
 
 public:
 	CPoint3D m_ptLayerPoint;
@@ -119,3 +118,6 @@ void PointToQuad(CPoint3D quad[4], CPoint3D point, double offset, CVector3D coor
 
 //偏移轮廓
 void Offset(CBoundary* boundary, double offset, CVector3D coordinate[]);//由于某些很小的向量分量，最终得到的偏置轮廓可能与原轮廓不共面
+
+//判断点是否在线段内
+bool IsPointInSeg(CPoint3D pt, CPoint3D seg_ptS, CPoint3D seg_ptE);

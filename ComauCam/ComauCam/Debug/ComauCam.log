@@ -1,8 +1,59 @@
-﻿  Slice.cpp
-e:\project\program files\camversion\comaucam\comaucam\slice.cpp(99): warning C4018: “<”: 有符号/无符号不匹配
-e:\project\program files\camversion\comaucam\comaucam\slice.cpp(116): warning C4018: “<”: 有符号/无符号不匹配
-e:\project\program files\camversion\comaucam\comaucam\slice.cpp(132): warning C4018: “<”: 有符号/无符号不匹配
-e:\project\program files\camversion\comaucam\comaucam\slice.cpp(149): warning C4018: “<”: 有符号/无符号不匹配
-e:\project\program files\camversion\comaucam\comaucam\slice.cpp(514): warning C4018: “<”: 有符号/无符号不匹配
+﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppClean.targets(76,5): warning : 文件“e:\project\program files\camversion\comaucam\comaucam\debug\comaucam.pch”正由另一进程使用，因此该进程无法访问此文件。
+  stdafx.cpp
+  ViewTree.cpp
+  Triangle.cpp
+  TransferDlg.cpp
+  SweepDlg.cpp
+  Sweep.cpp
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(33): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “z”: 未引用的局部变量
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_max”: 未引用的局部变量
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x_min”: 未引用的局部变量
+e:\project\program files\camversion\comaucam\comaucam\sweep.cpp(31): warning C4101: “x”: 未引用的局部变量
+  STLModel.cpp
+e:\project\program files\camversion\comaucam\comaucam\stlmodel.cpp(380): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\stlmodel.cpp(544): warning C4018: “<”: 有符号/无符号不匹配
+  SliceDlg.cpp
+  Slice.cpp
+e:\project\program files\camversion\comaucam\comaucam\slice.cpp(97): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\slice.cpp(110): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\slice.cpp(126): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\slice.cpp(139): warning C4018: “<”: 有符号/无符号不匹配
+  PropertiesWnd.cpp
+  OutputWnd.cpp
+  OpenGL.cpp
+e:\project\program files\camversion\comaucam\comaucam\opengl.cpp(227): warning C4018: “<”: 有符号/无符号不匹配
+  MainFrm.cpp
+  LVertex.cpp
+  LayerDlg.cpp
+  Layer.cpp
+e:\project\program files\camversion\comaucam\comaucam\layer.cpp(240): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\layer.cpp(455): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\layer.cpp(471): warning C4018: “<”: 有符号/无符号不匹配
+  GemoBase.cpp
+  GCode.cpp
+e:\project\program files\camversion\comaucam\comaucam\gcode.cpp(167): warning C4018: “<”: 有符号/无符号不匹配
+  FileView.cpp
+  DisplayDlg.cpp
+  ComauCamView.cpp
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(324): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(331): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(342): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(691): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(692): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(693): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(694): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(695): warning C4800: “BOOL”: 将值强制为布尔值“true”或“false”(性能警告)
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(710): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(743): warning C4018: “<”: 有符号/无符号不匹配
+e:\project\program files\camversion\comaucam\comaucam\comaucamview.cpp(756): warning C4018: “<”: 有符号/无符号不匹配
+  正在生成代码...
+e:\project\program files\camversion\comaucam\comaucam\gemobase.cpp(381): warning C4715: “CVector3D::GetC_Angle”: 不是所有的控件路径都返回值
+  正在编译...
+  ComauCamDoc.cpp
+  ComauCam.cpp
+  ClassView.cpp
+  正在生成代码...
+    正在创建库 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.lib 和对象 E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exp
   ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.exe
   ComauCam.vcxproj -> E:\Project\Program files\CamVersion\ComauCam\Debug\ComauCam.pdb (Partial PDB)

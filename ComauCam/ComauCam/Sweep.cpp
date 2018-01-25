@@ -67,54 +67,7 @@ void CSweep::Sweep()
 			tmp = offsetBoundary;
 			sum++;
 		}
-		//变法向的层切面因为太小所以不切，只走轮廓
-		/*if (m_vpSweepLayers[i]->m_vCoordinate[2].dz == 1.0)
-		{
-			//设置偏置大小
-			Offset(m_vpSweepLayers[i], 0.9);
-			//寻找轮廓 x 方向的极值
-			int sz = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments.size();
-			x_min = x_max = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[0]->m_ptStart.x;
-			for (int j = 0; j < sz; j++)
-			{
-				if (x_max <= m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[j]->m_ptEnd.x)
-					x_max = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[j]->m_ptEnd.x;
-				if (x_min >= m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[j]->m_ptEnd.x)
-				{
-					x_min = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[j]->m_ptEnd.x;
-					z = m_vpSweepLayers[i]->m_vpOffsetBoundaries[0]->m_vpSegments[j]->m_ptEnd.z;
-				}
-			}
 
-			//给第一条扫描线赋初值
-			x = x_min + 0.1;
-			while (true)
-			{
-				CSweepLine* tmp_sweep = new CSweepLine();
-				tmp_sweep->m_ptLinePoint = CPoint3D(x, 0, z);
-				tmp_sweep->m_vLineVec = CVector3D(0, 1, 0);
-				tmp_sweep->m_vLineNormal = m_vpSweepLayers[i]->m_vCoordinate[2];
-				m_vpSweepLayers[i]->m_vpSweepLines.push_back(tmp_sweep);
-				YaxisSweep(m_vpSweepLayers[i]);
-
-				if (x >= (x_max - m_dDistance))
-				{  
-					break;
-				}
-				x = x + m_vpSweepLayers[i]->m_vCoordinate[0].dx*m_dDistance;
-				//z = z + m_vpSweepLayers[i]->m_vCoordinate[0].dz*m_dDistance;
-			}
-		}
-		else
-		{
-			unsigned szT = m_vpSweepLayers[i]->m_vpRoute.size();
-			for (int j = 0; j < szT; j++)
-			{
-				m_vpSweepLayers[i]->m_vpTurnRoute.push_back(new CSweepPoint(*m_vpSweepLayers[i]->m_vpRoute[(j+1)%szT],0,0));
-			}
-			CalACAngle(m_vpSweepLayers[i]);
-			CalFiveAxisValue(m_vpSweepLayers[i]);
-		}*/
 	}
 }
 
@@ -140,7 +93,7 @@ void CSweep::YaxisSweep(CSweepLayer* layer)
 		}
 	}
 
-/*	///连成 zigzag 路径的算法需要很大的改动
+/*	
 	int szP = crosspoint.size();
 
 	if (layer->m_vpRoute.size() == 0)

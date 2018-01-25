@@ -15,6 +15,8 @@
 #include "GCode.h"
 #include "TransferDlg.h"
 
+
+
 class CComauCamView : public CView
 {
 protected: // 仅从序列化创建
@@ -24,9 +26,9 @@ protected: // 仅从序列化创建
 // 特性
 public:
 	CComauCamDoc* GetDocument() const;
-	vector<CSTLModel*> m_vecpSTLModels;
-	vector<CSlice*> m_vecpSlices;
-	vector<CSweep*> m_vecpSweeps;
+	vector<CSTLModel*> m_vpSTLModels;
+	vector<CSlice*> m_vpSlices;
+	vector<CSweep*> m_vpSweeps;
 	CGCode* m_pGCode;
 
 	bool m_bSTLDraw;
@@ -84,7 +86,6 @@ public:
 	void SetSceneRot(int axis, int value, BOOL increment, BOOL apply);
 	void SetCamPos(int axis, int value, BOOL increment, BOOL apply);
 	void SetScenePos(int axis, int value, BOOL increment, BOOL apply);
-
 
 // 生成的消息映射函数
 protected:

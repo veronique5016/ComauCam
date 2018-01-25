@@ -265,30 +265,6 @@ double CSliceLayer::ZminofLayer()
 	return zmin;
 }
 
-int CSliceLayer::FindLowestSegment()
-{
-	int index = -1;
-	if (m_vCoordinate[2].dz == 1.0)
-	{
-		return index;
-	}
-	else
-	{
-		int szP = m_vpBoundaries[0]->m_vpSegments.size();
-		double height = m_vpBoundaries[0]->m_vpSegments[0]->m_ptStart.z + m_vpBoundaries[0]->m_vpSegments[0]->m_ptEnd.z;
-		for (int i = 0; i < szP; i++)
-		{
-			double tmp_height = m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.z + m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.z;
-			if (height >= tmp_height)
-			{
-				height = tmp_height;
-				index = i;
-			}
-		}
-		return index;
-	}
-}
-
 CSweepLine::CSweepLine()
 {
 }
@@ -504,5 +480,17 @@ void Offset(CBoundary* boundary, double offset, CVector3D coordinate[])
 			boundary->m_vpSegments[(i + 1) % boundary->m_vpSegments.size()]->m_ptStart = CPoint3D(point_out);
 		}
 	}
+}
+
+bool IsPointInSeg(CPoint3D pt, CPoint3D seg_ptS, CPoint3D seg_ptE)
+{
+	double dist = ::GetDistance(seg_ptS, seg_ptE);
+	double dist1 = ::GetDistance(seg_ptS, pt);
+	double dist2 = ::GetDistance(pt, seg_ptE);
+	double error = dist - dist1 - dist2;
+	if (fabs(error) < 0.0000001)
+		return true;
+	else
+		return false;
 }
 

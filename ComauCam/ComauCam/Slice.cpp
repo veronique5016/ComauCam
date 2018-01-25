@@ -51,117 +51,110 @@ void CSlice::Slice(CSTLModel* model)
 		pLayer->m_ptLayerPoint = CPoint3D(0, 0, z);
 		m_vpLayers.push_back(pLayer);
 
-		int index = m_vpLayers.size() - 1;//index 指向当前的切平面,这里确定的平面法向量永远为 z 轴正向
-		GetBoundaryPoints(m_vpLayers[index]);
+		int index_layer = m_vpLayers.size() - 1;//index_layer 指向当前的切平面,这里确定的平面法向量永远为 z 轴正向
+		GetBoundaryPoints(m_vpLayers[index_layer]);
 
 		//将轮廓逆时针排列并删除共线点
-		m_vpLayers[index]->OptimizeBoundary();
-		m_vpLayers[index]->RearrangeBoundary();
+		m_vpLayers[index_layer]->OptimizeBoundary();
+		m_vpLayers[index_layer]->RearrangeBoundary();
 		
 		CSliceLayer* pTurnLayer = new CSliceLayer();
 
 		//判断是否需要变法向切片
-		int szL = m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments.size();
+		int szL = m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments.size();
 		for (int i = 0; i < szL; i++)
 		{
-			double angle = GetAngle(CVector3D(0, 0, 1), CVector3D(*m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_pTriangle->n));
+			double angle = GetAngle(CVector3D(0, 0, 1), CVector3D(*m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments[i]->m_pTriangle->n));
 			//标准静态挂流角度为128°
-			if (angle > 110.0*PI / 180.0)
+			if (angle > 100.0*PI / 180.0)
 			{
 				//偏移轮廓
 				double offset_dist = 2.0;
-				Offset(m_vpLayers[index]->m_vpBoundaries[0], offset_dist, m_vpLayers[index]->m_vCoordinate);
+				Offset(m_vpLayers[index_layer]->m_vpBoundaries[0], offset_dist, m_vpLayers[index_layer]->m_vCoordinate);
 
 				//定义变法向切平面的坐标系和平面上一点
-				CPoint3D layer_point = CPoint3D(m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart);
+				CPoint3D layer_point = CPoint3D(m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart);
 				layer_point.z = layer_point.z - offset_dist*cos(angle - PI / 2.0)*sin(angle - PI / 2.0);
 				pTurnLayer->m_ptLayerPoint = layer_point;
 
 				GetBoundaryPoints(pTurnLayer);
 				pTurnLayer->OptimizeBoundary();	
+
+				int szSeg = m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments.size();
+				for (int i = 0; i < szSeg; i++)
+				{
+					CPoint3D pStart = CPoint3D(m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.x,
+						m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.y,
+						0);
+					CPoint3D pEnd = CPoint3D(m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.x,
+						m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.y,
+						0);
+					CPoint3D crosspoint;
+					vector<CPoint3D> crosspoints;
+					CVector3D normal = m_vpLayers[index_layer]->m_vpBoundaries[0]->m_vpSegments[i]->m_vSegmentVec * CVector3D(0, 0, 1);
+					normal.Normalize();
+
+					for (int j = 0; j < pTurnLayer->m_vpBoundaries[0]->m_vpSegments.size(); j++)
+					{
+						CPoint3D segSp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.y, 0);
+						CPoint3D segEp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.y, 0);
+
+						::GetCrossPoint(crosspoint, pStart, normal, segSp, segEp);
+						
+						if (::IsPointInSeg(crosspoint, segSp, segEp))
+						{
+							crosspoints.push_back(crosspoint);
+						}
+					}
+					int min_index = 0;
+					for (int j = 0; j < crosspoints.size(); j++)
+					{
+						CVector3D tmp_vec = CVector3D(pStart, crosspoints[j]);
+						double tmp_angle = ::GetAngle(normal, tmp_vec);
+						if (tmp_angle < 0.0001)
+						{
+							if (::GetDistance(pStart, crosspoints[j]) <= GetDistance(pStart, crosspoints[min_index]))
+								min_index = j;
+						}
+					}
+
+					CSliceFrag* tmpFrag = new CSliceFrag();
+					tmpFrag->m_ptBoundary[0] = CPoint3D(pStart.x, pStart.y, m_vpLayers[index_layer]->m_ptLayerPoint.z);
+					tmpFrag->m_ptBoundary[1] = CPoint3D(crosspoints[min_index].x, crosspoints[min_index].y, pTurnLayer->m_ptLayerPoint.z);
+					crosspoints.clear();
+
+					for (int j = 0; j < pTurnLayer->m_vpBoundaries[0]->m_vpSegments.size(); j++)
+					{
+						CPoint3D segSp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.y, 0);
+						CPoint3D segEp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.y, 0);
+
+						::GetCrossPoint(crosspoint, pEnd, normal, segSp, segEp);
+						
+						if (::IsPointInSeg(crosspoint, segSp, segEp))
+						{
+							crosspoints.push_back(crosspoint);
+						}
+					}
+					min_index = 0;
+					for (int j = 0; j < crosspoints.size(); j++)
+					{
+						CVector3D tmp_vec = CVector3D(pEnd, crosspoints[j]);
+						double tmp_angle = ::GetAngle(normal, tmp_vec);
+						if (tmp_angle < 0.0001)
+						{
+							if (::GetDistance(pEnd, crosspoints[j]) <= GetDistance(pEnd, crosspoints[min_index]))
+								min_index = j;
+						}
+					}
+					tmpFrag->m_ptBoundary[2] = CPoint3D(crosspoints[min_index].x, crosspoints[min_index].y, pTurnLayer->m_ptLayerPoint.z);
+					tmpFrag->m_ptBoundary[3] = CPoint3D(pEnd.x, pEnd.y, m_vpLayers[index_layer]->m_ptLayerPoint.z);
+					crosspoints.clear();
+					m_vpLayers[index_layer]->m_vpFragments.push_back(tmpFrag);
+				}
 				break;
 			}
 		}
-		szL = m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments.size();
-		for (int i = 0; i < szL; i++)
-		{
-			CPoint3D pStart = CPoint3D(m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.x,
-				m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptStart.y,
-				0);
-			CPoint3D pEnd = CPoint3D(m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.x,
-				m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_ptEnd.y,
-				0);
-			CPoint3D crosspoint;
-			vector<CPoint3D> crosspoints;
-			CVector3D normal = m_vpLayers[index]->m_vpBoundaries[0]->m_vpSegments[i]->m_vSegmentVec * CVector3D(0, 0, 1);
-			normal.Normalize();
-
-			for (int j = 0; j < pTurnLayer->m_vpBoundaries[0]->m_vpSegments.size(); j++ )
-			{
-				CPoint3D segSp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.y, 0);
-				CPoint3D segEp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.y, 0);
-
-				::GetCrossPoint(crosspoint, pStart, normal, segSp, segEp);
-				double dist = GetDistance(segSp, segEp);
-				double dist1 = GetDistance(segSp, crosspoint);
-				double dist2 = GetDistance(crosspoint, segEp);
-				double sum = dist1 + dist2;
-				double error = dist - sum;
- 				if (fabs(error) < 0.0000000001)
-				{
-					crosspoints.push_back(crosspoint);
-				}
-			}			
-			int min_index = 0;
-			for (int j = 0; j < crosspoints.size(); j++)
-			{
-				CVector3D tmp_vec = CVector3D(pStart, crosspoints[j]);
-				double tmp_angle = ::GetAngle(normal, tmp_vec);
-				if (tmp_angle < 0.0001)
-				{
-					if (GetDistance(pStart, crosspoints[j]) <= GetDistance(pStart, crosspoints[min_index]))
-						min_index = j;
-				}
-			}
-
-			CSliceFrag* tmpFrag = new CSliceFrag();
-			tmpFrag->m_ptBoundary[0] = CPoint3D(pStart.x, pStart.y, m_vpLayers[index]->m_ptLayerPoint.z);
-			tmpFrag->m_ptBoundary[1] = CPoint3D(crosspoints[min_index].x, crosspoints[min_index].y, pTurnLayer->m_ptLayerPoint.z);
-			crosspoints.clear();
-
-			for (int j = 0; j < pTurnLayer->m_vpBoundaries[0]->m_vpSegments.size(); j++)
-			{
-				CPoint3D segSp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptStart.y, 0);
-				CPoint3D segEp = CPoint3D(pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.x, pTurnLayer->m_vpBoundaries[0]->m_vpSegments[j]->m_ptEnd.y, 0);
-
-				::GetCrossPoint(crosspoint, pEnd, normal, segSp, segEp);
-				double dist = GetDistance(segSp, segEp);
-				double dist1 = GetDistance(segSp, crosspoint);
-				double dist2 = GetDistance(crosspoint, segEp);
-				double sum = dist1 + dist2;
-				double error = dist - sum;
-				if (fabs(error) < 0.0000000001)
-				{
-					crosspoints.push_back(crosspoint);
-				}
-			}
-			min_index = 0;
-			for (int j = 0; j < crosspoints.size(); j++)
-			{
-				CVector3D tmp_vec = CVector3D(pEnd, crosspoints[j]);
-				double tmp_angle = ::GetAngle(normal, tmp_vec);
-				if (tmp_angle < 0.0001)
-				{
-					if (GetDistance(pEnd, crosspoints[j]) <= GetDistance(pEnd, crosspoints[min_index]))
-						min_index = j;
-				}
-			}
-			tmpFrag->m_ptBoundary[2] = CPoint3D(crosspoints[min_index].x, crosspoints[min_index].y, pTurnLayer->m_ptLayerPoint.z);
-			tmpFrag->m_ptBoundary[3] = CPoint3D(pEnd.x, pEnd.y, m_vpLayers[index]->m_ptLayerPoint.z);
-			crosspoints.clear();
-			m_vpLayers[index]->m_vpFragments.push_back(tmpFrag);
-		}
-		m_vpLayers.push_back(pTurnLayer);
+		//m_vpLayers.push_back(pTurnLayer);
 		z += dz;
 	}
 }
@@ -472,71 +465,4 @@ void CSlice::CalIntersectPoint(CSliceLayer* layer, CLEdge * edge, CLTriangle*pCu
 			point->z = p.z;
 		}
 	}
-}
-
-void CSlice::GetAddedLayerBoundary(CSliceLayer * layer, CSegment turnlayer_seg, CSegment layer_seg)
-{
-	CSegment tmp_seg = CSegment(turnlayer_seg.m_ptEnd, turnlayer_seg.m_ptStart, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-	tmp_seg = CSegment(turnlayer_seg.m_ptStart, layer_seg.m_ptEnd, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-	tmp_seg = CSegment(layer_seg.m_ptEnd, layer_seg.m_ptStart, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-	tmp_seg = CSegment(layer_seg.m_ptStart, turnlayer_seg.m_ptEnd, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-}
-
-void CSlice::GetAddedLayerBoundary(CSliceLayer * layer, CSliceLayer * turn_layer, CSliceLayer * z_layer)
-{
-	layer->m_vCoordinate[1] = turn_layer->m_vCoordinate[1];
-	CVector3D vec1 = turn_layer->m_vpBoundaries[0]->m_vpSegments[2]->m_vSegmentVec;
-	CVector3D vec2 = CVector3D(z_layer->m_vpBoundaries[0]->m_vpSegments[1]->m_ptEnd, turn_layer->m_vpBoundaries[0]->m_vpSegments[2]->m_ptStart);
-	layer->m_vCoordinate[2] = vec2*vec1;
-	layer->m_vCoordinate[2].Normalize();
-	layer->m_vCoordinate[0] = turn_layer->m_vCoordinate[1] * turn_layer->m_vCoordinate[2];
-	layer->m_vCoordinate[0].Normalize();
-	layer->m_ptLayerPoint = turn_layer->m_vpBoundaries[0]->m_vpSegments[2]->m_ptStart;
-
-	layer->m_vpBoundaries.push_back(new CBoundary());
-	CSegment tmp_seg = CSegment(turn_layer->m_vpBoundaries[0]->m_vpSegments[2]->m_ptEnd, turn_layer->m_vpBoundaries[0]->m_vpSegments[2]->m_ptStart, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-	tmp_seg = CSegment(turn_layer->m_vpBoundaries[0]->m_vpSegments[2]->m_ptStart, z_layer->m_vpBoundaries[0]->m_vpSegments[1]->m_ptEnd, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-	tmp_seg = CSegment(z_layer->m_vpBoundaries[0]->m_vpSegments[1]->m_ptEnd, z_layer->m_vpBoundaries[0]->m_vpSegments[1]->m_ptStart, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-	tmp_seg = CSegment(z_layer->m_vpBoundaries[0]->m_vpSegments[1]->m_ptStart, turn_layer->m_vpBoundaries[0]->m_vpSegments[2]->m_ptEnd, NULL);
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(new CSegment(tmp_seg));
-}
-
-void CSlice::ModifyTurnLayer(CSliceLayer* layer)
-{
-	vector<CSegment*> tmp_boundary;
-	for (int i = 0; i < layer->m_vpBoundaries[0]->m_vpSegments.size(); i++)
-	{
-		tmp_boundary.push_back(layer->m_vpBoundaries[0]->m_vpSegments[i]);
-	}
-
-	int seg_index = layer->FindLowestSegment();
-	CSegment* start_seg = new CSegment(*layer->m_vpBoundaries[0]->m_vpSegments[seg_index]);
-	layer->m_vpBoundaries[0]->m_vpSegments.clear();
-
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(start_seg);
-	CPoint3D intersect;
-	//确定变法向切平面的宽度
-	MoveSegment(tmp_boundary[seg_index], layer->m_vCoordinate[0] * (-2));
-	CPoint3D tmp_swap = tmp_boundary[seg_index]->m_ptStart;
-	tmp_boundary[seg_index]->m_ptStart = tmp_boundary[seg_index]->m_ptEnd;
-	tmp_boundary[seg_index]->m_ptEnd = tmp_swap;
-	tmp_boundary[seg_index]->m_vSegmentVec = CVector3D(0, 0, 0) - tmp_boundary[seg_index]->m_vSegmentVec;
-
-	GetCrossPoint(intersect, *tmp_boundary[(seg_index + 1) % tmp_boundary.size()], *tmp_boundary[seg_index]);
-	tmp_boundary[(seg_index + 1) % tmp_boundary.size()]->m_ptEnd = intersect;
-	tmp_boundary[seg_index]->m_ptStart = intersect;
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(tmp_boundary[(seg_index + 1) % tmp_boundary.size()]);
-	GetCrossPoint(intersect, *tmp_boundary[seg_index], *tmp_boundary[(seg_index - 1 + tmp_boundary.size()) % tmp_boundary.size()]);
-	tmp_boundary[seg_index]->m_ptEnd = intersect;
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(tmp_boundary[seg_index]);
-	tmp_boundary[(seg_index - 1 + tmp_boundary.size()) % tmp_boundary.size()]->m_ptStart = intersect;
-	layer->m_vpBoundaries[0]->m_vpSegments.push_back(tmp_boundary[(seg_index - 1 + tmp_boundary.size()) % tmp_boundary.size()]);
-	tmp_boundary.clear();
 }
